@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,4 +6,248 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  CA_ADMIN
+  CA_STAFF
+  CLIENT
+}
+
+enum UploadStatus {
+  PENDING
+  PROCESSING
+  DONE
+  ERROR
+}
+
+enum ImsAction {
+  ACCEPTED
+  REJECTED
+  PENDING
+}
+
+enum MatchLevel {
+  EXACT
+  VALUE_TOLERANCE
+  SOFT_INVOICE
+  NO_MATCH
+}
+
+enum ReconciliationOutcome {
+  AUTO_ACCEPTED
+  AUTO_REJECTED
+  PENDING_REVIEW
+  NOT_IN_BOOKS
+}
+
+enum NotificationType {
+  CA_NOTIFY_CLIENT
+  CLIENT_COMPLETED
+  CLIENT_UPLOADED
+  UPLOAD_FAILED
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model Organization {
+  id         String   @id @default(uuid())
+  name       String
+  logo_url   String?
+  created_at DateTime @default(now())
+
+  users        User[]
+  clients      Client[]
+  team_invites TeamInvite[]
+
+  @@map("organizations")
+}
+
+model User {
+  id         String   @id
+  name       String
+  email      String   @unique
+  role       UserRole
+  org_id     String?
+  client_id  String?
+  created_at DateTime @default(now())
+
+  org    Organization? @relation(fields: [org_id], references: [id])
+  client Client?       @relation(fields: [client_id], references: [id])
+
+  upload_sessions        UploadSession[]
+  team_invites_sent      TeamInvite[]           @relation("InvitedBy")
+  reconciliation_done    ReconciliationResult[] @relation("DoneBy")
+  notifications_received Notification[]         @relation("Recipient")
+  notifications_sent     Notification[]         @relation("Sender")
+  audit_logs             AuditLog[]
+
+  @@map("users")
+}
+
+model TeamInvite {
+  id            String    @id @default(uuid())
+  org_id        String
+  email         String
+  role          UserRole
+  token         String    @unique @default(uuid())
+  expires_at    DateTime
+  accepted_at   DateTime?
+  invited_by_id String
+  created_at    DateTime  @default(now())
+
+  org        Organization @relation(fields: [org_id], references: [id])
+  invited_by User         @relation("InvitedBy", fields: [invited_by_id], references: [id])
+
+  @@map("team_invites")
+}
+
+model Client {
+  id                String    @id @default(uuid())
+  org_id            String
+  name              String
+  contact_email     String
+  invite_token      String?   @unique
+  invite_expires_at DateTime?
+  created_at        DateTime  @default(now())
+
+  org           Organization  @relation(fields: [org_id], references: [id])
+  gstins        ClientGstin[]
+  users         User[]
+  notifications Notification[]
+
+  @@map("clients")
+}
+
+model ClientGstin {
+  id         String   @id @default(uuid())
+  client_id  String
+  gstin      String   @unique
+  is_primary Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  client          Client          @relation(fields: [client_id], references: [id])
+  upload_sessions UploadSession[]
+
+  @@map("client_gstins")
+}
+
+model UploadSession {
+  id                String       @id @default(uuid())
+  client_gstin_id   String
+  period            String
+  ims_uploaded_at   DateTime?
+  ims_file_url      String?
+  tally_uploaded_at DateTime?
+  tally_file_url    String?
+  uploaded_by_id    String
+  status            UploadStatus @default(PENDING)
+  created_at        DateTime     @default(now())
+
+  client_gstin  ClientGstin  @relation(fields: [client_gstin_id], references: [id])
+  uploaded_by   User         @relation(fields: [uploaded_by_id], references: [id])
+  ims_invoices  ImsInvoice[]
+  tally_entries TallyEntry[]
+
+  @@unique([client_gstin_id, period])
+  @@map("upload_sessions")
+}
+
+model ImsInvoice {
+  id                String    @id @default(uuid())
+  upload_session_id String
+  supplier_gstin    String
+  supplier_name     String?
+  invoice_number    String
+  invoice_date      DateTime
+  invoice_value     String
+  taxable_value     String
+  igst              String
+  cgst              String
+  sgst              String
+  ims_action        ImsAction @default(PENDING)
+  place_of_supply   String?
+  hsn_code          String?
+  created_at        DateTime  @default(now())
+
+  upload_session        UploadSession         @relation(fields: [upload_session_id], references: [id])
+  reconciliation_result ReconciliationResult?
+
+  @@map("ims_invoices")
+}
+
+model TallyEntry {
+  id                String   @id @default(uuid())
+  upload_session_id String
+  supplier_name     String
+  supplier_gstin    String
+  voucher_number    String
+  voucher_date      DateTime
+  total_amount      String
+  taxable_value     String
+  igst              String
+  cgst              String
+  sgst              String
+  hsn_code          String?
+  created_at        DateTime @default(now())
+
+  upload_session         UploadSession          @relation(fields: [upload_session_id], references: [id])
+  reconciliation_results ReconciliationResult[]
+
+  @@map("tally_entries")
+}
+
+model ReconciliationResult {
+  id             String                @id @default(uuid())
+  ims_invoice_id String                @unique
+  tally_entry_id String?
+  match_level    MatchLevel
+  outcome        ReconciliationOutcome
+  reason_code    String
+  reason_text    String
+  itc_at_risk    String
+  is_done        Boolean               @default(false)
+  done_at        DateTime?
+  done_by_id     String?
+  created_at     DateTime              @default(now())
+  updated_at     DateTime              @updatedAt
+
+  ims_invoice ImsInvoice  @relation(fields: [ims_invoice_id], references: [id])
+  tally_entry TallyEntry? @relation(fields: [tally_entry_id], references: [id])
+  done_by     User?       @relation("DoneBy", fields: [done_by_id], references: [id])
+
+  @@map("reconciliation_results")
+}
+
+model Notification {
+  id           String           @id @default(uuid())
+  recipient_id String
+  sender_id    String?
+  client_id    String?
+  type         NotificationType
+  message      String
+  is_read      Boolean          @default(false)
+  created_at   DateTime         @default(now())
+
+  recipient User    @relation("Recipient", fields: [recipient_id], references: [id])
+  sender    User?   @relation("Sender", fields: [sender_id], references: [id])
+  client    Client? @relation(fields: [client_id], references: [id])
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  user_id     String
+  action      String
+  entity_type String
+  entity_id   String?
+  metadata    Json?
+  created_at  DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("audit_logs")
 }
