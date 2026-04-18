@@ -162,7 +162,6 @@ async function main() {
   const allIms   = await prisma.imsInvoice.findMany({ where: { upload_session_id: IDS.session } })
   const allTally = await prisma.tallyEntry.findMany({ where: { upload_session_id: IDS.session } })
 
-  const imsMap   = new Map(allIms.map(i => [`${i.supplier_gstin}|${i.invoice_number}|${i.id}`, i]))
   const imsByKey = new Map<string, typeof allIms>()
   for (const i of allIms) {
     const key = `${i.supplier_gstin}|${i.invoice_number}`
@@ -201,7 +200,6 @@ async function main() {
     const ims = imsArr?.[0]
     const tally = tallyMap.get(key)
     if (!ims || !tally) continue
-    const itc = (parseFloat(ims.igst) + parseFloat(ims.cgst) + parseFloat(ims.sgst)).toFixed(2)
     results.push({ ims_invoice_id: ims.id, tally_entry_id: tally.id, match_level: 'EXACT', outcome: 'AUTO_ACCEPTED', reason_code: 'EXACT_MATCH', reason_text: 'Invoice matched exactly in your books. No action needed.', itc_at_risk: '0.00' })
   }
 

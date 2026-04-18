@@ -1,4 +1,4 @@
-type UserRole = 'CA_ADMIN' | 'CA_STAFF' | 'CLIENT'
+import { UserRole } from '@prisma/client'
 
 export function isCAAdmin(role: UserRole): boolean {
   return role === 'CA_ADMIN'

@@ -7,7 +7,8 @@ export async function getSession() {
 }
 
 export async function requireAuth() {
-  const session = await getSession()
-  if (!session) throw new Error('Unauthorized')
-  return session
+  const supabase = createServerClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error || !user) throw new Error('Unauthorized')
+  return user
 }
