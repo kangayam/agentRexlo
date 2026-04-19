@@ -15,8 +15,16 @@ export function ActingAsBanner({ firmName, clientId }: ActingAsBannerProps) {
 
   const handleExit = async () => {
     setExiting(true)
-    await fetch(`/api/clients/${clientId}/acting-as`, { method: 'DELETE' })
-    router.push('/ca/clients')
+    try {
+      const res = await fetch(`/api/clients/${clientId}/acting-as`, { method: 'DELETE' })
+      if (res.ok) {
+        router.push('/ca/clients')
+      }
+    } catch {
+      // network failure — reset so user can retry
+    } finally {
+      setExiting(false)
+    }
   }
 
   return (

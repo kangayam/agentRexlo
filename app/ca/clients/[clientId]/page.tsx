@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,16 +23,17 @@ export default function ClientDetailPage() {
   const [gstinError, setGstinError] = useState('')
   const [actingAs, setActingAs] = useState(false)
   const [resending, setResending] = useState(false)
+  const [resendError, setResendError] = useState('')
 
-  const fetchClient = async () => {
+  const fetchClient = useCallback(async () => {
     const res = await fetch(`/api/clients/${clientId}`)
     if (!res.ok) { setLoading(false); return }
     const data = await res.json()
     setClient(data)
     setLoading(false)
-  }
+  }, [clientId])
 
-  useEffect(() => { fetchClient() }, [clientId])
+  useEffect(() => { fetchClient() }, [fetchClient])
 
   const handleAddGstin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,18 +53,36 @@ export default function ClientDetailPage() {
 
   const handleResendInvite = async () => {
     setResending(true)
-    await fetch('/api/clients', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'resend-invite', clientId }),
-    })
-    setResending(false)
+    setResendError('')
+    try {
+      const res = await fetch('/api/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'resend-invite', clientId }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        setResendError(data.error ?? 'Failed to send invite')
+      }
+    } catch {
+      setResendError('Network error — please try again')
+    } finally {
+      setResending(false)
+    }
   }
 
   const handleActAs = async () => {
     setActingAs(true)
-    await fetch(`/api/clients/${clientId}/acting-as`, { method: 'POST' })
-    router.push('/client/dashboard')
+    try {
+      const res = await fetch(`/api/clients/${clientId}/acting-as`, { method: 'POST' })
+      if (res.ok) {
+        router.push('/client/dashboard')
+      }
+    } catch {
+      // network failure
+    } finally {
+      setActingAs(false)
+    }
   }
 
   if (loading) return <div className="p-8 text-gray-500">Loading…</div>
@@ -135,6 +154,7 @@ export default function ClientDetailPage() {
           <Button variant="outline" size="sm" onClick={handleResendInvite} disabled={resending}>
             {resending ? 'Sending…' : 'Resend Invite'}
           </Button>
+          {resendError && <p className="text-sm text-red-600">{resendError}</p>}
         </section>
       )}
     </div>
