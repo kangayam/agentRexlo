@@ -254,9 +254,12 @@ agentflow-core/
 │   ├── WORKFLOW.md               # Dev workflow (Claude Code + Figma + GitHub)
 │   └── CLAUDE.md                 # Context file for Claude Code
 │
-├── data/                         # Dummy data for development
-│   ├── sample-ims.json
-│   └── sample-tally.csv
+├── data/                         # Sample & test data
+│   └── fixtures/                 # Golden reconciliation test set (see FIXTURES.md)
+│       ├── 27AABCU9603R1ZX-ims-2026-02.json
+│       ├── 27AABCU9603R1ZX-tally-2026-02.csv
+│       ├── 27AABCU9603R1ZX-recon-expected-2026-02.csv
+│       └── FIXTURES.md
 │
 └── tests/                        # Basic unit tests for recon engine
 ```
@@ -323,6 +326,8 @@ Full schema is in the PRD you shared and will be written in `prisma/schema.prism
 
 The heart of the product. Pure rule-based in Phase 1 — no AI, no fuzzy matching. This keeps it predictable, debuggable, and fast.
 
+**The golden test fixtures for this engine live at `data/fixtures/` and are documented in `data/fixtures/FIXTURES.md`.** The 9 scenarios there (EXACT_MATCH, WRONG_GSTIN, NOT_IN_BOOKS, VALUE_OVER_10, VALUE_MISMATCH_2_10, FORMAT_VARIATION, INVOICE_NUMBER_MISMATCH, DATE_GAP, DUPLICATE) are the behavioural contract for the rules below. If you change a rule here, you update the expected fixture and the tests together.
+
 ### Step 1 — Normalise
 
 Before matching anything, clean up the data:
@@ -330,27 +335,45 @@ Before matching anything, clean up the data:
 - **GSTIN:** uppercase, trim spaces, validate 15-char alphanumeric.
 - **Invoice number:** lowercase, strip `/ - _ \ # space`, drop leading zeros. `"INV/2026/001"`, `"INV-2026-001"`, and `"inv2026001"` all become `"inv202601"`.
 - **Value:** round to 2 decimals, treat ±₹1 as equal.
+- **Date:** parse both `DD-MM-YYYY` (IMS JSON convention) and `DD/MM/YYYY` (Tally CSV convention) into ISO 8601 (`YYYY-MM-DD`) before any comparison.
+- **Tax amounts:** for IMS, sum item-level `iamt / camt / samt / csamt` across all `itms[]` entries for multi-line invoices.
 
-### Step 2 — Match (3 levels, tried in order)
+### Step 2 — Detect duplicates in the IMS upload
 
-For each IMS invoice, look for a Tally entry:
+Before matching, scan the IMS dataset for the same normalised invoice# appearing twice under the same supplier. Both copies are marked `DUPLICATE` → `AUTO_REJECTED` with reason *"Duplicate IMS entry — same invoice uploaded twice"*. They are excluded from the candidate pool below.
 
-- **Level 1 — Exact:** same GSTIN + same normalised invoice# + value within 2%. → clean match.
-- **Level 2 — Value tolerance:** same GSTIN + same invoice# + value 2–10% difference. → needs review.
-- **Level 3 — Soft invoice#:** same GSTIN + value within 2% + invoice# differs. → needs review (likely same invoice, different format).
+### Step 3 — Find candidate matches (two-stage lookup)
 
-If no match at any level: **NOT_IN_BOOKS**.
+For each remaining IMS invoice, find candidate Tally entries using two lookup strategies and combine the results. **GSTIN is not part of the match key — it is a validation check in Step 4.** This is intentional: the `WRONG_GSTIN` scenario (same invoice#, same value, different GSTIN) must still match so the engine can flag the GSTIN mismatch instead of silently marking it `NOT_IN_BOOKS`.
 
-### Step 3 — Auto-action
+- **Strategy A — Invoice# primary:** find Tally entries with the same normalised invoice#. (Catches EXACT_MATCH, FORMAT_VARIATION, WRONG_GSTIN, VALUE_OVER_10, VALUE_MISMATCH_2_10, DATE_GAP, DUPLICATE.)
+- **Strategy B — Soft match:** find Tally entries with same GSTIN + value within 2% + same tax type, but a different invoice#. (Catches INVOICE_NUMBER_MISMATCH where the supplier and buyer use different invoice numbering conventions.)
 
-Assign one of four outcomes:
+If both strategies return zero candidates → **NOT_IN_BOOKS**.
 
-- **AUTO_ACCEPTED** → Level 1 match, tax type correct (IGST vs CGST+SGST based on POS), no duplicate.
-- **AUTO_REJECTED** → GSTIN mismatch, value >10% higher in IMS than Tally, or duplicate invoice# in IMS.
-- **PENDING_REVIEW** → Level 2 or Level 3 match, tax type mismatch, or >7 day invoice date gap.
-- **NOT_IN_BOOKS** → no match at all.
+If multiple candidates, pick the one with the smallest value delta, then closest date.
 
-### Step 4 — Human-readable reason
+### Step 4 — Validate the match and classify
+
+Run the selected candidate through a cascade of checks. The **first** check that fires determines the outcome. Order matters.
+
+1. **GSTIN check.** If IMS GSTIN ≠ Tally GSTIN → **AUTO_REJECTED** with reason *"Supplier GSTIN mismatch — IMS: {imsGstin} / Tally: {tallyGstin}"*. (Scenario: WRONG_GSTIN.)
+2. **Value delta check.** Compute `delta = (tallyValue − imsValue) / imsValue × 100`.
+    - If `|delta| > 10%` → **AUTO_REJECTED** with reason *"Value delta: Tally ₹X vs IMS ₹Y ({sign}{delta}% — exceeds 10% threshold)"*. (Scenario: VALUE_OVER_10.)
+    - If `2% < |delta| ≤ 10%` → **PENDING_REVIEW** with reason *"Value delta: Tally ₹X vs IMS ₹Y ({sign}{delta}% — within 2–10% band)"*. (Scenario: VALUE_MISMATCH_2_10.)
+3. **Invoice# soft-match check.** If the match came via Strategy B (different normalised invoice#) → **PENDING_REVIEW** with reason *"Invoice# mismatch — IMS: '{imsInv}' / Tally: '{tallyInv}'"*. (Scenario: INVOICE_NUMBER_MISMATCH.)
+4. **Tax-type check.** If IMS declares IGST but Tally declares CGST+SGST (or vice versa) based on POS → **PENDING_REVIEW** with reason *"Tax type mismatch — IMS: {imsType} / Tally: {tallyType}"*.
+5. **Date gap check.** If `|imsDate − tallyDate| > 7 days` → **PENDING_REVIEW** with reason *"Date gap: N days — IMS: {imsDate} / Tally: {tallyDate}"*. (Scenario: DATE_GAP.)
+6. **Clean pass** → **AUTO_ACCEPTED** (no reason needed). Covers EXACT_MATCH and FORMAT_VARIATION; the latter is already handled because normalisation collapses `INV/26/021` and `INV-26-021` to the same key before lookup.
+
+### Step 5 — Outcomes at a glance
+
+- **AUTO_ACCEPTED** → match found, all validation checks pass.
+- **AUTO_REJECTED** → GSTIN mismatch, value >10% delta, or duplicate IMS entry.
+- **PENDING_REVIEW** → value delta 2–10%, soft invoice# match, tax type mismatch, or date gap >7 days.
+- **NOT_IN_BOOKS** → no candidate found by either strategy.
+
+### Step 6 — Human-readable reason
 
 Every non-auto-accepted result gets a plain-English explanation the client can understand without GST expertise. Examples:
 
@@ -360,7 +383,7 @@ Every non-auto-accepted result gets a plain-English explanation the client can u
 
 Reason templates live in `lib/reconciliation/reasons.ts` so they can be edited without touching the matching logic.
 
-### Step 5 — ITC at risk
+### Step 7 — ITC at risk
 
 For each non-auto-accepted invoice: `itc_at_risk = IGST + CGST + SGST`. Dashboard totals are sums across the current session.
 
@@ -405,30 +428,43 @@ These are the screens you design in Figma before handing off to Claude Code. Sta
 
 ## 12. Dummy Data Plan
 
-For the first 6 weeks of development, you will use sample data, not real client data. This is faster and avoids any compliance concerns.
+For the first 6 weeks of development, you will use anonymised sample data, not real client data. This is faster and avoids any compliance concerns.
 
-**What to create (put these in `/data` folder of the repo):**
+### The golden fixture set (already staged)
 
-1. **`sample-ims.json`** — A realistic IMS export with ~30 invoices:
-   - 20 that match Tally exactly (should auto-accept)
-   - 3 with 2% value variance (should go to Pending Review)
-   - 2 with 12% value variance (should be flagged for rejection)
-   - 2 with wrong GSTIN (should be flagged for rejection)
-   - 1 duplicate
-   - 2 invoices not in Tally (should be Not in Books)
+The repo ships with a real-shaped, anonymised test set at `data/fixtures/` that doubles as the reconciliation engine's ground-truth oracle. Every change to `lib/reconciliation/` must keep the tests in `tests/reconciliation.test.ts` green against this set.
 
-2. **`sample-tally.csv`** — Matching Tally purchase register with ~28 entries, structured like a typical Tally export with headers: `Supplier Name`, `Party GSTIN`, `Voucher Number`, `Voucher Date`, `Total Amount`, `Taxable Value`, `IGST Amount`, `CGST Amount`, `SGST Amount`, `HSN Code`.
+| File | Role |
+|---|---|
+| `27AABCU9603R1ZX-ims-2026-02.json` | IMS GSTN JSON export for Feb 2026 — 47 invoices across 45 suppliers |
+| `27AABCU9603R1ZX-tally-2026-02.csv` | Matching Tally purchase register (DD/MM/YYYY dates, standard Tally headers) |
+| `27AABCU9603R1ZX-recon-expected-2026-02.csv` | Expected engine output — one row per IMS invoice with scenario label, `Recon_Output`, and `Error_Reason` |
+| `FIXTURES.md` | Scenario catalogue, worked examples, aggregate sanity numbers |
 
-3. **`sample-tally-variant.csv`** — Same data but with different column header names (e.g., `Vendor GSTIN` instead of `Party GSTIN`) to test the column-mapping UI.
+The fixture set covers all nine scenarios listed in §10 and produces this expected summary:
 
-4. Seed script in `prisma/seed.ts` that creates:
-   - 1 CA firm ("Demo CA Associates")
-   - 1 Staff member
-   - 3 clients ("Alpha Manufacturing", "Beta Retail", "Gamma Services")
-   - 4 GSTINs across the clients
-   - Uploaded sample data for January 2026
+| Metric | Expected |
+|---|---|
+| Total IMS invoices | 47 (46 unique + 1 duplicate) |
+| AUTO_ACCEPTED | 41 |
+| AUTO_REJECTED | 4 (1 wrong GSTIN + 1 value >10% + 2 duplicates) |
+| PENDING_REVIEW | 3 (1 value 2–10% + 1 invoice# mismatch + 1 date gap) |
+| NOT_IN_BOOKS | 1 |
 
-You should be able to run `npm run seed` and have a working demo in 10 seconds. Claude Code will write this seed script for you.
+### Seed script
+
+`prisma/seed.ts` creates:
+- 1 CA firm ("Demo CA Associates")
+- 1 Staff member
+- 3 clients ("Alpha Manufacturing", "Beta Retail", "Gamma Services")
+- 4 GSTINs across the clients
+- An upload session for Feb 2026 pre-populated from `data/fixtures/27AABCU9603R1ZX-ims-2026-02.json` and `27AABCU9603R1ZX-tally-2026-02.csv`
+
+`npm run seed` should produce a fully working demo with real reconciliation results in under 10 seconds. Claude Code will write this seed script.
+
+### When more variation is needed
+
+A second fixture with different Tally header names (e.g., `Vendor GSTIN` instead of `Supplier GSTIN`) can be added later as `data/fixtures/tally-variant-headers.csv` to exercise the column-mapping UI. The `FIXTURES.md` doc has instructions for adding new scenarios without breaking the golden set.
 
 ---
 

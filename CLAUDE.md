@@ -50,7 +50,8 @@ tests/            Unit tests (focus on lib/reconciliation)
 
 docs/             SPEC.md, WORKFLOW.md, this file
 
-data/             Dummy sample files (sample-ims.json, sample-tally.csv)
+data/
+  fixtures/       Golden test set for reconciliation engine (see data/fixtures/FIXTURES.md)
 ```
 
 ## Coding conventions
@@ -84,11 +85,21 @@ data/             Dummy sample files (sample-ims.json, sample-tally.csv)
 
 ## Rules that matter
 
-1. **Normalize before matching.** GSTINs uppercase, invoice numbers lowercase/stripped, values rounded to 2 decimals. See `lib/reconciliation/normalize.ts`.
-2. **Three match levels.** Level 1 exact, Level 2 value-tolerance, Level 3 soft-invoice#. Details in SPEC.md §10.
+1. **Normalize before matching.** GSTINs uppercase, invoice numbers lowercase/stripped of `/ - _ \ # space` and leading zeros, values rounded to 2 decimals, dates parsed into ISO 8601 from both `DD-MM-YYYY` (IMS) and `DD/MM/YYYY` (Tally). See `lib/reconciliation/normalize.ts`.
+2. **Match on invoice# first, validate GSTIN second.** GSTIN is NOT part of the match key — it is a validation step that fires AUTO_REJECTED when mismatched. If you make GSTIN part of the match key, the WRONG_GSTIN fixture will silently become NOT_IN_BOOKS and the engine will be wrong. Candidate lookup uses two strategies: (A) same normalised invoice#, (B) same GSTIN + value within 2% + same tax type (for soft invoice# matches). Details in SPEC.md §10.
 3. **Four outcomes.** `AUTO_ACCEPTED`, `AUTO_REJECTED`, `PENDING_REVIEW`, `NOT_IN_BOOKS`.
 4. **ITC at risk** = IGST + CGST + SGST for any non-auto-accepted invoice.
 5. **Re-upload behaviour.** IMS re-upload is additive and preserves "Done" status. Tally re-upload replaces all.
+
+## Reconciliation test fixtures (non-negotiable)
+
+The golden test set lives at `data/fixtures/`:
+- `27AABCU9603R1ZX-ims-2026-02.json` — input (IMS)
+- `27AABCU9603R1ZX-tally-2026-02.csv` — input (Tally)
+- `27AABCU9603R1ZX-recon-expected-2026-02.csv` — **expected engine output**
+- `FIXTURES.md` — scenario catalogue + aggregate sanity numbers
+
+Any change to `lib/reconciliation/` or `lib/parsers/` must keep `tests/reconciliation.test.ts` green against this expected output. The 9 scenarios covered: `EXACT_MATCH`, `WRONG_GSTIN`, `NOT_IN_BOOKS`, `VALUE_OVER_10`, `VALUE_MISMATCH_2_10`, `FORMAT_VARIATION`, `INVOICE_NUMBER_MISMATCH`, `DATE_GAP`, `DUPLICATE`. Expected totals: 41 AUTO_ACCEPTED, 4 AUTO_REJECTED, 3 PENDING_REVIEW, 1 NOT_IN_BOOKS over 47 rows.
 
 ## Phase scope — what we are NOT building yet
 
