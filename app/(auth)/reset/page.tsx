@@ -74,12 +74,12 @@ export default function ResetPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Reset your password</CardTitle>
-          <CardDescription>Enter your email and we'll send you a reset link.</CardDescription>
+          <CardDescription>Enter your email and we&apos;ll send you a reset link.</CardDescription>
         </CardHeader>
         <CardContent>
           {sent ? (
             <p className="text-sm text-slate-600">
-              If an account exists for that email, you'll receive a reset link within a few minutes.
+              If an account exists for that email, you&apos;ll receive a reset link within a few minutes.
             </p>
           ) : (
             <form onSubmit={handleRequest} className="space-y-4">

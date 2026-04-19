@@ -48,7 +48,7 @@ export default function SignupPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-slate-500">
-              Didn't receive it? Check your spam folder, or{' '}
+              Didn&apos;t receive it? Check your spam folder, or{' '}
               <button onClick={() => setStep('form')} className="underline text-slate-900">
                 try again
               </button>

@@ -61,7 +61,7 @@ function AcceptInviteForm() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-slate-500">
-              Once confirmed, you'll be taken to the AgentFlow dashboard.
+              Once confirmed, you&apos;ll be taken to the AgentFlow dashboard.
             </p>
           </CardContent>
         </Card>
