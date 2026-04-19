@@ -11,10 +11,14 @@ export async function POST(request: Request) {
     const { email, password, name, orgName } = body as {
       email: string; password: string; name: string; orgName: string
     }
+    const origin = new URL(request.url).origin
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, orgName } },
+      options: {
+        data: { name, orgName },
+        emailRedirectTo: `${origin}/auth/callback?next=/ca/dashboard`,
+      },
     })
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json({ step: 'check-email' })

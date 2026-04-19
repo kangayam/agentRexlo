@@ -9,10 +9,9 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = createServerClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
       // On first login, create Prisma records from user metadata
-      const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const existing = await prisma.user.findUnique({ where: { id: user.id } })
         if (!existing) {
