@@ -36,6 +36,28 @@ export async function GET(request: Request) {
                 }),
               ])
             }
+          } else if (meta.clientInviteToken) {
+            // Client invite acceptance path
+            const client = await prisma.client.findUnique({
+              where: { invite_token: meta.clientInviteToken },
+            })
+            if (client && client.invite_expires_at && client.invite_expires_at > new Date()) {
+              await prisma.$transaction([
+                prisma.user.create({
+                  data: {
+                    id: user.id,
+                    name: meta.name ?? user.email!,
+                    email: user.email!,
+                    role: 'CLIENT',
+                    client_id: client.id,
+                  },
+                }),
+                prisma.client.update({
+                  where: { id: client.id },
+                  data: { invite_token: null, invite_expires_at: null },
+                }),
+              ])
+            }
           } else if (meta.orgName) {
             // New CA Admin signup path
             const orgId = crypto.randomUUID()

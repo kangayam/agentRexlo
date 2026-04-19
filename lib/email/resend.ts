@@ -40,3 +40,34 @@ export async function sendTeamInviteEmail({
     html: buildInviteEmailHtml({ orgName, inviteUrl }),
   })
 }
+
+export async function sendClientInviteEmail({
+  to,
+  caOrgName,
+  token,
+}: {
+  to: string
+  caOrgName: string
+  token: string
+}): Promise<void> {
+  const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/accept-client-invite?token=${token}`
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL!,
+    to,
+    subject: `${caOrgName} has invited you to AgentFlow`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+        <h2 style="color:#0f172a;">${caOrgName} has invited you to AgentFlow</h2>
+        <p style="color:#334155;">Your CA firm has set up AgentFlow to manage your GST reconciliation. Click below to create your account.</p>
+        <a href="${inviteUrl}"
+           style="display:inline-block;background:#0f172a;color:#ffffff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
+          Set Up My Account
+        </a>
+        <p style="color:#94a3b8;font-size:14px;margin-top:24px;">
+          This link expires in 7 days.
+        </p>
+      </div>
+    `,
+  })
+}
