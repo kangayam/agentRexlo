@@ -53,7 +53,13 @@ export async function POST(request: Request) {
         invited_by_id: dbUser.id,
       },
     })
-    await sendTeamInviteEmail({ to: email, orgName: org.name, token: invite.token })
+    try {
+      await sendTeamInviteEmail({ to: email, orgName: org.name, token: invite.token })
+    } catch (err) {
+      await prisma.teamInvite.delete({ where: { id: invite.id } })
+      const message = err instanceof Error ? err.message : 'Failed to send invite email'
+      return NextResponse.json({ error: `Email not sent: ${message}` }, { status: 500 })
+    }
     return NextResponse.json({ invite })
   }
 
