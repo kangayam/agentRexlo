@@ -99,7 +99,7 @@ function AcceptClientInviteForm() {
 
 export default function AcceptClientInvitePage() {
   return (
-    <Suspense>
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
       <AcceptClientInviteForm />
     </Suspense>
   )
