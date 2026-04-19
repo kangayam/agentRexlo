@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/'
 
   if (code) {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
       // On first login, create Prisma records from user metadata

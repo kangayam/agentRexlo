@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase/server'
 export async function POST(request: Request) {
   const body = await request.json()
   const { action } = body as { action: string }
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   // Sign up: register email + password + metadata; Supabase sends confirmation link
   if (action === 'signup') {
