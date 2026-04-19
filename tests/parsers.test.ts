@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'vitest'
 import Decimal from 'decimal.js'
 import { parseImsJson } from '@/lib/parsers/ims-json-parser'
+import { parseTallyCsv } from '@/lib/parsers/tally-csv-parser'
 
 const SINGLE_SUPPLIER_JSON = JSON.stringify({
   gstin: '27AABCU9603R1ZX',
@@ -99,5 +100,38 @@ describe('parseImsJson', () => {
     expect(result[0].supplierGstin).toBe('A')
     expect(result[1].supplierGstin).toBe('B')
     expect(result[2].supplierGstin).toBe('B')
+  })
+})
+
+const TALLY_CSV = `Supplier GSTIN,Supplier Name,Invoice Number,Invoice Date,Taxable Value,IGST Amount,CGST Amount,SGST Amount,Cess Amount,Total Amount,HSN Code
+27ERMJD3988G1ZJ,National Chemicals Ltd,BILL26001,02/02/2026,432200,0,25932,25932,0,484064,3904
+21HYHPA1337A1ZR,Rajasthan Packaging Co,INV/26/002,07/02/2026,26000,1300,0,0,0,27300,8537
+`
+
+describe('parseTallyCsv', () => {
+  test('parses standard fixture CSV headers', () => {
+    const rows = parseTallyCsv(TALLY_CSV)
+    expect(rows).toHaveLength(2)
+    expect(rows[0].supplierGstin).toBe('27ERMJD3988G1ZJ')
+    expect(rows[0].supplierName).toBe('National Chemicals Ltd')
+    expect(rows[0].invoiceNum).toBe('BILL26001')
+    expect(rows[0].invoiceDate).toBe('2026-02-02')
+    expect(rows[0].totalAmount).toBeInstanceOf(Decimal)
+    expect(rows[0].totalAmount.toNumber()).toBe(484064)
+    expect(rows[0].igst.toNumber()).toBe(0)
+    expect(rows[0].cgst.toNumber()).toBe(25932)
+    expect(rows[0].sgst.toNumber()).toBe(25932)
+    expect(rows[0].taxableValue.toNumber()).toBe(432200)
+  })
+
+  test('converts DD/MM/YYYY date to ISO', () => {
+    const rows = parseTallyCsv(TALLY_CSV)
+    expect(rows[1].invoiceDate).toBe('2026-02-07')
+  })
+
+  test('handles zero amounts gracefully', () => {
+    const rows = parseTallyCsv(TALLY_CSV)
+    expect(rows[1].cgst.toNumber()).toBe(0)
+    expect(rows[1].sgst.toNumber()).toBe(0)
   })
 })
