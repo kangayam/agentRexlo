@@ -39,16 +39,24 @@ export default function ClientDetailPage() {
     e.preventDefault()
     setAddingGstin(true)
     setGstinError('')
-    const res = await fetch('/api/clients', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'add-gstin', clientId, gstin: newGstin.toUpperCase() }),
-    })
-    const data = await res.json()
-    if (!res.ok) { setGstinError(data.error ?? 'Failed'); setAddingGstin(false); return }
-    setNewGstin('')
-    setAddingGstin(false)
-    fetchClient()
+    try {
+      const res = await fetch('/api/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add-gstin', clientId, gstin: newGstin.toUpperCase() }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setGstinError(data.error ?? 'Failed')
+        return
+      }
+      setNewGstin('')
+      fetchClient()
+    } catch {
+      setGstinError('Network error — please try again')
+    } finally {
+      setAddingGstin(false)
+    }
   }
 
   const handleResendInvite = async () => {
