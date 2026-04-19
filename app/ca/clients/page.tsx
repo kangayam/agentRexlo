@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,15 +29,22 @@ export default function CAClientsPage() {
   const [email, setEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
+  const [fetchError, setFetchError] = useState('')
 
-  const fetchClients = async () => {
-    const res = await fetch('/api/clients')
-    const data = await res.json()
-    setClients(data.clients ?? [])
-    setLoading(false)
-  }
+  const fetchClients = useCallback(async () => {
+    try {
+      const res = await fetch('/api/clients')
+      if (!res.ok) throw new Error('Failed to load clients')
+      const data = await res.json()
+      setClients(data.clients ?? [])
+    } catch {
+      setFetchError('Failed to load clients. Please refresh.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-  useEffect(() => { fetchClients() }, [])
+  useEffect(() => { fetchClients() }, [fetchClients])
 
   const handleAddClient = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,6 +69,7 @@ export default function CAClientsPage() {
   }
 
   if (loading) return <div className="p-8 text-gray-500">Loading clients…</div>
+  if (fetchError) return <div className="p-8 text-red-600">{fetchError}</div>
 
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-6">
@@ -96,7 +104,7 @@ export default function CAClientsPage() {
         </form>
       )}
 
-      {clients.length === 0 ? (
+      {!showForm && clients.length === 0 ? (
         <p className="text-gray-500">No clients yet. Add your first client above.</p>
       ) : (
         <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
