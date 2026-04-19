@@ -1,4 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/db/prisma'
 
 export async function getSession() {
   const supabase = createServerClient()
@@ -11,4 +12,12 @@ export async function requireAuth() {
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error || !user) throw new Error('Unauthorized')
   return user
+}
+
+export async function getAuthedUser() {
+  const supabase = createServerClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error || !user) throw new Error('Unauthorized')
+  const dbUser = await prisma.user.findUniqueOrThrow({ where: { id: user.id } })
+  return dbUser
 }
