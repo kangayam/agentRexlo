@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { normalizeDate, dateDiffDays, normalizeInvoiceNumber, normalizeGstin } from '@/lib/reconciliation/normalize'
+import { normalizeDate, dateDiffDays, normalizeInvoiceNumber, normalizeGstin, normalizeDecimal } from '@/lib/reconciliation/normalize'
 
 describe('normalizeDate', () => {
   test('converts DD-MM-YYYY (IMS hyphens) to ISO', () => {
@@ -41,5 +41,18 @@ describe('normalizeGstin', () => {
   })
   test('trims', () => {
     expect(normalizeGstin('  27ERMJD3988G1ZJ  ')).toBe('27ERMJD3988G1ZJ')
+  })
+})
+
+describe('normalizeDecimal', () => {
+  test('rounds to 2 decimal places', () => {
+    expect(normalizeDecimal(3.456)).toBe('3.46')
+    expect(normalizeDecimal(3.454)).toBe('3.45')
+  })
+  test('accepts string input', () => {
+    expect(normalizeDecimal('484064')).toBe('484064.00')
+  })
+  test('handles zero', () => {
+    expect(normalizeDecimal(0)).toBe('0.00')
   })
 })

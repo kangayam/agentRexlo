@@ -11,8 +11,7 @@ export function normalizeInvoiceNumber(num: string): string {
 }
 
 export function normalizeDecimal(val: number | string): string {
-  // TODO: implement in recon sprint
-  return new Decimal(val).toDecimalPlaces(2).toString()
+  return new Decimal(val).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2)
 }
 
 export function normalizeDate(dateStr: string): string {
@@ -25,5 +24,7 @@ export function normalizeDate(dateStr: string): string {
 
 export function dateDiffDays(isoA: string, isoB: string): number {
   const msPerDay = 1000 * 60 * 60 * 24
-  return Math.abs(Math.round((new Date(isoA).getTime() - new Date(isoB).getTime()) / msPerDay))
+  return Math.abs(Math.round(
+    (new Date(isoA + 'T00:00:00Z').getTime() - new Date(isoB + 'T00:00:00Z').getTime()) / msPerDay
+  ))
 }
