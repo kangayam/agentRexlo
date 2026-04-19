@@ -14,3 +14,16 @@ export function normalizeDecimal(val: number | string): string {
   // TODO: implement in recon sprint
   return new Decimal(val).toDecimalPlaces(2).toString()
 }
+
+export function normalizeDate(dateStr: string): string {
+  // Accept DD-MM-YYYY (hyphens, IMS) or DD/MM/YYYY (slashes, Tally)
+  const parts = dateStr.split(/[-/]/)
+  if (parts.length !== 3) throw new Error(`Invalid date: ${dateStr}`)
+  const [dd, mm, yyyy] = parts
+  return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`
+}
+
+export function dateDiffDays(isoA: string, isoB: string): number {
+  const msPerDay = 1000 * 60 * 60 * 24
+  return Math.abs(Math.round((new Date(isoA).getTime() - new Date(isoB).getTime()) / msPerDay))
+}
