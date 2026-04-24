@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 
-type ButtonState = 'idle' | 'confirm' | 'sending' | 'done'
+type ButtonState = 'idle' | 'confirm' | 'sending' | 'done' | 'error'
 
 export function NotifyButton({ clientId }: { clientId: string }) {
   const [state, setState] = useState<ButtonState>('idle')
@@ -16,14 +16,21 @@ export function NotifyButton({ clientId }: { clientId: string }) {
   const handleConfirm = async () => {
     setState('sending')
     try {
-      await fetch('/api/notify', {
+      const res = await fetch('/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ clientId }),
       })
-    } finally {
-      setState('done')
-      setTimeout(() => { if (mountedRef.current) setState('idle') }, 2000)
+      if (res.ok) {
+        setState('done')
+        setTimeout(() => { if (mountedRef.current) setState('idle') }, 2000)
+      } else {
+        setState('error')
+        setTimeout(() => { if (mountedRef.current) setState('idle') }, 3000)
+      }
+    } catch {
+      setState('error')
+      setTimeout(() => { if (mountedRef.current) setState('idle') }, 3000)
     }
   }
 
@@ -56,6 +63,10 @@ export function NotifyButton({ clientId }: { clientId: string }) {
 
   if (state === 'done') {
     return <span className="text-xs font-medium text-emerald-600">Sent ✓</span>
+  }
+
+  if (state === 'error') {
+    return <span className="text-xs font-medium text-red-600">Failed to send</span>
   }
 
   return (

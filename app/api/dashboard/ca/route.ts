@@ -8,6 +8,9 @@ import Decimal from 'decimal.js'
 export async function GET() {
   const user = await getAuthedUser().catch(() => null)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (user.role === 'CLIENT') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
   if (!user.org_id) return NextResponse.json({ error: 'No org' }, { status: 403 })
 
   const now = new Date()

@@ -6,6 +6,9 @@ import { sendNotification } from '@/lib/notifications/index'
 export async function POST(req: NextRequest) {
   const user = await getAuthedUser().catch(() => null)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (user.role !== 'CA_ADMIN' && user.role !== 'CA_STAFF') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
   if (!user.org_id) return NextResponse.json({ error: 'No org' }, { status: 403 })
 
   const body = await req.json().catch(() => null)

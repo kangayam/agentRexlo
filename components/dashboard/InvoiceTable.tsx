@@ -55,9 +55,12 @@ export function InvoiceTable({ initialRows }: InvoiceTableProps) {
     const updateRow = (r: ReconRow) =>
       r.resultId === resultId ? { ...r, isDone } : r
 
-    setAllRows(prev => prev.map(updateRow))
-    setVisibleRows(prev => prev.map(updateRow))
-  }, [])
+    setAllRows(prev => {
+      const next = prev.map(updateRow)
+      setVisibleRows(filterRows(next, activeChip))
+      return next
+    })
+  }, [activeChip])
 
   const counts = countByChip(allRows)
 

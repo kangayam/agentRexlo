@@ -16,6 +16,18 @@ export async function GET(req: NextRequest) {
   const clientId = actingAs ?? (user.role === 'CLIENT' ? user.client_id : null)
   if (!clientId) return NextResponse.json({ error: 'No client context' }, { status: 403 })
 
+  // When acting-as is set, verify caller is a CA role and owns the client
+  if (actingAs) {
+    if (user.role !== 'CA_ADMIN' && user.role !== 'CA_STAFF') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    const clientOwned = await prisma.client.findUnique({
+      where: { id: actingAs, org_id: user.org_id ?? '' },
+      select: { id: true },
+    })
+    if (!clientOwned) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const { searchParams } = new URL(req.url)
   let period = searchParams.get('period') ?? null
 

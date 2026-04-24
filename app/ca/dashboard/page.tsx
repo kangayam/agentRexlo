@@ -69,7 +69,7 @@ export default async function CADashboardPage() {
       })
     }
     const stats = clientStats.get(cid)!
-    if (r.outcome !== 'AUTO_ACCEPTED') {
+    if (r.outcome !== 'AUTO_ACCEPTED' && !r.is_done) {
       stats.itcAtRisk = stats.itcAtRisk.plus(new Decimal(r.itc_at_risk.toString()))
     }
     if (!r.is_done && r.outcome !== 'AUTO_ACCEPTED') {
