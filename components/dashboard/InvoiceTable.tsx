@@ -8,7 +8,9 @@ import { filterRows, countByChip } from '@/lib/dashboard/client'
 import type { ReconRow, FilterChip } from '@/lib/dashboard/client'
 
 function formatDate(iso: string): string {
-  const d = new Date(iso)
+  // Parse date-only strings manually to avoid UTC-to-local timezone shift
+  const [year, month, day] = iso.slice(0, 10).split('-').map(Number)
+  const d = new Date(year, month - 1, day)
   return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
