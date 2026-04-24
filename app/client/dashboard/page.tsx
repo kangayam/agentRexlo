@@ -17,6 +17,18 @@ export default async function ClientDashboardPage() {
   const clientId = actingAs ?? (user.role === 'CLIENT' ? user.client_id : null)
   if (!clientId) redirect('/ca/dashboard')
 
+  // If acting-as, verify caller is a CA and owns this client
+  if (actingAs) {
+    if (user.role !== 'CA_ADMIN' && user.role !== 'CA_STAFF') {
+      redirect('/client/dashboard') // CLIENT users can't use acting-as
+    }
+    const owned = await prisma.client.findUnique({
+      where: { id: actingAs, org_id: user.org_id ?? '' },
+      select: { id: true },
+    })
+    if (!owned) redirect('/ca/dashboard') // client doesn't belong to this CA's org
+  }
+
   // Find the latest completed upload period for this client
   const latest = await prisma.uploadSession.findFirst({
     where: { client_gstin: { client_id: clientId }, status: 'DONE' },
