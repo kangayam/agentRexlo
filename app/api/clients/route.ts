@@ -7,7 +7,8 @@ import { UserRole } from '@prisma/client'
 const GSTIN_REGEX = /^[A-Z0-9]{15}$/
 
 export async function GET() {
-  const dbUser = await getAuthedUser()
+  const dbUser = await getAuthedUser().catch(() => null)
+  if (!dbUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (!dbUser.org_id) return NextResponse.json({ error: 'No org' }, { status: 403 })
 
   const clients = await prisma.client.findMany({

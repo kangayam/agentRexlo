@@ -135,3 +135,37 @@ describe('parseTallyCsv', () => {
     expect(rows[1].sgst.toNumber()).toBe(0)
   })
 })
+
+describe('parseTallyCsv with custom column map', () => {
+  const CUSTOM_CSV = `Party GSTIN,Ledger Name,Bill Reference,Voucher Date,Taxable Amt,IGST Amt,Central Tax,State Tax,Total Amt
+27ERMJD3988G1ZJ,National Chemicals Ltd,BILL26001,02/02/2026,432200,0,25932,25932,484064
+`
+  const CUSTOM_MAP: import('@/lib/parsers/tally-excel-parser').TallyColumnMap = {
+    supplierGstin:  'Party GSTIN',
+    supplierName:   'Ledger Name',
+    voucherNumber:  'Bill Reference',
+    voucherDate:    'Voucher Date',
+    totalAmount:    'Total Amt',
+    taxableValue:   'Taxable Amt',
+    igst:           'IGST Amt',
+    cgst:           'Central Tax',
+    sgst:           'State Tax',
+    hsnCode:        '',
+  }
+
+  test('parses CSV using a custom column map', () => {
+    const rows = parseTallyCsv(CUSTOM_CSV, CUSTOM_MAP)
+    expect(rows).toHaveLength(1)
+    expect(rows[0].supplierGstin).toBe('27ERMJD3988G1ZJ')
+    expect(rows[0].invoiceNum).toBe('BILL26001')
+    expect(rows[0].cgst.toNumber()).toBe(25932)
+  })
+
+  test('falls back to default column names when no map provided', () => {
+    const STANDARD_CSV = `Supplier GSTIN,Supplier Name,Invoice Number,Invoice Date,Taxable Value,IGST Amount,CGST Amount,SGST Amount,Cess Amount,Total Amount,HSN Code
+27ERMJD3988G1ZJ,Nat Chem,BILL26001,02/02/2026,432200,0,25932,25932,0,484064,3904
+`
+    const rows = parseTallyCsv(STANDARD_CSV)
+    expect(rows[0].supplierGstin).toBe('27ERMJD3988G1ZJ')
+  })
+})

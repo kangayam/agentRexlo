@@ -311,11 +311,21 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Re-fetch after recon so status reflects DONE (recon updates status in DB)
+  const finalSession = reconOutcomes
+    ? await prisma.uploadSession.findUniqueOrThrow({
+        where: { id: session.id },
+        include: { _count: { select: { ims_invoices: true, tally_entries: true } } },
+      })
+    : reloadedSession
+
   return NextResponse.json({
-    sessionId: reloadedSession.id,
-    status: reloadedSession.status,
-    imsCount: reloadedSession._count.ims_invoices,
-    tallyCount: reloadedSession._count.tally_entries,
+    sessionId:       finalSession.id,
+    status:          finalSession.status,
+    imsUploadedAt:   finalSession.ims_uploaded_at?.toISOString() ?? null,
+    imsCount:        finalSession._count.ims_invoices,
+    tallyUploadedAt: finalSession.tally_uploaded_at?.toISOString() ?? null,
+    tallyCount:      finalSession._count.tally_entries,
     ...(reconOutcomes ? { reconOutcomes } : {}),
   })
 }

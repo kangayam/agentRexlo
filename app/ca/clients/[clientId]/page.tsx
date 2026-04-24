@@ -84,7 +84,7 @@ export default function ClientDetailPage() {
     try {
       const res = await fetch(`/api/clients/${clientId}/acting-as`, { method: 'POST' })
       if (res.ok) {
-        router.push('/client/dashboard')
+        router.push('/client/upload')
       }
     } catch {
       // network failure

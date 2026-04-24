@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { getAuthedUser, getEffectiveClientId } from '@/lib/auth/session'
 import { prisma } from '@/lib/db/prisma'
 import { GstinUploadCard, SessionState } from '@/components/upload/GstinUploadCard'
-import { getDefaultPeriodValue } from '@/components/upload/PeriodPicker'
+import { getDefaultPeriodValue } from '@/lib/upload/period'
 
 // Map state code (first 2 chars of GSTIN) to state name
 const STATE_NAMES: Record<string, string> = {
