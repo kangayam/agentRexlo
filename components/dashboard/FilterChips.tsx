@@ -22,6 +22,7 @@ export function FilterChips({ active, counts, onChange }: FilterChipsProps) {
       {CHIPS.map(chip => (
         <button
           key={chip.id}
+          type="button"
           onClick={() => onChange(chip.id)}
           className={`rounded-full border px-3 py-1 text-sm font-medium transition-colors ${
             active === chip.id

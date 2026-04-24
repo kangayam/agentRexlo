@@ -2,6 +2,7 @@ import type { SummaryCards as SummaryData } from '@/lib/dashboard/client'
 
 function formatINR(amount: string): string {
   const num = parseFloat(amount)
+  if (isNaN(num)) return '₹0'
   return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
 }
 
