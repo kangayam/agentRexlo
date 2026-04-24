@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthedUser, getEffectiveClientId } from '@/lib/auth/session'
+import { getAuthedUser } from '@/lib/auth/session'
 import { prisma } from '@/lib/db/prisma'
 import { computeSummaryCards } from '@/lib/dashboard/client'
+import { cookies } from 'next/headers'
+import Decimal from 'decimal.js'
 import type { ReconRow } from '@/lib/dashboard/client'
 
 export async function GET(req: NextRequest) {
-  try {
-    await getAuthedUser()
-  } catch {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const user = await getAuthedUser().catch(() => null)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const clientId = await getEffectiveClientId()
+  // Resolve effective client: acting-as cookie (CA) or user's own client_id (CLIENT)
+  const cookieStore = await cookies()
+  const actingAs = cookieStore.get('actingAsClientId')?.value
+  const clientId = actingAs ?? (user.role === 'CLIENT' ? user.client_id : null)
   if (!clientId) return NextResponse.json({ error: 'No client context' }, { status: 403 })
 
   const { searchParams } = new URL(req.url)
@@ -56,7 +58,7 @@ export async function GET(req: NextRequest) {
     doneAt:        r.done_at?.toISOString() ?? null,
   }))
 
-  rows.sort((a, b) => parseFloat(b.itcAtRisk) - parseFloat(a.itcAtRisk))
+  rows.sort((a, b) => new Decimal(b.itcAtRisk).minus(a.itcAtRisk).toNumber())
 
   return NextResponse.json({ period, summaryCards: computeSummaryCards(rows), rows })
 }
