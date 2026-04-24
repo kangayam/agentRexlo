@@ -34,6 +34,6 @@ export function sortCaRows(rows: CaClientRow[]): CaClientRow[] {
   return [...rows].sort((a, b) => {
     const statusDiff = STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
     if (statusDiff !== 0) return statusDiff
-    return parseFloat(b.itcAtRisk) - parseFloat(a.itcAtRisk)
+    return new Decimal(b.itcAtRisk).minus(a.itcAtRisk).toNumber()
   })
 }
