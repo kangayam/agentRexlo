@@ -1,11 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 type ButtonState = 'idle' | 'confirm' | 'sending' | 'done'
 
 export function NotifyButton({ clientId }: { clientId: string }) {
   const [state, setState] = useState<ButtonState>('idle')
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const handleConfirm = async () => {
     setState('sending')
@@ -17,7 +23,7 @@ export function NotifyButton({ clientId }: { clientId: string }) {
       })
     } finally {
       setState('done')
-      setTimeout(() => setState('idle'), 2000)
+      setTimeout(() => { if (mountedRef.current) setState('idle') }, 2000)
     }
   }
 
