@@ -20,14 +20,21 @@ export async function POST(req: NextRequest) {
   })
   if (!client) return NextResponse.json({ error: 'Client not found' }, { status: 404 })
 
-  for (const recipient of client.users) {
-    await sendNotification({
-      recipientId: recipient.id,
-      senderId:    user.id,
-      clientId:    client.id,
-      type:        'CA_NOTIFY_CLIENT',
-      message:     'Your CA has sent you a reminder to review your IMS action queue.',
-    })
+  try {
+    await Promise.all(
+      client.users.map(recipient =>
+        sendNotification({
+          recipientId: recipient.id,
+          senderId:    user.id,
+          clientId:    client.id,
+          type:        'CA_NOTIFY_CLIENT',
+          message:     'Your CA has sent you a reminder to review your IMS action queue.',
+        }),
+      ),
+    )
+  } catch (err) {
+    console.error('sendNotification failed', err)
+    return NextResponse.json({ error: 'Failed to send notification' }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true, notifiedCount: client.users.length })
