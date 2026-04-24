@@ -27,7 +27,17 @@ export default async function CADashboardPage() {
     orderBy: { name: 'asc' },
   })
 
-  const now = new Date()
+  // Find the most recent completed period across all org clients
+  const latestSession = await prisma.uploadSession.findFirst({
+    where: {
+      status: 'DONE',
+      client_gstin: { client: { org_id: user.org_id ?? '' } },
+    },
+    orderBy: { period: 'desc' },
+    select: { period: true },
+  })
+
+  const activePeriod = latestSession?.period ?? null
 
   const allResults = await prisma.reconciliationResult.findMany({
     where: {
@@ -38,7 +48,7 @@ export default async function CADashboardPage() {
               org_id: user.org_id ?? '',
             },
           },
-          period: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
+          period: activePeriod ?? '__none__',
           status: 'DONE',
         },
       },
@@ -102,7 +112,9 @@ export default async function CADashboardPage() {
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Client Overview</h1>
         <p className="mt-1 text-sm text-gray-500">
-          {now.toLocaleString('en-IN', { month: 'long', year: 'numeric' })}
+          {activePeriod
+            ? new Date(activePeriod + '-01').toLocaleString('en-IN', { month: 'long', year: 'numeric' })
+            : 'No data yet'}
         </p>
       </div>
       <CaClientTable rows={rows} />
