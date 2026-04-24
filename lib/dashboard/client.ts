@@ -33,6 +33,7 @@ export function computeSummaryCards(rows: ReconRow[]): SummaryCards {
   let unverified = new Decimal(0)
 
   for (const row of rows) {
+    // isDone not checked — safe ITC is always counted regardless of done status
     if (row.matchOutcome === 'AUTO_ACCEPTED') {
       safe = safe.plus(new Decimal(row.igst)).plus(row.cgst).plus(row.sgst)
     } else if (!row.isDone) {
