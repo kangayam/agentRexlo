@@ -12,6 +12,7 @@ export default async function CADashboardPage() {
     user = await getAuthedUser()
   } catch {
     redirect('/login')
+    return
   }
 
   if (user.role === 'CLIENT') {
@@ -27,8 +28,6 @@ export default async function CADashboardPage() {
   })
 
   const now = new Date()
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
 
   const allResults = await prisma.reconciliationResult.findMany({
     where: {
@@ -39,7 +38,7 @@ export default async function CADashboardPage() {
               org_id: user.org_id ?? '',
             },
           },
-          created_at: { gte: monthStart, lte: monthEnd },
+          period: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
           status: 'DONE',
         },
       },
