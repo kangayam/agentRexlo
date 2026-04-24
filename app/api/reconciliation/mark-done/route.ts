@@ -18,6 +18,15 @@ export async function PATCH(req: NextRequest) {
   }
   const { resultId, isDone } = body as { resultId: string; isDone: boolean }
 
+  // For CA roles, verify their org owns the client they're acting as via cookie
+  if (user.role !== 'CLIENT') {
+    const clientOwned = await prisma.client.findUnique({
+      where: { id: clientId, org_id: user.org_id ?? '' },
+      select: { id: true },
+    })
+    if (!clientOwned) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   // Verify ownership: result → ims_invoice → upload_session → client_gstin → client_id
   const result = await prisma.reconciliationResult.findUnique({
     where: { id: resultId },
