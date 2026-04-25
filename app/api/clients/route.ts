@@ -128,14 +128,26 @@ export async function POST(request: Request) {
     })
 
     const newToken = crypto.randomUUID()
-    const updated = await prisma.client.update({
+    const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+
+    // Save token first, then send email. Roll back if email fails.
+    await prisma.client.update({
       where: { id: clientId },
-      data: {
-        invite_token: newToken,
-        invite_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
+      data: { invite_token: newToken, invite_expires_at: newExpiry },
     })
-    await sendClientInviteEmail({ to: updated.contact_email, caOrgName: org.name, token: newToken })
+
+    try {
+      await sendClientInviteEmail({ to: client.contact_email, caOrgName: org.name, token: newToken })
+    } catch (err) {
+      // Roll back token so the CA can retry
+      await prisma.client.update({
+        where: { id: clientId },
+        data: { invite_token: null, invite_expires_at: null },
+      })
+      const message = err instanceof Error ? err.message : 'Failed to send invite email'
+      return NextResponse.json({ error: `Email not sent: ${message}` }, { status: 500 })
+    }
+
     return NextResponse.json({ ok: true })
   }
 

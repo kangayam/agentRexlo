@@ -42,10 +42,9 @@ export async function POST(request: Request) {
   })
   if (authError) return NextResponse.json({ error: authError.message }, { status: 400 })
 
-  await prisma.client.update({
-    where: { id: client.id },
-    data: { invite_token: null, invite_expires_at: null },
-  })
+  // Token is cleared in auth/callback once the Supabase verification email is clicked
+  // and the Prisma user record is confirmed created. Do NOT clear it here — if the user
+  // never clicks the verification email, clearing now would lock them out permanently.
 
   return NextResponse.json({ email: client.contact_email })
 }
