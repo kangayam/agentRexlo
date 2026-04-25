@@ -151,16 +151,22 @@ export default function ClientDetailPage() {
         )}
       </section>
 
-      {/* Invite */}
-      {client.invite && (
+      {/* Invite — show whenever there are no active users */}
+      {client.users.length === 0 && (
         <section className="bg-white border rounded-xl p-6 space-y-3 shadow-sm">
-          <h2 className="font-semibold text-gray-800">Pending Invite</h2>
-          <p className="text-sm text-gray-600">
-            Sent to <strong>{client.invite.email}</strong> — expires{' '}
-            {new Date(client.invite.expires_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-          </p>
+          <h2 className="font-semibold text-gray-800">Client Invite</h2>
+          {client.invite ? (
+            <p className="text-sm text-gray-600">
+              Invite sent to <strong>{client.invite.email}</strong> — expires{' '}
+              {new Date(client.invite.expires_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+            </p>
+          ) : (
+            <p className="text-sm text-gray-600">
+              No active invite. Send one to <strong>{client.contactEmail}</strong>.
+            </p>
+          )}
           <Button variant="outline" size="sm" onClick={handleResendInvite} disabled={resending}>
-            {resending ? 'Sending…' : 'Resend Invite'}
+            {resending ? 'Sending…' : client.invite ? 'Resend Invite' : 'Send Invite'}
           </Button>
           {resendError && <p className="text-sm text-red-600">{resendError}</p>}
         </section>
