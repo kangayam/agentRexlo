@@ -23,6 +23,11 @@ export default async function ClientLayout({ children }: { children: React.React
   const cookieStore = await cookies()
   const actingAsClientId = cookieStore.get('actingAsClientId')?.value ?? null
 
+  // CA users must be acting-as a client to access the client portal
+  if ((user.role === 'CA_ADMIN' || user.role === 'CA_STAFF') && !actingAsClientId) {
+    redirect('/ca/dashboard')
+  }
+
   let actingAsFirmName: string | null = null
   if (actingAsClientId && user.org_id) {
     const client = await prisma.client.findUnique({
