@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { NotificationBell } from '@/components/nav/NotificationBell'
 
 export interface NavItem {
   label: string
@@ -58,6 +59,7 @@ export function AppSidebar({ navItems, userName, userEmail }: AppSidebarProps) {
 
       {/* User info + sign out */}
       <div className="border-t border-gray-200 pt-4 space-y-2">
+        <NotificationBell />
         <div className="px-3">
           <p className="truncate text-sm font-medium text-gray-900">{userName}</p>
           <p className="truncate text-xs text-gray-500">{userEmail}</p>
