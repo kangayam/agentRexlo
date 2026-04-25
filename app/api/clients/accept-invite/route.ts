@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   const origin = new URL(request.url).origin
   const supabase = await createServerClient()
-  const { error: authError } = await supabase.auth.signUp({
+  const { data, error: authError } = await supabase.auth.signUp({
     email: client.contact_email,
     password,
     options: {
@@ -42,9 +42,32 @@ export async function POST(request: Request) {
   })
   if (authError) return NextResponse.json({ error: authError.message }, { status: 400 })
 
-  // Token is cleared in auth/callback once the Supabase verification email is clicked
-  // and the Prisma user record is confirmed created. Do NOT clear it here — if the user
-  // never clicks the verification email, clearing now would lock them out permanently.
+  // If Supabase email confirmation is disabled, signUp returns a session immediately.
+  // In that case, create the Prisma user record now and clear the invite token.
+  if (data.session && data.user) {
+    const existing = await prisma.user.findUnique({ where: { id: data.user.id } })
+    if (!existing) {
+      await prisma.$transaction([
+        prisma.user.create({
+          data: {
+            id:        data.user.id,
+            name:      name as string,
+            email:     client.contact_email,
+            role:      'CLIENT',
+            client_id: client.id,
+          },
+        }),
+        prisma.client.update({
+          where: { id: client.id },
+          data: { invite_token: null, invite_expires_at: null },
+        }),
+      ])
+    }
+    // Tell the page to redirect directly to the dashboard
+    return NextResponse.json({ email: client.contact_email, redirect: '/client/dashboard' })
+  }
 
+  // Email confirmation is enabled — user must click the Supabase confirmation email.
+  // Token is cleared in auth/callback after the user verifies.
   return NextResponse.json({ email: client.contact_email })
 }

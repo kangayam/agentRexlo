@@ -32,6 +32,10 @@ function AcceptClientInviteForm() {
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error); setLoading(false); return }
+    if (data.redirect) {
+      window.location.href = data.redirect
+      return
+    }
     setEmail(data.email)
     setStep('check-email')
     setLoading(false)
