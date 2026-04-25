@@ -9,22 +9,30 @@ export async function GET() {
   const notifications = await prisma.notification.findMany({
     where: { recipient_id: user.id },
     orderBy: { created_at: 'desc' },
-    take: 10,
+    take: 50, // fetch more so dedup can select best 10
     select: {
       id: true,
       message: true,
       type: true,
       is_read: true,
       created_at: true,
+      client_id: true,
     },
   })
 
-  const unreadCount = await prisma.notification.count({
-    where: { recipient_id: user.id, is_read: false },
-  })
+  // Deduplicate: keep only the most recent notification per (type, message, client_id)
+  const seen = new Set<string>()
+  const deduped = notifications.filter(n => {
+    const key = `${n.type}|${n.client_id ?? ''}|${n.message}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  }).slice(0, 10)
+
+  const unreadCount = deduped.filter(n => !n.is_read).length
 
   return NextResponse.json({
-    notifications: notifications.map(n => ({
+    notifications: deduped.map(n => ({
       id: n.id,
       message: n.message,
       type: n.type,
