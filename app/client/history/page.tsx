@@ -37,7 +37,7 @@ export default async function ClientHistoryPage() {
 
   // Validate acting-as org membership for CA users
   if (actingAs) {
-    if (user.role !== 'CA_ADMIN' && user.role !== 'CA_STAFF') redirect('/client/dashboard')
+    if (user.role !== 'CA_ADMIN' && user.role !== 'CA_STAFF') redirect('/ca/dashboard')
     const owned = await prisma.client.findUnique({
       where: { id: actingAs, org_id: user.org_id ?? '' },
       select: { id: true },
