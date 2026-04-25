@@ -40,30 +40,32 @@ export async function POST(request: Request) {
     // (e.g. email confirmation was enabled and the auth callback never ran).
     if (!dbUser) {
       const meta = (data.user.user_metadata ?? {}) as Record<string, string>
-      if (meta.clientInviteToken) {
-        const client = await prisma.client.findUnique({
-          where: { invite_token: meta.clientInviteToken },
-          select: { id: true },
+
+      // Try to find the client by contact_email — more reliable than the stale
+      // invite token in metadata (which may have been rotated since signup).
+      const client = await prisma.client.findFirst({
+        where: { contact_email: email },
+        select: { id: true },
+      })
+
+      if (client) {
+        await prisma.user.create({
+          data: {
+            id:        data.user.id,
+            name:      meta.name ?? email,
+            email,
+            role:      'CLIENT',
+            client_id: client.id,
+          },
         })
-        if (client) {
-          await prisma.$transaction([
-            prisma.user.create({
-              data: {
-                id:        data.user.id,
-                name:      meta.name ?? email,
-                email,
-                role:      'CLIENT',
-                client_id: client.id,
-              },
-            }),
-            prisma.client.update({
-              where: { id: client.id },
-              data: { invite_token: null, invite_expires_at: null },
-            }),
-          ])
-          dbUser = { role: 'CLIENT' }
-        }
+        // Clear any pending invite token since the account is now active
+        await prisma.client.update({
+          where: { id: client.id },
+          data: { invite_token: null, invite_expires_at: null },
+        })
+        dbUser = { role: 'CLIENT' }
       }
+
       if (!dbUser) {
         return NextResponse.json(
           { error: 'Account setup incomplete. Please contact your CA to resend the invite.' },
