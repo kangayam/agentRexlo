@@ -30,11 +30,49 @@ export async function POST(request: Request) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) return NextResponse.json({ error: error.message }, { status: 401 })
     const { prisma } = await import('@/lib/db/prisma')
-    const dbUser = await prisma.user.findUnique({
+    let dbUser = await prisma.user.findUnique({
       where: { id: data.user.id },
       select: { role: true },
     })
-    const redirectTo = dbUser?.role === 'CLIENT' ? '/client/dashboard' : '/ca/dashboard'
+
+    // Prisma user missing — create it now from Supabase metadata.
+    // This handles the case where signUp succeeded but the Prisma record was never written
+    // (e.g. email confirmation was enabled and the auth callback never ran).
+    if (!dbUser) {
+      const meta = (data.user.user_metadata ?? {}) as Record<string, string>
+      if (meta.clientInviteToken) {
+        const client = await prisma.client.findUnique({
+          where: { invite_token: meta.clientInviteToken },
+          select: { id: true },
+        })
+        if (client) {
+          await prisma.$transaction([
+            prisma.user.create({
+              data: {
+                id:        data.user.id,
+                name:      meta.name ?? email,
+                email,
+                role:      'CLIENT',
+                client_id: client.id,
+              },
+            }),
+            prisma.client.update({
+              where: { id: client.id },
+              data: { invite_token: null, invite_expires_at: null },
+            }),
+          ])
+          dbUser = { role: 'CLIENT' }
+        }
+      }
+      if (!dbUser) {
+        return NextResponse.json(
+          { error: 'Account setup incomplete. Please contact your CA to resend the invite.' },
+          { status: 403 },
+        )
+      }
+    }
+
+    const redirectTo = dbUser.role === 'CLIENT' ? '/client/dashboard' : '/ca/dashboard'
     return NextResponse.json({ redirectTo })
   }
 
