@@ -1,34 +1,52 @@
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db/prisma'
-import { ActingAsBanner } from '@/components/acting-as-banner'
 import { getAuthedUser } from '@/lib/auth/session'
+import { ActingAsBanner } from '@/components/acting-as-banner'
+import { AppSidebar } from '@/components/nav/AppSidebar'
+
+const CLIENT_NAV = [
+  { label: 'Dashboard', href: '/client/dashboard' },
+  { label: 'Upload',    href: '/client/upload' },
+  { label: 'History',   href: '/client/history' },
+]
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
+  let user: Awaited<ReturnType<typeof getAuthedUser>>
+  try {
+    user = await getAuthedUser()
+  } catch {
+    redirect('/login')
+    return
+  }
+
   const cookieStore = await cookies()
   const actingAsClientId = cookieStore.get('actingAsClientId')?.value ?? null
 
   let actingAsFirmName: string | null = null
-  if (actingAsClientId) {
-    try {
-      const dbUser = await getAuthedUser()
-      if (dbUser.org_id) {
-        const client = await prisma.client.findUnique({
-          where: { id: actingAsClientId, org_id: dbUser.org_id },
-          select: { name: true },
-        })
-        actingAsFirmName = client?.name ?? null
-      }
-    } catch {
-      // unauthenticated or lookup failed — skip banner
-    }
+  if (actingAsClientId && user.org_id) {
+    const client = await prisma.client.findUnique({
+      where: { id: actingAsClientId, org_id: user.org_id },
+      select: { name: true },
+    })
+    actingAsFirmName = client?.name ?? null
   }
 
   return (
-    <>
-      {actingAsClientId && actingAsFirmName && (
-        <ActingAsBanner firmName={actingAsFirmName} clientId={actingAsClientId} />
-      )}
-      {children}
-    </>
+    <div className="flex h-screen overflow-hidden">
+      <AppSidebar
+        navItems={CLIENT_NAV}
+        userName={user.name}
+        userEmail={user.email}
+      />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {actingAsClientId && actingAsFirmName && (
+          <ActingAsBanner firmName={actingAsFirmName} clientId={actingAsClientId} />
+        )}
+        <main className="flex-1 overflow-y-auto">
+          {children}
+        </main>
+      </div>
+    </div>
   )
 }
