@@ -1,45 +1,55 @@
+/**
+ * Single source of truth for reconciliation reason text.
+ *
+ * SPEC.md §10 Step 6: "Reason templates live in lib/reconciliation/reasons.ts
+ * so they can be edited without touching the matching logic."
+ *
+ * Canonical wording is locked to the expected reason strings in
+ * data/fixtures/27AABCU9603R1ZX-recon-expected-2026-02.csv.
+ */
+
 export const REASON_CODES = {
-  EXACT_MATCH:         'EXACT_MATCH',
-  VALUE_VARIANCE_LOW:  'VALUE_VARIANCE_LOW',
-  VALUE_VARIANCE_HIGH: 'VALUE_VARIANCE_HIGH',
   GSTIN_MISMATCH:      'GSTIN_MISMATCH',
-  DUPLICATE_INVOICE:   'DUPLICATE_INVOICE',
-  NOT_IN_BOOKS:        'NOT_IN_BOOKS',
+  VALUE_OVER_10:       'VALUE_OVER_10',
+  VALUE_2_TO_10:       'VALUE_2_TO_10',
+  SOFT_INVOICE_MATCH:  'SOFT_INVOICE_MATCH',
   TAX_TYPE_MISMATCH:   'TAX_TYPE_MISMATCH',
   DATE_GAP:            'DATE_GAP',
-  SOFT_INVOICE_MATCH:  'SOFT_INVOICE_MATCH',
+  FORMAT_VARIATION:    'FORMAT_VARIATION',
+  DUPLICATE:           'DUPLICATE',
+  NOT_IN_BOOKS:        'NOT_IN_BOOKS',
 } as const
 
 export type ReasonCode = typeof REASON_CODES[keyof typeof REASON_CODES]
 
 const TEMPLATES: Record<ReasonCode, string> = {
-  EXACT_MATCH:
-    'Invoice matched exactly in your books. No action needed.',
-  VALUE_VARIANCE_LOW:
-    'Invoice value in IMS (₹{imsValue}) is {pct}% higher than your books (₹{tallyValue}). This may be freight or packing charges. Review and Accept if agreed, or mark Pending if disputed.',
-  VALUE_VARIANCE_HIGH:
-    'Invoice value in IMS (₹{imsValue}) is {pct}% higher than your books (₹{tallyValue}). Significant variance — Reject and ask the supplier to re-file with the correct amount.',
   GSTIN_MISMATCH:
-    'The supplier GSTIN on this invoice ({imsGstin}) does not match your records ({tallyGstin}). This is likely a wrong state registration. Reject and ask the supplier to re-file.',
-  DUPLICATE_INVOICE:
-    'Invoice number {invoiceNumber} appears more than once in the IMS data. Reject the duplicate and confirm the correct invoice with the supplier.',
-  NOT_IN_BOOKS:
-    'This invoice from {supplierName} is not found in your Tally purchase register. Verify with your purchase team before Accepting on GSTN.',
-  TAX_TYPE_MISMATCH:
-    'The tax type on this invoice (IGST) does not match your books (CGST+SGST). Check the Place of Supply with the supplier.',
-  DATE_GAP:
-    'Invoice date in IMS ({imsDate}) differs from your books ({tallyDate}) by more than 7 days. Confirm the correct date with the supplier.',
+    'Supplier GSTIN mismatch — IMS: {imsGstin} / Tally: {tallyGstin}',
+  VALUE_OVER_10:
+    'Value delta: Tally ₹{tallyValue} vs IMS ₹{imsValue} ({sign}{pct}% — exceeds 10% threshold)',
+  VALUE_2_TO_10:
+    'Value delta: Tally ₹{tallyValue} vs IMS ₹{imsValue} ({sign}{pct}% — within 2–10% band)',
   SOFT_INVOICE_MATCH:
-    'Invoice matched by value and supplier, but the invoice numbers differ ({imsNum} vs {tallyNum}). Confirm this is the same invoice before Accepting.',
+    'Invoice# mismatch — IMS: "{imsInv}" / Tally: "{tallyInv}" (normalised keys differ)',
+  TAX_TYPE_MISMATCH:
+    'Tax type mismatch — IMS: {imsType} / Tally: {tallyType}',
+  DATE_GAP:
+    'Date gap: {days} days — IMS: {imsDate} / Tally: {tallyDate}',
+  FORMAT_VARIATION:
+    'Format-only diff — normalises to same key (IMS: "{imsInv}" / Tally: "{tallyInv}")',
+  DUPLICATE:
+    'Duplicate IMS entry — same invoice uploaded twice by supplier (2 IMS entries for 1 Tally row)',
+  NOT_IN_BOOKS:
+    'Invoice not found in Tally books — no matching purchase entry',
 }
 
 export function buildReason(
-  reasonCode: ReasonCode,
-  params: Record<string, string> = {}
+  code: ReasonCode,
+  params: Record<string, string | number> = {}
 ): string {
-  let text = TEMPLATES[reasonCode]
+  let text = TEMPLATES[code]
   for (const [key, value] of Object.entries(params)) {
-    text = text.replace(new RegExp(`\\{${key}\\}`, 'g'), value)
+    text = text.replace(new RegExp(`\\{${key}\\}`, 'g'), String(value))
   }
   return text
 }

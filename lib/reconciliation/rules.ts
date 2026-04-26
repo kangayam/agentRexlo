@@ -3,6 +3,7 @@ import type { NormalizedImsInvoice } from '@/lib/parsers/ims-json-parser'
 import type { NormalizedTallyRow } from '@/lib/parsers/tally-csv-parser'
 import type { MatchStrategy } from '@/lib/reconciliation/matcher'
 import { normalizeGstin, dateDiffDays } from '@/lib/reconciliation/normalize'
+import { buildReason, REASON_CODES } from '@/lib/reconciliation/reasons'
 
 export type ReconOutcome = 'AUTO_ACCEPTED' | 'AUTO_REJECTED' | 'PENDING_REVIEW' | 'NOT_IN_BOOKS'
 
@@ -50,7 +51,7 @@ export function classify(
       ...base,
       itcAtRisk: itcTotal,
       result: 'AUTO_REJECTED',
-      reason: 'Duplicate IMS entry — same invoice uploaded twice by supplier (2 IMS entries for 1 Tally row)',
+      reason: buildReason(REASON_CODES.DUPLICATE),
       matchedTallyInvoiceNum: null,
     }
   }
@@ -60,7 +61,7 @@ export function classify(
       ...base,
       itcAtRisk: itcTotal,
       result: 'NOT_IN_BOOKS',
-      reason: 'Invoice not found in Tally books — no matching purchase entry',
+      reason: buildReason(REASON_CODES.NOT_IN_BOOKS),
       matchedTallyInvoiceNum: null,
     }
   }
@@ -71,7 +72,10 @@ export function classify(
       ...base,
       itcAtRisk: itcTotal,
       result: 'AUTO_REJECTED',
-      reason: `Supplier GSTIN mismatch — IMS: ${inv.supplierGstin} / Tally: ${tally.supplierGstin}`,
+      reason: buildReason(REASON_CODES.GSTIN_MISMATCH, {
+        imsGstin: inv.supplierGstin,
+        tallyGstin: tally.supplierGstin,
+      }),
       matchedTallyInvoiceNum: tally.invoiceNum,
     }
   }
@@ -81,12 +85,18 @@ export function classify(
   const pct = valueDelta.div(inv.totalValue).times(100)
   const absPct = pct.abs()
   const sign = pct.gte(0) ? '+' : ''
+  const valueParams = {
+    tallyValue: tally.totalAmount.toFixed(0),
+    imsValue: inv.totalValue.toFixed(0),
+    sign,
+    pct: absPct.toFixed(1),
+  }
   if (absPct.gt(10)) {
     return {
       ...base,
       itcAtRisk: itcTotal,
       result: 'AUTO_REJECTED',
-      reason: `Value delta: Tally ₹${tally.totalAmount.toFixed(0)} vs IMS ₹${inv.totalValue.toFixed(0)} (${sign}${absPct.toFixed(1)}% — exceeds 10% threshold)`,
+      reason: buildReason(REASON_CODES.VALUE_OVER_10, valueParams),
       matchedTallyInvoiceNum: tally.invoiceNum,
     }
   }
@@ -95,7 +105,7 @@ export function classify(
       ...base,
       itcAtRisk: itcTotal,
       result: 'PENDING_REVIEW',
-      reason: `Value delta: Tally ₹${tally.totalAmount.toFixed(0)} vs IMS ₹${inv.totalValue.toFixed(0)} (${sign}${absPct.toFixed(1)}% — within 2–10% band)`,
+      reason: buildReason(REASON_CODES.VALUE_2_TO_10, valueParams),
       matchedTallyInvoiceNum: tally.invoiceNum,
     }
   }
@@ -106,18 +116,24 @@ export function classify(
       ...base,
       itcAtRisk: itcTotal,
       result: 'PENDING_REVIEW',
-      reason: `Invoice# mismatch — IMS: "${inv.invoiceNum}" / Tally: "${tally.invoiceNum}" (normalised keys differ)`,
+      reason: buildReason(REASON_CODES.SOFT_INVOICE_MATCH, {
+        imsInv: inv.invoiceNum,
+        tallyInv: tally.invoiceNum,
+      }),
       matchedTallyInvoiceNum: tally.invoiceNum,
     }
   }
 
-  // 4. Format-only variation (Strategy A, same normalized key, different raw strings)
+  // 4. Format-only variation (Strategy A, same normalised key, different raw strings)
   if (inv.invoiceNum !== tally.invoiceNum) {
     return {
       ...base,
       itcAtRisk: new Decimal(0),
       result: 'AUTO_ACCEPTED',
-      reason: `Format-only diff — normalises to same key (IMS: "${inv.invoiceNum}" / Tally: "${tally.invoiceNum}")`,
+      reason: buildReason(REASON_CODES.FORMAT_VARIATION, {
+        imsInv: inv.invoiceNum,
+        tallyInv: tally.invoiceNum,
+      }),
       matchedTallyInvoiceNum: tally.invoiceNum,
     }
   }
@@ -129,7 +145,11 @@ export function classify(
       ...base,
       itcAtRisk: itcTotal,
       result: 'PENDING_REVIEW',
-      reason: `Date gap: ${daysDiff} days — IMS: ${isoToDMY(inv.invoiceDate, '-')} / Tally: ${isoToDMY(tally.invoiceDate, '/')}`,
+      reason: buildReason(REASON_CODES.DATE_GAP, {
+        days: daysDiff,
+        imsDate: isoToDMY(inv.invoiceDate, '-'),
+        tallyDate: isoToDMY(tally.invoiceDate, '/'),
+      }),
       matchedTallyInvoiceNum: tally.invoiceNum,
     }
   }

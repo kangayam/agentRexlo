@@ -20,20 +20,20 @@ If you change the reconciliation logic, you change the expected output file. The
 
 The expected file uses nine distinct `Scenario` labels. The engine must produce the matching `Recon_Output` for each one.
 
-| # | Scenario | Count | Expected Output | Trigger |
+| # | Scenario | Result rows | Expected Output | Trigger |
 |---|---|---|---|---|
-| 1 | `EXACT_MATCH` | 40 | `AUTO_ACCEPTED` | GSTIN + normalised invoice# + value (±2%) + date + tax type all match |
+| 1 | `EXACT_MATCH` | 42 | `AUTO_ACCEPTED` | GSTIN + normalised invoice# + value (±2%) + date all match |
 | 2 | `WRONG_GSTIN` | 1 | `AUTO_REJECTED` | Invoice# matches Tally but GSTINs differ (likely wrong-state registration) |
 | 3 | `NOT_IN_BOOKS` | 1 | `NOT_IN_BOOKS` | IMS invoice with no matching Tally entry |
 | 4 | `VALUE_OVER_10` | 1 | `AUTO_REJECTED` | Value difference between IMS and Tally > 10% |
 | 5 | `VALUE_MISMATCH_2_10` | 1 | `PENDING_REVIEW` | Value difference 2–10% (freight / packing suspected) |
 | 6 | `FORMAT_VARIATION` | 1 | `AUTO_ACCEPTED` | `INV/26/021` vs `INV-26-021` — normalises to same key |
-| 7 | `INVOICE_NUMBER_MISMATCH` | 1 | `PENDING_REVIEW` | Different invoice numbers, but same GSTIN + value + tax (soft match) |
+| 7 | `INVOICE_NUMBER_MISMATCH` | 1 | `PENDING_REVIEW` | Different invoice numbers, but same GSTIN + value (soft match) |
 | 8 | `DATE_GAP` | 1 | `PENDING_REVIEW` | Invoice date differs by > 7 days between IMS and Tally |
-| 9 | `DUPLICATE` | 1 | `AUTO_REJECTED` | Same invoice# uploaded twice in IMS (both instances rejected) |
-| | **Total** | **47 IMS invoices** | | |
+| 9 | `DUPLICATE` | 1 | `AUTO_REJECTED` | Same invoice# uploaded twice in IMS — collapsed into one rejected row |
+| | **Total** | **50 result rows** | | |
 
-*Note: 47 unique IMS invoices — one appears twice as a duplicate → 46 distinct invoice numbers + 1 duplicate = 47 reconciliation result rows.*
+*Note: the IMS file contains 51 invoice entries (50 unique GSTIN+invoice# pairs + 1 duplicate of an existing entry). The duplicate group is collapsed into a single `AUTO_REJECTED` result row, so the engine emits 50 reconciliation rows total.*
 
 ---
 
@@ -116,8 +116,11 @@ Gap = 10 days → exceeds 7-day threshold
 ```
 IMS:     INV-26-034 appears twice in the same upload (same supplier, same value)
 Tally:   INV-26-034 appears once
-→ BOTH IMS entries AUTO_REJECTED — "Duplicate IMS entry — same invoice uploaded twice"
+→ ONE collapsed AUTO_REJECTED row —
+  "Duplicate IMS entry — same invoice uploaded twice by supplier (2 IMS entries for 1 Tally row)"
 ```
+
+The engine intentionally collapses a duplicate group into a single result row rather than emitting one row per duplicate copy. The CA / client has one decision to make ("which copy is real?"), so the dashboard surfaces one action item.
 
 ---
 
@@ -180,9 +183,10 @@ The engine's dashboard summary for this fixture should produce:
 
 | Metric | Expected |
 |---|---|
-| Total IMS invoices | 47 (46 unique + 1 duplicate) |
-| AUTO_ACCEPTED | 41 |
-| AUTO_REJECTED | 4 (1 wrong GSTIN + 1 value over 10% + 2 duplicates) |
+| Total IMS entries | 51 (50 unique GSTIN+invoice# pairs + 1 duplicate copy) |
+| Total result rows | 50 (the duplicate group collapses to one row) |
+| AUTO_ACCEPTED | 43 (42 EXACT_MATCH + 1 FORMAT_VARIATION) |
+| AUTO_REJECTED | 3 (1 wrong GSTIN + 1 value over 10% + 1 collapsed duplicate) |
 | PENDING_REVIEW | 3 (1 value 2–10% + 1 invoice# mismatch + 1 date gap) |
 | NOT_IN_BOOKS | 1 |
 | Tally rows unmatched | 0 (every Tally entry finds its IMS match) |

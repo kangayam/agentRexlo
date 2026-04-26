@@ -340,7 +340,9 @@ Before matching anything, clean up the data:
 
 ### Step 2 — Detect duplicates in the IMS upload
 
-Before matching, scan the IMS dataset for the same normalised invoice# appearing twice under the same supplier. Both copies are marked `DUPLICATE` → `AUTO_REJECTED` with reason *"Duplicate IMS entry — same invoice uploaded twice"*. They are excluded from the candidate pool below.
+Before matching, scan the IMS dataset for the same normalised invoice# appearing more than once under the same supplier. The duplicate group is collapsed into **one** `AUTO_REJECTED` result row (not one row per duplicate copy), with reason *"Duplicate IMS entry — same invoice uploaded twice by supplier (2 IMS entries for 1 Tally row)"*. The duplicate group is excluded from the candidate pool below.
+
+This collapse is deliberate: the user has one decision to make per duplicate group ("which of the two do I keep?") so the dashboard surfaces one row, not two. The duplicate count is recoverable from the IMS upload session if needed.
 
 ### Step 3 — Find candidate matches (two-stage lookup)
 
