@@ -83,6 +83,10 @@ data/
 - **POS** — Place of Supply. Determines whether tax is IGST (inter-state) or CGST+SGST (intra-state).
 - **Reconciliation** — Matching IMS invoices vs Tally purchase register.
 
+## External references
+
+- **ITC primer (ClearTax):** https://cleartax.in/s/gst-input-tax-credit — the canonical explainer for what ITC is, who can claim it, eligibility conditions (Section 16 of CGST Act), and time-bar rules. Read this before changing any rule that touches `itc_at_risk` or eligibility logic.
+
 ## Rules that matter
 
 1. **Normalize before matching.** GSTINs uppercase, invoice numbers lowercase/stripped of `/ - _ \ # space` and leading zeros, values rounded to 2 decimals, dates parsed into ISO 8601 from both `DD-MM-YYYY` (IMS) and `DD/MM/YYYY` (Tally). See `lib/reconciliation/normalize.ts`.
