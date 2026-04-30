@@ -1,3 +1,14 @@
-export default function Home() {
-  return <main><h1>AgentFlow Core</h1></main>
+import { redirect } from 'next/navigation'
+import { getAuthedUser } from '@/lib/auth/session'
+
+export default async function Home() {
+  let user: Awaited<ReturnType<typeof getAuthedUser>> | null = null
+  try {
+    user = await getAuthedUser()
+  } catch {
+    redirect('/login')
+  }
+
+  if (user?.role === 'CLIENT') redirect('/client/dashboard')
+  redirect('/ca/dashboard')
 }
