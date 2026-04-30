@@ -16,3 +16,4 @@ ALTER TABLE public.tally_entries          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reconciliation_results ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public._prisma_migrations     ENABLE ROW LEVEL SECURITY;
