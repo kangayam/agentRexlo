@@ -7,14 +7,15 @@ export async function POST(
   _request: Request,
   { params }: { params: Promise<{ clientId: string }> }
 ) {
-  const dbUser = await getAuthedUser()
+  const dbUser = await getAuthedUser().catch(() => null)
+  if (!dbUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (!dbUser.org_id) return NextResponse.json({ error: 'No org' }, { status: 403 })
   const { clientId } = await params
 
   const client = await prisma.client.findUnique({
     where: { id: clientId, org_id: dbUser.org_id },
   })
-  if (!client) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (!client) return NextResponse.json({ error: `Client ${clientId} not found in org ${dbUser.org_id}` }, { status: 404 })
 
   const cookieStore = await cookies()
   cookieStore.set('actingAsClientId', clientId, {

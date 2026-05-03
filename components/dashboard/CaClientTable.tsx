@@ -23,7 +23,8 @@ export function CaClientTable({ rows }: { rows: CaClientRow[] }) {
     if (res.ok) {
       router.push('/client/dashboard')
     } else {
-      setViewQueueError('Failed to switch client. Please try again.')
+      const data = await res.json().catch(() => ({}))
+      setViewQueueError(data.error ?? `Error ${res.status} — Failed to switch client.`)
     }
   }
 
