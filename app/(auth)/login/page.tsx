@@ -208,8 +208,8 @@ export default function LoginPage() {
             {/* Email or User ID */}
             <label
               htmlFor="email"
-              className="text-[#374151] mb-[6px]"
-              style={{ fontSize: 13, fontWeight: 600 }}
+              className="mb-[6px]"
+              style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}
             >
               Email or User ID
             </label>
@@ -219,15 +219,15 @@ export default function LoginPage() {
               type="text"
               placeholder="name@company.com"
               required
-              className="mb-[14px] outline-none focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
+              className="mb-[14px] outline-none focus:outline-none focus:ring-2 focus:ring-[#E6B8A2] focus:border-transparent placeholder:text-white/25"
               style={{
                 height: 42,
-                border: '1.5px solid #e5e7eb',
+                border: '1.5px solid rgba(230,184,162,0.2)',
                 borderRadius: 8,
                 padding: '0 12px',
                 fontSize: 14,
-                color: '#374151',
-                background: '#f9fafb',
+                color: '#ffffff',
+                background: 'rgba(255,255,255,0.05)',
                 fontFamily: 'inherit',
               }}
             />
@@ -236,15 +236,13 @@ export default function LoginPage() {
             <div className="flex justify-between items-center mb-[6px]">
               <label
                 htmlFor="password"
-                className="text-[#374151]"
-                style={{ fontSize: 13, fontWeight: 600 }}
+                style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}
               >
                 Password
               </label>
               <a
                 href="/reset"
-                className="text-[#f97316]"
-                style={{ fontSize: 12.5, fontWeight: 600, textDecoration: 'none' }}
+                style={{ fontSize: 12.5, fontWeight: 600, textDecoration: 'none', color: '#E6B8A2' }}
               >
                 Forgot Password?
               </a>
@@ -257,15 +255,15 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 placeholder="••••••••"
                 required
-                className="w-full outline-none focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
+                className="w-full outline-none focus:outline-none focus:ring-2 focus:ring-[#E6B8A2] focus:border-transparent placeholder:text-white/25"
                 style={{
                   height: 42,
-                  border: '1.5px solid #e5e7eb',
+                  border: '1.5px solid rgba(230,184,162,0.2)',
                   borderRadius: 8,
                   padding: '0 40px 0 12px',
                   fontSize: 14,
-                  color: '#374151',
-                  background: '#f9fafb',
+                  color: '#ffffff',
+                  background: 'rgba(255,255,255,0.05)',
                   fontFamily: 'inherit',
                 }}
               />
@@ -273,8 +271,8 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setShowPassword(p => !p)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-[#9ca3af]"
-                style={{ fontSize: 15 }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer"
+                style={{ color: 'rgba(255,255,255,0.3)', fontSize: 15 }}
               >
                 {showPassword ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -297,12 +295,12 @@ export default function LoginPage() {
                 type="checkbox"
                 id="remember"
                 className="cursor-pointer"
-                style={{ width: 15, height: 15, accentColor: '#0a1628' }}
+                style={{ width: 15, height: 15, accentColor: '#E6B8A2' }}
               />
               <label
                 htmlFor="remember"
-                className="text-[#6b7280] cursor-pointer"
-                style={{ fontSize: 13 }}
+                className="cursor-pointer"
+                style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}
               >
                 Remember User ID
               </label>
@@ -317,10 +315,11 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full text-white mb-[11px] flex items-center justify-center gap-2"
+              className="w-full mb-[11px] flex items-center justify-center gap-2"
               style={{
                 height: 44,
-                background: '#0a1628',
+                background: '#E6B8A2',
+                color: '#021C2E',
                 border: 'none',
                 borderRadius: 9,
                 fontSize: 15,
@@ -346,15 +345,16 @@ export default function LoginPage() {
             {/* Sign Up button */}
             <a
               href="/signup"
-              className="w-full flex items-center justify-center text-[#0a1628] mb-[20px]"
+              className="w-full flex items-center justify-center mb-[20px]"
               style={{
                 height: 44,
-                border: '1.5px solid #d1d5db',
+                border: '1.5px solid rgba(230,184,162,0.35)',
                 borderRadius: 9,
                 fontSize: 15,
                 fontWeight: 600,
                 textDecoration: 'none',
                 fontFamily: 'inherit',
+                color: '#E6B8A2',
               }}
             >
               Sign Up
@@ -363,12 +363,19 @@ export default function LoginPage() {
             {/* Security note */}
             <div className="flex items-center justify-center gap-[7px]">
               <div
-                className="flex items-center justify-center text-white rounded-full flex-shrink-0"
-                style={{ width: 18, height: 18, background: '#16a34a', fontSize: 10 }}
+                className="flex items-center justify-center rounded-full flex-shrink-0"
+                style={{
+                  width: 18,
+                  height: 18,
+                  background: 'rgba(230,184,162,0.15)',
+                  border: '1px solid rgba(230,184,162,0.3)',
+                  color: '#E6B8A2',
+                  fontSize: 9,
+                }}
               >
                 ✓
               </div>
-              <span className="text-[#9ca3af]" style={{ fontSize: 11.5 }}>
+              <span style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.28)' }}>
                 Secured with enterprise-grade encryption
               </span>
             </div>
