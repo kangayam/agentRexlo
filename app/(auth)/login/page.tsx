@@ -33,7 +33,7 @@ export default function LoginPage() {
   return (
     <main
       style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}
-      className="flex h-screen overflow-hidden bg-[#0a1628] relative"
+      className="flex h-screen overflow-hidden bg-[#021C2E] relative"
     >
       {/* ── NAV ── */}
       <nav
@@ -47,15 +47,16 @@ export default function LoginPage() {
           <a href="#" className="text-white/75 font-medium" style={{ fontSize: 13.5 }}>Help</a>
           <a href="#" className="text-white/75 font-medium" style={{ fontSize: 13.5 }}>Documentation</a>
           <button
-            className="text-white font-medium"
             style={{
               fontSize: 13.5,
               padding: '8px 18px',
               borderRadius: 7,
-              border: '1.5px solid rgba(255,255,255,0.35)',
+              border: '1.5px solid rgba(230,184,162,0.35)',
               background: 'transparent',
               cursor: 'pointer',
               fontFamily: 'inherit',
+              color: '#E6B8A2',
+              fontWeight: 500,
             }}
           >
             Contact Support
