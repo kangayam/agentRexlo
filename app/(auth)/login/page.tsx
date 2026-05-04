@@ -73,15 +73,15 @@ export default function LoginPage() {
         <div
           className="flex items-center gap-2 w-fit rounded-full mb-[30px]"
           style={{
-            background: 'rgba(249,115,22,0.12)',
-            border: '1px solid rgba(249,115,22,0.35)',
+            background: 'rgba(230,184,162,0.10)',
+            border: '1px solid rgba(230,184,162,0.28)',
             padding: '7px 16px',
           }}
         >
-          <div className="animate-pulse-dot w-2 h-2 rounded-full bg-[#f97316]" />
+          <div className="animate-pulse-dot w-2 h-2 rounded-full" style={{ background: '#E6B8A2' }} />
           <span
-            className="text-[#f97316] font-bold uppercase"
-            style={{ fontSize: 11, letterSpacing: '1.2px' }}
+            className="font-bold uppercase"
+            style={{ fontSize: 11, letterSpacing: '1.2px', color: '#E6B8A2' }}
           >
             AI-POWERED PLATFORM
           </span>
@@ -90,7 +90,7 @@ export default function LoginPage() {
         {/* Headline */}
         <h1
           className="text-white mb-[18px]"
-          style={{ fontSize: 44, fontWeight: 900, lineHeight: 1.08, letterSpacing: '-1.5px' }}
+          style={{ fontSize: 36, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1.2px' }}
         >
           Discover AI-powered GST reconciliation and client-centric solutions tailored for
           Chartered Accountants in India.
@@ -121,15 +121,14 @@ export default function LoginPage() {
               key={label}
               className="flex-1 rounded-[14px]"
               style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.09)',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(230,184,162,0.12)',
                 padding: '20px 22px',
                 backdropFilter: 'blur(4px)',
               }}
             >
               <div
-                className="text-[#f97316]"
-                style={{ fontSize: 28, fontWeight: 800, lineHeight: 1, marginBottom: 6 }}
+                style={{ fontSize: 28, fontWeight: 800, lineHeight: 1, marginBottom: 6, color: '#E6B8A2' }}
               >
                 {number}
               </div>
@@ -150,9 +149,10 @@ export default function LoginPage() {
 
         {/* CTA */}
         <button
-          className="flex items-center gap-2 text-white w-fit"
+          className="flex items-center gap-2 w-fit"
           style={{
-            background: '#f97316',
+            background: '#E6B8A2',
+            color: '#021C2E',
             padding: '14px 28px',
             borderRadius: 9,
             fontSize: 15,
