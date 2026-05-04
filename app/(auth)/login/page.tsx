@@ -170,41 +170,36 @@ export default function LoginPage() {
       {/* ── RIGHT PANEL ── */}
       <div
         className="flex items-center justify-center relative overflow-hidden"
-        style={{ width: '46%' }}
+        style={{ width: '46%', background: '#0A2F4A' }}
       >
-        {/* Photo background */}
+        {/* Subtle radial glow */}
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: 'url(/login-bg.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            background: 'radial-gradient(ellipse at 70% 40%, rgba(230,184,162,0.06) 0%, transparent 60%)',
           }}
-        />
-        {/* Left-edge gradient overlay */}
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(to right, rgba(10,22,40,0.45) 0%, transparent 50%)' }}
         />
 
         {/* Login card */}
         <div
-          className="relative z-10 bg-white rounded-[20px]"
+          className="relative z-10 rounded-[20px]"
           style={{
             width: 370,
             padding: '38px 34px 32px',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.3)',
+            background: '#021C2E',
+            border: '1px solid rgba(230,184,162,0.18)',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.4)',
           }}
         >
           <h2
-            className="text-center text-[#0a1628] mb-[6px]"
+            className="text-center text-white mb-[6px]"
             style={{ fontSize: 21, fontWeight: 700 }}
           >
             Welcome Back
           </h2>
           <p
-            className="text-center text-[#6b7280] mb-[26px]"
-            style={{ fontSize: 12.5, lineHeight: 1.5 }}
+            className="text-center mb-[26px]"
+            style={{ fontSize: 12.5, lineHeight: 1.5, color: 'rgba(255,255,255,0.4)' }}
           >
             Please enter your credentials to access the ledger.
           </p>
