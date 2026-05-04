@@ -223,7 +223,7 @@ export default function LoginPage() {
               type="text"
               placeholder="name@company.com"
               required
-              className="mb-[14px] outline-none focus:outline-none focus:ring-2 focus:ring-[#0a1628] focus:border-transparent"
+              className="mb-[14px] outline-none focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
               style={{
                 height: 42,
                 border: '1.5px solid #e5e7eb',
@@ -261,7 +261,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 placeholder="••••••••"
                 required
-                className="w-full outline-none focus:outline-none focus:ring-2 focus:ring-[#0a1628] focus:border-transparent"
+                className="w-full outline-none focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
                 style={{
                   height: 42,
                   border: '1.5px solid #e5e7eb',
