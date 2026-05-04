@@ -1,10 +1,22 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+const REMEMBER_KEY = 'gst_remembered_email'
 
 export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [emailValue, setEmailValue] = useState('')
+  const [remember, setRemember] = useState(false)
+
+  useEffect(() => {
+    const saved = localStorage.getItem(REMEMBER_KEY)
+    if (saved) {
+      setEmailValue(saved)
+      setRemember(true)
+    }
+  }, [])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -17,12 +29,17 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'login',
-          email: fd.get('email'),
+          email: emailValue,
           password: fd.get('password'),
         }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error); setLoading(false); return }
+      if (remember) {
+        localStorage.setItem(REMEMBER_KEY, emailValue)
+      } else {
+        localStorage.removeItem(REMEMBER_KEY)
+      }
       window.location.href = data.redirectTo
     } catch {
       setError('Something went wrong. Please try again.')
@@ -219,6 +236,8 @@ export default function LoginPage() {
               type="text"
               placeholder="name@company.com"
               required
+              value={emailValue}
+              onChange={e => setEmailValue(e.target.value)}
               className="mb-[14px] outline-none focus:outline-none focus:ring-2 focus:ring-[#E6B8A2] focus:border-transparent placeholder:text-white/25"
               style={{
                 height: 42,
@@ -294,6 +313,8 @@ export default function LoginPage() {
               <input
                 type="checkbox"
                 id="remember"
+                checked={remember}
+                onChange={e => setRemember(e.target.checked)}
                 className="cursor-pointer"
                 style={{ width: 15, height: 15, accentColor: '#E6B8A2' }}
               />
