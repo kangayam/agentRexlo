@@ -205,25 +205,26 @@ function ClientDetailInner() {
         </nav>
       </div>
 
-      {/* Tab content */}
+      {/* Tab content — all tabs stay mounted so switching is instant and data isn't re-fetched */}
       <div>
-        {activeTab === 'reconciliation' && (
+        <div className={activeTab === 'reconciliation' ? '' : 'hidden'}>
           <ReconciliationTab
             clientId={clientId}
             period={period}
             onPendingCount={setPendingCount}
             onPeriods={handlePeriods}
           />
-        )}
-        {activeTab === 'analytics' && (
+        </div>
+        <div className={activeTab === 'analytics' ? '' : 'hidden'}>
           <AnalyticsTab clientId={clientId} period={period} />
-        )}
-        {activeTab === 'trend' && (
+        </div>
+        <div className={activeTab === 'trend' ? '' : 'hidden'}>
           <TrendTab clientId={clientId} />
-        )}
+        </div>
       </div>
 
-      {/* ── Client Info (collapsed) ───────────────────────────────────────────── */}
+      {/* ── Client Info (collapsed) — only on Reconciliation tab ─────────────── */}
+      {activeTab === 'reconciliation' && (
       <div className="border border-slate-200 rounded-xl overflow-hidden">
         <button
           type="button"
@@ -306,6 +307,7 @@ function ClientDetailInner() {
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { LogOut } from 'lucide-react'
 
@@ -26,7 +27,7 @@ export function LogoutModal({ open, onClose, userName }: LogoutModalProps) {
     return () => { document.body.style.overflow = '' }
   }, [open])
 
-  if (!open) return null
+  if (!open || typeof document === 'undefined') return null
 
   const handleConfirm = async () => {
     setSigningOut(true)
@@ -37,14 +38,15 @@ export function LogoutModal({ open, onClose, userName }: LogoutModalProps) {
     }
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4
-                 bg-slate-900/60 backdrop-blur-sm"
+      className="fixed inset-0 flex items-center justify-center p-4"
+      style={{ zIndex: 99999, backgroundColor: 'rgba(15, 23, 42, 0.85)' }}
       onClick={onClose}
     >
       <div
         className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden relative"
+        style={{ zIndex: 100000 }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Red accent top bar */}
@@ -98,6 +100,7 @@ export function LogoutModal({ open, onClose, userName }: LogoutModalProps) {
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
