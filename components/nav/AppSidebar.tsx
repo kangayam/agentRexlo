@@ -3,13 +3,23 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { type LucideIcon } from 'lucide-react'
+import { LayoutDashboard, Users, BarChart2, Bell, UserCheck, Upload, Clock, type LucideIcon } from 'lucide-react'
 import { NotificationBell } from '@/components/nav/NotificationBell'
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  LayoutDashboard,
+  Users,
+  BarChart2,
+  Bell,
+  UserCheck,
+  Upload,
+  Clock,
+}
 
 export interface NavItem {
   label: string
   href: string
-  icon?: LucideIcon
+  icon?: keyof typeof ICON_MAP
   badge?: number
 }
 
@@ -54,7 +64,7 @@ export function AppSidebar({ navItems, userName, userEmail }: AppSidebarProps) {
       <nav className="flex-1 px-2 py-3 space-y-0.5">
         {navItems.map(item => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-          const Icon = item.icon
+          const Icon = item.icon ? ICON_MAP[item.icon] : undefined
           return (
             <Link
               key={item.href}

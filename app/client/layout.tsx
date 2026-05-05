@@ -4,12 +4,10 @@ import { prisma } from '@/lib/db/prisma'
 import { getAuthedUser } from '@/lib/auth/session'
 import { ActingAsBanner } from '@/components/acting-as-banner'
 import { AppSidebar } from '@/components/nav/AppSidebar'
-import { LayoutDashboard, Upload, Clock } from 'lucide-react'
-
 const CLIENT_NAV = [
-  { label: 'Dashboard', href: '/client/dashboard', icon: LayoutDashboard },
-  { label: 'Upload',    href: '/client/upload',    icon: Upload },
-  { label: 'History',   href: '/client/history',   icon: Clock },
+  { label: 'Dashboard', href: '/client/dashboard', icon: 'LayoutDashboard' as const },
+  { label: 'Upload',    href: '/client/upload',    icon: 'Upload'          as const },
+  { label: 'History',   href: '/client/history',   icon: 'Clock'           as const },
 ]
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {

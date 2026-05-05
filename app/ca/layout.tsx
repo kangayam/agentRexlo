@@ -1,14 +1,12 @@
 import { redirect } from 'next/navigation'
 import { getAuthedUser } from '@/lib/auth/session'
 import { AppSidebar } from '@/components/nav/AppSidebar'
-import { LayoutDashboard, Users, BarChart2, Bell, UserCheck } from 'lucide-react'
-
 const CA_NAV = [
-  { label: 'Dashboard', href: '/ca/dashboard', icon: LayoutDashboard },
-  { label: 'Clients',   href: '/ca/clients',   icon: Users },
-  { label: 'Analytics', href: '/ca/analytics', icon: BarChart2 },
-  { label: 'Alerts',    href: '/ca/alerts',    icon: Bell,      badge: 6 },
-  { label: 'Team',      href: '/ca/team',      icon: UserCheck },
+  { label: 'Dashboard', href: '/ca/dashboard', icon: 'LayoutDashboard' as const },
+  { label: 'Clients',   href: '/ca/clients',   icon: 'Users'           as const },
+  { label: 'Analytics', href: '/ca/analytics', icon: 'BarChart2'       as const },
+  { label: 'Alerts',    href: '/ca/alerts',    icon: 'Bell'            as const, badge: 6 },
+  { label: 'Team',      href: '/ca/team',      icon: 'UserCheck'       as const },
 ]
 
 export default async function CaLayout({ children }: { children: React.ReactNode }) {
