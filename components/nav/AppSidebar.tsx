@@ -83,20 +83,20 @@ export function AppSidebar({ navItems, userName, userEmail }: AppSidebarProps) {
         })}
       </nav>
 
-      {/* Bottom: Notifications row */}
-      <div className="border-t border-slate-700 pt-2 pb-1">
+      {/* Notifications — styled as a nav row, not a user card */}
+      <div className="border-t border-slate-700 px-2 py-1">
         <NotificationBell dark />
       </div>
 
-      {/* User row + sign out */}
-      <div className="border-t border-slate-700 px-4 py-3 space-y-2">
-        <div className="flex items-center gap-2">
+      {/* User card + sign out — only circular avatar is here */}
+      <div className="border-t border-slate-700 px-4 py-3">
+        <div className="flex items-center gap-2 mb-2">
           <div className="w-7 h-7 rounded-full bg-slate-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
             {initial}
           </div>
           <div className="min-w-0">
-            <div className="text-white text-xs font-medium truncate">{userName}</div>
-            <div className="text-slate-500 text-[11px] truncate">{userEmail}</div>
+            <p className="text-white text-xs font-medium truncate">{userName}</p>
+            <p className="text-slate-500 text-[11px] truncate">{userEmail}</p>
           </div>
         </div>
         <button

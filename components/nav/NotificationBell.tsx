@@ -1,7 +1,7 @@
-// components/nav/NotificationBell.tsx
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { Bell } from 'lucide-react'
 
 interface NotificationItem {
   id: string
@@ -94,17 +94,14 @@ export function NotificationBell({ dark = false }: { dark?: boolean }) {
   }
 
   return (
-    <div ref={containerRef} className="relative px-3">
+    <div ref={containerRef} className="relative">
       <button
         type="button"
         onClick={handleOpen}
-        className={`flex w-full items-center gap-2 rounded-md px-0 py-2 text-sm font-medium transition-colors ${dark ? 'text-slate-400 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+        className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors ${dark ? 'text-slate-400 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
       >
-        <span className="relative inline-flex">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
+        <span className="relative flex-shrink-0">
+          <Bell className="h-4 w-4" />
           {data.unreadCount > 0 && (
             <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
               {data.unreadCount > 9 ? '9+' : data.unreadCount}
