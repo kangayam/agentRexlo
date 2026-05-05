@@ -88,26 +88,30 @@ export function AppSidebar({ navItems, userName, userEmail }: AppSidebarProps) {
         })}
       </nav>
 
-      {/* Bottom: Notifications + User + Sign out */}
-      <div className="px-4 py-4 border-t border-slate-700 space-y-3">
+      {/* Bottom: Notifications → User row → Sign out */}
+      <div className="border-t border-slate-700 py-3 space-y-1">
         <NotificationBell dark />
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-slate-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-            {initials}
-          </div>
-          <div className="min-w-0">
-            <div className="text-white text-xs font-medium truncate">{userName}</div>
-            <div className="text-slate-500 text-[11px] truncate">{userEmail}</div>
+        <div className="px-4 pt-2 pb-1">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-slate-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+              {initials}
+            </div>
+            <div className="min-w-0">
+              <div className="text-white text-xs font-medium truncate">{userName}</div>
+              <div className="text-slate-500 text-[11px] truncate">{userEmail}</div>
+            </div>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleSignOut}
-          disabled={signingOut}
-          className="text-slate-500 hover:text-slate-300 text-xs transition-colors disabled:opacity-50"
-        >
-          {signingOut ? 'Signing out…' : 'Sign out'}
-        </button>
+        <div className="px-4">
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="text-slate-500 hover:text-slate-300 text-xs transition-colors disabled:opacity-50"
+          >
+            {signingOut ? 'Signing out…' : 'Sign out'}
+          </button>
+        </div>
       </div>
     </aside>
   )

@@ -22,16 +22,18 @@ const BAND_PILL: Record<QualityBand, string> = {
 type FilterTab = 'All' | 'Pre-14th' | 'Critical' | 'No Upload'
 const TABS: FilterTab[] = ['All', 'Pre-14th', 'Critical', 'No Upload']
 
-function Sparkline({ history }: { history: number[] }) {
-  const padded = history.length >= 6
-    ? history.slice(-6)
-    : [...Array(6 - history.length).fill(0), ...history]
+function Sparkline({ history, score }: { history: number[]; score: number }) {
+  const isEmpty = history.length === 0
+  const bars = isEmpty
+    ? Array(6).fill(score)
+    : history.length >= 6 ? history.slice(-6) : [...Array(6 - history.length).fill(history[0] ?? score), ...history]
+  const color = score >= 80 ? 'bg-green-400' : score >= 60 ? 'bg-blue-400' : score >= 40 ? 'bg-amber-400' : 'bg-red-400'
   return (
-    <div className="flex items-end gap-0.5 h-4">
-      {padded.map((v, i) => (
+    <div className={`flex items-end gap-0.5 h-4 ${isEmpty ? 'opacity-40' : ''}`}>
+      {bars.map((v, i) => (
         <div
           key={i}
-          className={`w-1.5 rounded-sm ${v > 0 ? 'bg-blue-400' : 'bg-slate-200'}`}
+          className={`w-1.5 rounded-sm ${v > 0 ? color : 'bg-slate-200'}`}
           style={{ height: `${Math.max(2, (v / 100) * 16)}px` }}
         />
       ))}
@@ -149,7 +151,7 @@ export function CaClientTable({ rows, daysUntil14th }: { rows: CaClientRow[]; da
                         <span className={`inline-flex items-center px-1.5 py-0.5 rounded border text-[11px] font-bold ${BAND_PILL[row.qualityBand]}`}>
                           {row.qualityScore}
                         </span>
-                        <Sparkline history={row.scoreHistory} />
+                        <Sparkline history={row.scoreHistory} score={row.qualityScore} />
                       </div>
                     ) : (
                       <span className="text-slate-400">—</span>
