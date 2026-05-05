@@ -1,29 +1,47 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useEffect, useState, useCallback, Suspense } from 'react'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
+import { ChevronRight, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ReconciliationTab } from '@/components/dashboard/client-detail/ReconciliationTab'
+import { AnalyticsTab } from '@/components/dashboard/client-detail/AnalyticsTab'
+import { TrendTab } from '@/components/dashboard/client-detail/TrendTab'
+
+type Tab = 'reconciliation' | 'analytics' | 'trend'
 
 interface ClientDetail {
-  firmName: string
+  firmName:     string
   contactEmail: string
-  gstins: Array<{ id: string; gstin: string; is_primary: boolean }>
-  users: Array<{ id: string; name: string; email: string; created_at: string }>
-  invite: { email: string; expires_at: string } | null
+  gstins:       Array<{ id: string; gstin: string; is_primary: boolean }>
+  users:        Array<{ id: string; name: string; email: string; created_at: string }>
+  invite:       { email: string; expires_at: string } | null
 }
 
-export default function ClientDetailPage() {
-  const router = useRouter()
+// ─── Inner component (uses useSearchParams) ───────────────────────────────────
+
+function ClientDetailInner() {
+  const router       = useRouter()
   const { clientId } = useParams<{ clientId: string }>()
-  const [client, setClient] = useState<ClientDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [newGstin, setNewGstin] = useState('')
-  const [addingGstin, setAddingGstin] = useState(false)
-  const [gstinError, setGstinError] = useState('')
-  const [actingAs, setActingAs] = useState(false)
-  const [resending, setResending] = useState(false)
-  const [resendError, setResendError] = useState('')
+  const searchParams = useSearchParams()
+
+  const tabParam    = (searchParams.get('tab') as Tab | null) ?? 'analytics'
+  const periodParam = searchParams.get('period')
+
+  const [client,       setClient]       = useState<ClientDetail | null>(null)
+  const [loading,      setLoading]      = useState(true)
+  const [activeTab,    setActiveTab]    = useState<Tab>(tabParam)
+  const [period,       setPeriod]       = useState<string | null>(periodParam)
+  const [periods,      setPeriods]      = useState<string[]>([])
+  const [pendingCount, setPendingCount] = useState(0)
+  const [infoOpen,     setInfoOpen]     = useState(false)
+  const [newGstin,     setNewGstin]     = useState('')
+  const [addingGstin,  setAddingGstin]  = useState(false)
+  const [gstinError,   setGstinError]   = useState('')
+  const [actingAs,     setActingAs]     = useState(false)
+  const [resending,    setResending]    = useState(false)
+  const [resendError,  setResendError]  = useState('')
 
   const fetchClient = useCallback(async () => {
     const res = await fetch(`/api/clients/${clientId}`)
@@ -34,6 +52,21 @@ export default function ClientDetailPage() {
   }, [clientId])
 
   useEffect(() => { fetchClient() }, [fetchClient])
+
+  // Stable callbacks passed to ReconciliationTab — must not change on every render
+  const handlePeriods = useCallback((p: string[]) => {
+    setPeriods(p)
+    setPeriod(prev => (prev === null && p.length > 0) ? p[0] : prev)
+  }, [])
+
+  function navigate(tab: Tab, p?: string | null) {
+    const params = new URLSearchParams()
+    params.set('tab', tab)
+    if (p) params.set('period', p)
+    router.replace(`/ca/clients/${clientId}?${params.toString()}`)
+    setActiveTab(tab)
+    if (p !== undefined) setPeriod(p)
+  }
 
   const handleAddGstin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,10 +79,7 @@ export default function ClientDetailPage() {
         body: JSON.stringify({ action: 'add-gstin', clientId, gstin: newGstin.toUpperCase() }),
       })
       const data = await res.json()
-      if (!res.ok) {
-        setGstinError(data.error ?? 'Failed')
-        return
-      }
+      if (!res.ok) { setGstinError(data.error ?? 'Failed'); return }
       setNewGstin('')
       fetchClient()
     } catch {
@@ -83,9 +113,7 @@ export default function ClientDetailPage() {
     setActingAs(true)
     try {
       const res = await fetch(`/api/clients/${clientId}/acting-as`, { method: 'POST' })
-      if (res.ok) {
-        router.push('/client/upload')
-      }
+      if (res.ok) router.push('/client/upload')
     } catch {
       // network failure
     } finally {
@@ -93,84 +121,201 @@ export default function ClientDetailPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-gray-500">Loading…</div>
-  if (!client) return <div className="p-8 text-red-600">Client not found.</div>
+  if (loading) return <div className="p-8 text-slate-400 text-sm">Loading…</div>
+  if (!client) return <div className="p-8 text-red-600 text-sm">Client not found.</div>
+
+  const fmtPeriod = (p: string) => {
+    const [yyyy, mm] = p.split('-')
+    return new Date(Number(yyyy), Number(mm) - 1, 1)
+      .toLocaleString('en-IN', { month: 'short', year: 'numeric' })
+  }
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-8">
-      <div className="flex items-start justify-between">
+    <div className="p-6 max-w-5xl mx-auto space-y-6">
+
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1 text-xs text-slate-400">
+        <a href="/ca/dashboard" className="hover:text-slate-600 transition-colors">Dashboard</a>
+        <ChevronRight className="w-3 h-3" />
+        <span className="text-slate-700 font-medium">{client.firmName}</span>
+      </nav>
+
+      {/* Page header */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{client.firmName}</h1>
-          <p className="text-gray-500 text-sm mt-1">{client.contactEmail}</p>
+          <h1 className="text-xl font-bold text-slate-900">{client.firmName}</h1>
+          <p className="text-sm text-slate-500 mt-0.5">{client.contactEmail}</p>
         </div>
-        <Button onClick={handleActAs} disabled={actingAs} variant="outline">
-          {actingAs ? 'Switching…' : 'Act as Client'}
-        </Button>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Period selector — populated by ReconciliationTab */}
+          {periods.length > 0 && (
+            <select
+              value={period ?? ''}
+              onChange={e => navigate(activeTab, e.target.value || null)}
+              className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
+            >
+              {periods.map(p => (
+                <option key={p} value={p}>{fmtPeriod(p)}</option>
+              ))}
+            </select>
+          )}
+
+          <Button variant="outline" size="sm" className="text-xs" disabled>
+            Export PDF
+          </Button>
+
+          {pendingCount > 0 && (
+            <Button size="sm" className="text-xs bg-red-600 hover:bg-red-700 text-white border-0">
+              Send Reminders ({pendingCount})
+            </Button>
+          )}
+
+          <Button onClick={handleActAs} disabled={actingAs} variant="outline" size="sm" className="text-xs">
+            {actingAs ? 'Switching…' : 'Act as Client'}
+          </Button>
+        </div>
       </div>
 
-      {/* GSTINs */}
-      <section className="bg-white border rounded-xl p-6 space-y-4 shadow-sm">
-        <h2 className="font-semibold text-gray-800">GSTINs</h2>
-        <ul className="space-y-1">
-          {client.gstins.map(g => (
-            <li key={g.id} className="flex items-center gap-2 font-mono text-sm text-gray-700">
-              {g.gstin}
-              {g.is_primary && <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">Primary</span>}
-            </li>
+      {/* Tab bar */}
+      <div className="border-b border-slate-200">
+        <nav className="-mb-px flex gap-0">
+          {([
+            { key: 'analytics',      label: 'Analytics',      badge: '4 insights',                           badgeClass: 'bg-blue-100 text-blue-700' },
+            { key: 'reconciliation', label: 'Reconciliation',  badge: pendingCount > 0 ? String(pendingCount) : null, badgeClass: 'bg-amber-100 text-amber-700' },
+            { key: 'trend',          label: 'Trend',           badge: null,                                   badgeClass: '' },
+          ] as const).map(({ key, label, badge, badgeClass }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => navigate(key)}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
+                ${activeTab === key
+                  ? 'border-slate-900 text-slate-900'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+            >
+              {label}
+              {badge && (
+                <span className={`text-[10px] font-semibold rounded-full px-1.5 py-0.5 ${badgeClass}`}>
+                  {badge}
+                </span>
+              )}
+            </button>
           ))}
-        </ul>
-        <form onSubmit={handleAddGstin} className="flex gap-2 pt-2">
-          <Input
-            value={newGstin}
-            onChange={e => setNewGstin(e.target.value.toUpperCase())}
-            placeholder="Add GSTIN"
-            maxLength={15}
-            className="w-52"
+        </nav>
+      </div>
+
+      {/* Tab content */}
+      <div>
+        {activeTab === 'reconciliation' && (
+          <ReconciliationTab
+            clientId={clientId}
+            period={period}
+            onPendingCount={setPendingCount}
+            onPeriods={handlePeriods}
           />
-          <Button type="submit" variant="outline" size="sm" disabled={addingGstin}>
-            {addingGstin ? 'Adding…' : 'Add'}
-          </Button>
-        </form>
-        {gstinError && <p className="text-sm text-red-600">{gstinError}</p>}
-      </section>
-
-      {/* Active Users */}
-      <section className="bg-white border rounded-xl p-6 space-y-4 shadow-sm">
-        <h2 className="font-semibold text-gray-800">Active Users</h2>
-        {client.users.length === 0 ? (
-          <p className="text-gray-500 text-sm">No users yet — invite pending.</p>
-        ) : (
-          <ul className="space-y-2">
-            {client.users.map(u => (
-              <li key={u.id} className="flex items-center justify-between text-sm">
-                <span className="font-medium text-gray-800">{u.name}</span>
-                <span className="text-gray-500">{u.email}</span>
-              </li>
-            ))}
-          </ul>
         )}
-      </section>
+        {activeTab === 'analytics' && (
+          <AnalyticsTab clientId={clientId} period={period} />
+        )}
+        {activeTab === 'trend' && (
+          <TrendTab clientId={clientId} />
+        )}
+      </div>
 
-      {/* Invite — show whenever there are no active users */}
-      {client.users.length === 0 && (
-        <section className="bg-white border rounded-xl p-6 space-y-3 shadow-sm">
-          <h2 className="font-semibold text-gray-800">Client Invite</h2>
-          {client.invite ? (
-            <p className="text-sm text-gray-600">
-              Invite sent to <strong>{client.invite.email}</strong> — expires{' '}
-              {new Date(client.invite.expires_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-            </p>
-          ) : (
-            <p className="text-sm text-gray-600">
-              No active invite. Send one to <strong>{client.contactEmail}</strong>.
-            </p>
-          )}
-          <Button variant="outline" size="sm" onClick={handleResendInvite} disabled={resending}>
-            {resending ? 'Sending…' : client.invite ? 'Resend Invite' : 'Send Invite'}
-          </Button>
-          {resendError && <p className="text-sm text-red-600">{resendError}</p>}
-        </section>
-      )}
+      {/* ── Client Info (collapsed) ───────────────────────────────────────────── */}
+      <div className="border border-slate-200 rounded-xl overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setInfoOpen(o => !o)}
+          className="w-full flex items-center justify-between px-5 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
+        >
+          <span className="text-sm font-medium text-slate-700">Client Info &amp; Settings</span>
+          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${infoOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {infoOpen && (
+          <div className="divide-y divide-slate-100 bg-white">
+            {/* GSTINs */}
+            <div className="p-5 space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">GSTINs</h3>
+              <ul className="space-y-1">
+                {client.gstins.map(g => (
+                  <li key={g.id} className="flex items-center gap-2 font-mono text-sm text-slate-700">
+                    {g.gstin}
+                    {g.is_primary && (
+                      <span className="text-[11px] bg-indigo-50 text-indigo-600 border border-indigo-200 px-2 py-0.5 rounded-full">
+                        Primary
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <form onSubmit={handleAddGstin} className="flex gap-2">
+                <Input
+                  value={newGstin}
+                  onChange={e => setNewGstin(e.target.value.toUpperCase())}
+                  placeholder="Add GSTIN"
+                  maxLength={15}
+                  className="w-52 text-sm"
+                />
+                <Button type="submit" variant="outline" size="sm" disabled={addingGstin}>
+                  {addingGstin ? 'Adding…' : 'Add'}
+                </Button>
+              </form>
+              {gstinError && <p className="text-xs text-red-600">{gstinError}</p>}
+            </div>
+
+            {/* Active Users */}
+            <div className="p-5 space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Active Users</h3>
+              {client.users.length === 0 ? (
+                <p className="text-sm text-slate-400">No users yet — invite pending.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {client.users.map(u => (
+                    <li key={u.id} className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-slate-800">{u.name}</span>
+                      <span className="text-slate-500">{u.email}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Invite */}
+            {client.users.length === 0 && (
+              <div className="p-5 space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Client Invite</h3>
+                {client.invite ? (
+                  <p className="text-sm text-slate-600">
+                    Invite sent to <strong>{client.invite.email}</strong> — expires{' '}
+                    {new Date(client.invite.expires_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-600">
+                    No active invite. Send one to <strong>{client.contactEmail}</strong>.
+                  </p>
+                )}
+                <Button variant="outline" size="sm" onClick={handleResendInvite} disabled={resending}>
+                  {resending ? 'Sending…' : client.invite ? 'Resend Invite' : 'Send Invite'}
+                </Button>
+                {resendError && <p className="text-xs text-red-600">{resendError}</p>}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
+  )
+}
+
+// ─── Page export (Suspense boundary for useSearchParams) ──────────────────────
+
+export default function ClientDetailPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-sm text-slate-400">Loading…</div>}>
+      <ClientDetailInner />
+    </Suspense>
   )
 }

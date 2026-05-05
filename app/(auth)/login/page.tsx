@@ -1,9 +1,11 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 const REMEMBER_KEY = 'gst_remembered_email'
 
-export default function LoginPage() {
+function LoginInner() {
+  const searchParams = useSearchParams()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -40,7 +42,8 @@ export default function LoginPage() {
       } else {
         localStorage.removeItem(REMEMBER_KEY)
       }
-      window.location.href = data.redirectTo
+      const from = searchParams?.get('from')
+      window.location.href = from ?? data.redirectTo
     } catch {
       setError('Something went wrong. Please try again.')
       setLoading(false)
@@ -220,6 +223,21 @@ export default function LoginPage() {
           >
             Please enter your credentials to access the ledger.
           </p>
+
+          {searchParams?.get('reason') === 'timeout' && (
+            <div className="mb-5 p-3.5 bg-amber-50 border border-amber-200
+                            rounded-lg flex items-start gap-2.5">
+              <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <p className="text-sm text-amber-800">
+                You were signed out due to inactivity. Please sign in again.
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="flex flex-col">
             {/* Email or User ID */}
@@ -425,5 +443,13 @@ export default function LoginPage() {
         </div>
       </footer>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center bg-[#021C2E]" />}>
+      <LoginInner />
+    </Suspense>
   )
 }

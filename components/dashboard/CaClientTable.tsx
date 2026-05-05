@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { NotifyButton } from '@/components/dashboard/NotifyButton'
 import type { CaClientRow, QualityBand } from '@/lib/dashboard/ca'
@@ -53,20 +53,7 @@ function LeakageBar({ pct }: { pct: number }) {
 }
 
 export function CaClientTable({ rows, daysUntil14th }: { rows: CaClientRow[]; daysUntil14th: number }) {
-  const router = useRouter()
   const [activeTab, setActiveTab] = useState<FilterTab>('All')
-  const [viewQueueError, setViewQueueError] = useState<string | null>(null)
-
-  const handleViewQueue = async (clientId: string) => {
-    setViewQueueError(null)
-    const res = await fetch(`/api/clients/${clientId}/acting-as`, { method: 'POST' })
-    if (res.ok) {
-      router.push('/client/dashboard')
-    } else {
-      const data = await res.json().catch(() => ({}))
-      setViewQueueError(data.error ?? `Error ${res.status} — Failed to switch client.`)
-    }
-  }
 
   const inPre14thWindow = daysUntil14th >= 1 && daysUntil14th <= 5
 
@@ -88,10 +75,6 @@ export function CaClientTable({ rows, daysUntil14th }: { rows: CaClientRow[]; da
 
   return (
     <div className="space-y-3">
-      {viewQueueError && (
-        <p className="text-sm text-red-500">{viewQueueError}</p>
-      )}
-
       {/* Filter tabs */}
       <div className="flex gap-1 border-b border-slate-200">
         {TABS.map(tab => (
@@ -133,7 +116,11 @@ export function CaClientTable({ rows, daysUntil14th }: { rows: CaClientRow[]; da
                   key={row.clientId}
                   className={isUrgentDeadline ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-50'}
                 >
-                  <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">{row.name}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                    <Link href={`/ca/clients/${row.clientId}?tab=analytics`} className="hover:text-blue-600 hover:underline">
+                      {row.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
                     {row.gstinCount} {row.gstinCount === 1 ? 'GSTIN' : 'GSTINs'}
                   </td>
@@ -175,13 +162,12 @@ export function CaClientTable({ rows, daysUntil14th }: { rows: CaClientRow[]; da
                   <td className="px-4 py-3 whitespace-nowrap">
                     <span className="inline-flex items-center gap-4">
                       <NotifyButton clientId={row.clientId} />
-                      <button
-                        type="button"
-                        onClick={() => handleViewQueue(row.clientId)}
+                      <Link
+                        href={`/ca/clients/${row.clientId}?tab=analytics`}
                         className="text-sm font-medium text-gray-700 hover:text-gray-900"
                       >
                         View Queue →
-                      </button>
+                      </Link>
                     </span>
                   </td>
                 </tr>

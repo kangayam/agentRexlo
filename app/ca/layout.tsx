@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { getAuthedUser } from '@/lib/auth/session'
 import { AppSidebar } from '@/components/nav/AppSidebar'
+import { WelcomeHeader } from '@/components/WelcomeHeader'
+import { InactivityWarning } from '@/components/InactivityWarning'
 const CA_NAV = [
   { label: 'Dashboard', href: '/ca/dashboard', icon: 'LayoutDashboard' as const },
   { label: 'Clients',   href: '/ca/clients',   icon: 'Users'           as const },
@@ -30,9 +32,13 @@ export default async function CaLayout({ children }: { children: React.ReactNode
         userName={user.name}
         userEmail={user.email}
       />
-      <main className="flex-1 overflow-y-auto">
-        {children}
-      </main>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <WelcomeHeader userName={user.name} />
+        <main className="flex-1 overflow-y-auto">
+          {children}
+        </main>
+      </div>
+      <InactivityWarning />
     </div>
   )
 }

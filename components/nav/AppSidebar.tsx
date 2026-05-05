@@ -1,10 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { LayoutDashboard, Users, BarChart2, Bell, UserCheck, Upload, Clock, type LucideIcon } from 'lucide-react'
-import { NotificationBell } from '@/components/nav/NotificationBell'
+import { LayoutDashboard, Users, BarChart2, Bell, UserCheck, Upload, Clock, LogOut, type LucideIcon } from 'lucide-react'
+import { LogoutModal } from '@/components/LogoutModal'
 
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
@@ -31,19 +31,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ navItems, userName, userEmail }: AppSidebarProps) {
   const pathname = usePathname()
-  const router = useRouter()
-  const [signingOut, setSigningOut] = useState(false)
-
-  const handleSignOut = async () => {
-    setSigningOut(true)
-    try {
-      await fetch('/api/auth/signout', { method: 'POST' })
-    } finally {
-      router.push('/login')
-    }
-  }
-
-  const initial = (userName.trim()[0] ?? '?').toUpperCase()
+  const [showLogout, setShowLogout] = useState(false)
 
   return (
     <aside className="w-56 flex-shrink-0 bg-slate-800 flex flex-col h-screen sticky top-0">
@@ -83,31 +71,27 @@ export function AppSidebar({ navItems, userName, userEmail }: AppSidebarProps) {
         })}
       </nav>
 
-      {/* Notifications — styled as a nav row, not a user card */}
-      <div className="border-t border-slate-700 px-2 py-1">
-        <NotificationBell dark />
-      </div>
-
-      {/* User card + sign out — only circular avatar is here */}
-      <div className="border-t border-slate-700 px-4 py-3">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-7 h-7 rounded-full bg-slate-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-            {initial}
-          </div>
-          <div className="min-w-0">
-            <p className="text-white text-xs font-medium truncate">{userName}</p>
-            <p className="text-slate-500 text-[11px] truncate">{userEmail}</p>
-          </div>
-        </div>
+      <div className="p-3 border-t border-slate-700">
         <button
           type="button"
-          onClick={handleSignOut}
-          disabled={signingOut}
-          className="text-slate-500 hover:text-slate-300 text-xs transition-colors disabled:opacity-50"
+          onClick={() => setShowLogout(true)}
+          className="w-full flex items-center justify-center gap-2
+                     px-4 py-2.5 rounded-lg
+                     bg-red-500/10 border border-red-500/20
+                     text-red-400 hover:bg-red-500/20
+                     hover:border-red-500/40 hover:text-red-300
+                     text-sm font-medium transition-all duration-150"
         >
-          {signingOut ? 'Signing out…' : 'Sign out'}
+          <LogOut className="w-4 h-4" />
+          Sign out
         </button>
       </div>
+
+      <LogoutModal
+        open={showLogout}
+        onClose={() => setShowLogout(false)}
+        userName={userName}
+      />
     </aside>
   )
 }

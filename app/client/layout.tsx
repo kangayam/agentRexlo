@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db/prisma'
 import { getAuthedUser } from '@/lib/auth/session'
 import { ActingAsBanner } from '@/components/acting-as-banner'
 import { AppSidebar } from '@/components/nav/AppSidebar'
+import { WelcomeHeader } from '@/components/WelcomeHeader'
+import { InactivityWarning } from '@/components/InactivityWarning'
 const CLIENT_NAV = [
   { label: 'Dashboard', href: '/client/dashboard', icon: 'LayoutDashboard' as const },
   { label: 'Upload',    href: '/client/upload',    icon: 'Upload'          as const },
@@ -47,10 +49,12 @@ export default async function ClientLayout({ children }: { children: React.React
         {actingAsClientId && actingAsFirmName && (
           <ActingAsBanner firmName={actingAsFirmName} clientId={actingAsClientId} />
         )}
+        <WelcomeHeader userName={user.name} />
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>
+      <InactivityWarning />
     </div>
   )
 }
