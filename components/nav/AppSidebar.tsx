@@ -43,12 +43,7 @@ export function AppSidebar({ navItems, userName, userEmail }: AppSidebarProps) {
     }
   }
 
-  const initials = userName
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
+  const initial = (userName.trim()[0] ?? '?').toUpperCase()
 
   return (
     <aside className="w-56 flex-shrink-0 bg-slate-800 flex flex-col h-screen sticky top-0">
@@ -88,30 +83,30 @@ export function AppSidebar({ navItems, userName, userEmail }: AppSidebarProps) {
         })}
       </nav>
 
-      {/* Bottom: Notifications → User row → Sign out */}
-      <div className="border-t border-slate-700 py-3 space-y-1">
+      {/* Bottom: Notifications row */}
+      <div className="border-t border-slate-700 pt-2 pb-1">
         <NotificationBell dark />
-        <div className="px-4 pt-2 pb-1">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-slate-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-              {initials}
-            </div>
-            <div className="min-w-0">
-              <div className="text-white text-xs font-medium truncate">{userName}</div>
-              <div className="text-slate-500 text-[11px] truncate">{userEmail}</div>
-            </div>
+      </div>
+
+      {/* User row + sign out */}
+      <div className="border-t border-slate-700 px-4 py-3 space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-slate-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+            {initial}
+          </div>
+          <div className="min-w-0">
+            <div className="text-white text-xs font-medium truncate">{userName}</div>
+            <div className="text-slate-500 text-[11px] truncate">{userEmail}</div>
           </div>
         </div>
-        <div className="px-4">
-          <button
-            type="button"
-            onClick={handleSignOut}
-            disabled={signingOut}
-            className="text-slate-500 hover:text-slate-300 text-xs transition-colors disabled:opacity-50"
-          >
-            {signingOut ? 'Signing out…' : 'Sign out'}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={signingOut}
+          className="text-slate-500 hover:text-slate-300 text-xs transition-colors disabled:opacity-50"
+        >
+          {signingOut ? 'Signing out…' : 'Sign out'}
+        </button>
       </div>
     </aside>
   )

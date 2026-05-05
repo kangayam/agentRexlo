@@ -23,18 +23,20 @@ type FilterTab = 'All' | 'Pre-14th' | 'Critical' | 'No Upload'
 const TABS: FilterTab[] = ['All', 'Pre-14th', 'Critical', 'No Upload']
 
 function Sparkline({ history, score }: { history: number[]; score: number }) {
-  const isEmpty = history.length === 0
-  const bars = isEmpty
-    ? Array(6).fill(score)
-    : history.length >= 6 ? history.slice(-6) : [...Array(6 - history.length).fill(history[0] ?? score), ...history]
+  const values = history.length > 0
+    ? (history.length >= 6 ? history.slice(-6) : [...Array(6 - history.length).fill(history[0] ?? score), ...history])
+    : Array(6).fill(score)
   const color = score >= 80 ? 'bg-green-400' : score >= 60 ? 'bg-blue-400' : score >= 40 ? 'bg-amber-400' : 'bg-red-400'
   return (
-    <div className={`flex items-end gap-0.5 h-4 ${isEmpty ? 'opacity-40' : ''}`}>
-      {bars.map((v, i) => (
+    <div className="flex items-end gap-0.5 h-4">
+      {values.map((v, i) => (
         <div
           key={i}
-          className={`w-1.5 rounded-sm ${v > 0 ? color : 'bg-slate-200'}`}
-          style={{ height: `${Math.max(2, (v / 100) * 16)}px` }}
+          className={`w-1 rounded-sm ${color}`}
+          style={{
+            height: `${Math.max(2, Math.round((v / 100) * 14))}px`,
+            opacity: 0.3 + i * 0.14,
+          }}
         />
       ))}
     </div>
