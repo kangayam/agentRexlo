@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { ChevronRight, ChevronDown } from 'lucide-react'
+import { ChevronRight, ChevronDown, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ReconciliationTab } from '@/components/dashboard/client-detail/ReconciliationTab'
@@ -161,9 +161,15 @@ function ClientDetailInner() {
             </select>
           )}
 
-          <Button variant="outline" size="sm" className="text-xs" disabled>
+          <button
+            onClick={() => window.print()}
+            className="h-9 px-4 rounded-lg bg-white border border-slate-200
+                       text-slate-700 text-sm font-medium hover:border-slate-300
+                       hover:bg-slate-50 transition-colors flex items-center gap-2"
+          >
+            <Download className="w-3.5 h-3.5" />
             Export PDF
-          </Button>
+          </button>
 
           {pendingCount > 0 && (
             <Button size="sm" className="text-xs bg-red-600 hover:bg-red-700 text-white border-0">
