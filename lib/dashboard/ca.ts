@@ -1,6 +1,7 @@
 import Decimal from 'decimal.js'
 
 export type ClientStatus = 'Urgent' | 'Pending' | 'All Done' | 'No Upload'
+export type QualityBand = 'Excellent' | 'Good' | 'Fair' | 'Poor'
 
 export interface CaClientRow {
   clientId:       string
@@ -8,6 +9,13 @@ export interface CaClientRow {
   gstinCount:     number
   period:         string | null
   itcAtRisk:      string
+  itcLeakage:     string
+  leakagePct:     number
+  qualityScore:   number
+  qualityBand:    QualityBand
+  daysUntil14th:  number
+  pre14thAtRisk:  string
+  scoreHistory:   number[]
   pendingActions: number
   status:         ClientStatus
 }
@@ -21,6 +29,13 @@ export function deriveClientStatus(
   if (pendingActions === 0) return 'All Done'
   if (new Decimal(itcAtRisk).gt(10000)) return 'Urgent'
   return 'Pending'
+}
+
+export function deriveQualityBand(score: number): QualityBand {
+  if (score >= 80) return 'Excellent'
+  if (score >= 60) return 'Good'
+  if (score >= 40) return 'Fair'
+  return 'Poor'
 }
 
 const STATUS_ORDER: Record<ClientStatus, number> = {

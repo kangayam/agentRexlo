@@ -26,13 +26,20 @@ describe('deriveClientStatus', () => {
 describe('sortCaRows', () => {
   function makeRow(overrides: Partial<CaClientRow>): CaClientRow {
     return {
-      clientId: 'c1',
-      name: 'Test',
-      gstinCount: 1,
-      period: '2026-04',
-      itcAtRisk: '0.00',
+      clientId:      'c1',
+      name:          'Test',
+      gstinCount:    1,
+      period:        '2026-04',
+      itcAtRisk:     '0.00',
+      itcLeakage:    '0.00',
+      leakagePct:    0,
+      qualityScore:  0,
+      qualityBand:   'Poor',
+      daysUntil14th: 10,
+      pre14thAtRisk: '0.00',
+      scoreHistory:  [],
       pendingActions: 0,
-      status: 'All Done',
+      status:        'All Done',
       ...overrides,
     }
   }
