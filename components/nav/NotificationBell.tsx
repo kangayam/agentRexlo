@@ -31,7 +31,7 @@ function timeAgo(iso: string): string {
   return `${Math.floor(diff / 86400)} days ago`
 }
 
-export function NotificationBell() {
+export function NotificationBell({ dark = false }: { dark?: boolean }) {
   const [data, setData] = useState<NotificationsResponse>({ notifications: [], unreadCount: 0 })
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -98,7 +98,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={handleOpen}
-        className="flex w-full items-center gap-2 rounded-md px-0 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+        className={`flex w-full items-center gap-2 rounded-md px-0 py-2 text-sm font-medium transition-colors ${dark ? 'text-slate-400 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
       >
         <span className="relative inline-flex">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

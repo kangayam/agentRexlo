@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import localFont from "next/font/local"
-import { Inter } from "next/font/google"
+import { Inter, Space_Mono } from "next/font/google"
 import "./globals.css"
 
 const geistSans = localFont({
@@ -18,6 +18,11 @@ const inter = Inter({
   variable: "--font-inter",
   weight: ["300", "400", "500", "600", "700", "800", "900"],
 })
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  variable: "--font-space-mono",
+  weight: ["700"],
+})
 
 export const metadata: Metadata = {
   title: "AgentFlow Core",
@@ -30,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${spaceMono.variable} antialiased`}
       >
         {children}
       </body>

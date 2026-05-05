@@ -3,11 +3,14 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { type LucideIcon } from 'lucide-react'
 import { NotificationBell } from '@/components/nav/NotificationBell'
 
 export interface NavItem {
   label: string
   href: string
+  icon?: LucideIcon
+  badge?: number
 }
 
 interface AppSidebarProps {
@@ -30,45 +33,68 @@ export function AppSidebar({ navItems, userName, userEmail }: AppSidebarProps) {
     }
   }
 
+  const initials = userName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
   return (
-    <aside className="flex h-screen w-56 flex-col border-r border-gray-200 bg-white px-3 py-4 flex-shrink-0">
+    <aside className="w-56 flex-shrink-0 bg-slate-800 flex flex-col h-screen sticky top-0">
       {/* Logo */}
-      <div className="mb-6 px-2">
-        <span className="text-lg font-bold text-gray-900">AgentFlow</span>
+      <div className="flex items-center gap-2 px-4 py-4 border-b border-slate-700">
+        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+          AG
+        </div>
+        <span className="text-white font-bold text-sm tracking-tight">AgentGST</span>
       </div>
 
-      {/* Nav links */}
-      <nav className="flex-1 space-y-1">
+      {/* Nav items */}
+      <nav className="flex-1 px-2 py-3 space-y-0.5">
         {navItems.map(item => {
-          const active = pathname === item.href || pathname.startsWith(item.href + '/')
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+          const Icon = item.icon
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                active
-                  ? 'bg-gray-900 text-white'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-              }`}
+              className={[
+                'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-150',
+                isActive
+                  ? 'bg-blue-500/15 text-white border-r-2 border-blue-500 rounded-r-none'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50',
+              ].join(' ')}
             >
-              {item.label}
+              {Icon && <Icon className="w-4 h-4 flex-shrink-0" />}
+              <span className="flex-1">{item.label}</span>
+              {item.badge !== undefined && (
+                <span className="bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           )
         })}
       </nav>
 
-      {/* User info + sign out */}
-      <div className="border-t border-gray-200 pt-4 space-y-2">
-        <NotificationBell />
-        <div className="px-3">
-          <p className="truncate text-sm font-medium text-gray-900">{userName}</p>
-          <p className="truncate text-xs text-gray-500">{userEmail}</p>
+      {/* Bottom: Notifications + User + Sign out */}
+      <div className="px-4 py-4 border-t border-slate-700 space-y-3">
+        <NotificationBell dark />
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-slate-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <div className="text-white text-xs font-medium truncate">{userName}</div>
+            <div className="text-slate-500 text-[11px] truncate">{userEmail}</div>
+          </div>
         </div>
         <button
           type="button"
           onClick={handleSignOut}
           disabled={signingOut}
-          className="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50"
+          className="text-slate-500 hover:text-slate-300 text-xs transition-colors disabled:opacity-50"
         >
           {signingOut ? 'Signing out…' : 'Sign out'}
         </button>
