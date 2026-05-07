@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db/prisma'
+import { STARTUP_TOKEN } from '@/lib/auth/startup-token'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -78,10 +79,14 @@ export async function GET(request: Request) {
       }
 
       const redirectTo = `${origin}${next}`
-      if (next === '/reset') {
-        return NextResponse.redirect(`${redirectTo}?mode=confirm`)
+      const stamp = (res: NextResponse) => {
+        res.cookies.set('srv_token', STARTUP_TOKEN, { httpOnly: true, sameSite: 'lax', path: '/' })
+        return res
       }
-      return NextResponse.redirect(redirectTo)
+      if (next === '/reset') {
+        return stamp(NextResponse.redirect(`${redirectTo}?mode=confirm`))
+      }
+      return stamp(NextResponse.redirect(redirectTo))
     }
   }
 
