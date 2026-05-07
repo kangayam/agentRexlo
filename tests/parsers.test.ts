@@ -168,4 +168,16 @@ describe('parseTallyCsv with custom column map', () => {
     const rows = parseTallyCsv(STANDARD_CSV)
     expect(rows[0].supplierGstin).toBe('27ERMJD3988G1ZJ')
   })
+
+  test('auto-detects non-standard column names without an explicit map', () => {
+    // Uses alias names (Party GSTIN, Ledger Name, Voucher No) not in DEFAULT_TALLY_COLUMN_MAP
+    const ALT_CSV = `Party GSTIN,Ledger Name,Voucher No,Invoice Date,Taxable Value,IGST Amount,CGST Amount,SGST Amount,Total Amount
+27ERMJD3988G1ZJ,National Chemicals,BILL26001,02/02/2026,432200,0,25932,25932,484064
+`
+    const rows = parseTallyCsv(ALT_CSV)   // no columnMap — must auto-detect
+    expect(rows).toHaveLength(1)
+    expect(rows[0].supplierGstin).toBe('27ERMJD3988G1ZJ')
+    expect(rows[0].invoiceNum).toBe('BILL26001')
+    expect(rows[0].cgst.toNumber()).toBe(25932)
+  })
 })

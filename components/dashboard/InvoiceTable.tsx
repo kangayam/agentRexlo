@@ -73,26 +73,33 @@ export function InvoiceTable({ initialRows }: InvoiceTableProps) {
           No invoices match this filter.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
-          <table className="w-full min-w-[1000px] divide-y divide-gray-200 text-sm">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <table className="w-full border-collapse table-fixed min-w-[940px] divide-y divide-gray-200 text-sm">
+            <colgroup>
+              <col style={{ width: '160px' }} />
+              <col style={{ width: '110px' }} />
+              <col style={{ width: '100px' }} />
+              <col style={{ width: '80px' }} />
+              <col style={{ width: '90px' }} />
+              <col style={{ width: '140px' }} />
+              <col style={{ width: '100px' }} />
+              <col style={{ width: '160px' }} />
+            </colgroup>
             <thead className="bg-gray-50">
               <tr>
                 {([
-                  ['Supplier GSTIN', 'text-left',  'w-[140px]'],
-                  ['Invoice #',      'text-left',  'w-[95px]'],
-                  ['Date',           'text-left',  'w-[80px]'],
-                  ['Taxable',        'text-right', 'w-[75px]'],
-                  ['IGST',           'text-right', 'w-[65px]'],
-                  ['CGST',           'text-right', 'w-[65px]'],
-                  ['SGST',           'text-right', 'w-[65px]'],
-                  ['ITC at Risk',    'text-right', 'w-[80px]'],
-                  ['Status',         'text-left',  'w-[105px]'],
-                  ['Reason',         'text-left',  'w-[100px]'],
-                  ['Action',         'text-left',  'w-[140px]'],
-                ] as const).map(([h, align, width]) => (
+                  ['Supplier GSTIN', 'text-left'],
+                  ['Invoice #',      'text-left'],
+                  ['Date',           'text-left'],
+                  ['IGST',           'text-right'],
+                  ['ITC at Risk',    'text-right'],
+                  ['Status',         'text-left'],
+                  ['Reason',         'text-left'],
+                  ['Action',         'text-left'],
+                ] as const).map(([h, align]) => (
                   <th
                     key={h}
-                    className={`px-3 py-3 ${align} text-xs font-medium uppercase tracking-wide text-gray-500 ${width}`}
+                    className={`px-3 py-3 ${align} text-xs font-medium uppercase tracking-wide text-gray-500`}
                   >
                     {h}
                   </th>
@@ -105,10 +112,7 @@ export function InvoiceTable({ initialRows }: InvoiceTableProps) {
                   <td className="whitespace-nowrap px-3 py-2 font-mono text-xs">{row.supplierGstin}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-xs">{row.invoiceNumber}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-xs">{formatDate(row.invoiceDate)}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-right text-xs">{formatINR(row.taxableValue)}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right text-xs">{formatINR(row.igst)}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-right text-xs">{formatINR(row.cgst)}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-right text-xs">{formatINR(row.sgst)}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right text-xs font-medium">
                     {row.matchOutcome === 'AUTO_ACCEPTED' ? '—' : formatINR(row.itcAtRisk)}
                   </td>
@@ -118,7 +122,7 @@ export function InvoiceTable({ initialRows }: InvoiceTableProps) {
                   <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-500">
                     {REASON_LABELS[row.reasonCode] ?? row.reasonCode}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2">
+                  <td className="whitespace-nowrap py-3 px-4 text-blue-600 font-medium text-sm cursor-pointer hover:underline">
                     {row.matchOutcome !== 'AUTO_ACCEPTED' && (
                       <MarkDoneButton
                         resultId={row.resultId}

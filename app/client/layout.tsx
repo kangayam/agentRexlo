@@ -38,6 +38,16 @@ export default async function ClientLayout({ children }: { children: React.React
     actingAsFirmName = client?.name ?? null
   }
 
+  // For CLIENT users, look up their own firm name
+  let clientFirmName: string | null = actingAsFirmName
+  if (!clientFirmName && user.role === 'CLIENT' && user.client_id) {
+    const ownClient = await prisma.client.findUnique({
+      where: { id: user.client_id },
+      select: { name: true },
+    })
+    clientFirmName = ownClient?.name ?? null
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
       <AppSidebar
@@ -49,7 +59,7 @@ export default async function ClientLayout({ children }: { children: React.React
         {actingAsClientId && actingAsFirmName && (
           <ActingAsBanner firmName={actingAsFirmName} clientId={actingAsClientId} />
         )}
-        <WelcomeHeader userName={user.name} />
+        <WelcomeHeader userName={user.name} firmName={clientFirmName ?? undefined} />
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>

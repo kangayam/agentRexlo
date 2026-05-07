@@ -111,6 +111,7 @@ model Client {
   contact_email     String
   invite_token      String?   @unique
   invite_expires_at DateTime?
+  last_reminded_at  DateTime?
   created_at        DateTime  @default(now())
 
   org           Organization  @relation(fields: [org_id], references: [id])

@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthedUser } from '@/lib/auth/session'
 import { prisma } from '@/lib/db/prisma'
-import { parseImsJson } from '@/lib/parsers/ims-json-parser'
+import { parseIMSJson } from '@/lib/parsers/ims-json-parser'
 import { parseTallyCsv } from '@/lib/parsers/tally-csv-parser'
 import { parseTallyFile } from '@/lib/parsers/tally-excel-parser'
 import type { TallyColumnMap } from '@/lib/parsers/tally-excel-parser'
 import { uploadFile } from '@/lib/storage/index'
 import { runReconciliation } from '@/lib/reconciliation/run'
 import { sendNotification } from '@/lib/notifications/index'
+import { replaceImsInvoices } from '@/lib/upload/ims'
 
 // ─── GET /api/upload?clientGstinId=xxx&period=YYYY-MM ────────────────────────
 
@@ -156,47 +157,29 @@ export async function POST(req: NextRequest) {
   const fileUrl = storagePath
 
   if (type === 'ims') {
-    // Parse IMS JSON
-    let parsed: Awaited<ReturnType<typeof parseImsJson>>
+    // Parse IMS JSON — format-agnostic
+    let rawJson: unknown
     try {
-      parsed = parseImsJson(fileBuffer.toString('utf-8'))
+      rawJson = JSON.parse(fileBuffer.toString('utf-8'))
+    } catch {
+      return NextResponse.json(
+        { error: 'File is not valid JSON. Please download a fresh export from GSTN → IMS tab → Export JSON.' },
+        { status: 422 }
+      )
+    }
+
+    let parsedFile: Awaited<ReturnType<typeof parseIMSJson>>
+    try {
+      parsedFile = parseIMSJson(rawJson)
     } catch (err) {
-      return NextResponse.json({ error: 'Failed to parse IMS JSON', detail: String(err) }, { status: 422 })
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : 'Failed to parse IMS JSON' },
+        { status: 422 }
+      )
     }
 
-    // Additive insert: skip existing invoice numbers for this session
-    const existing = await prisma.imsInvoice.findMany({
-      where: { upload_session_id: session.id },
-      select: { invoice_number: true },
-    })
-    const existingNumbers = new Set(existing.map(e => e.invoice_number))
-
-    const toInsert = parsed.filter(inv => !existingNumbers.has(inv.invoiceNum))
-
-    if (toInsert.length > 0) {
-      await prisma.imsInvoice.createMany({
-        data: toInsert.map(inv => ({
-          upload_session_id: session.id,
-          supplier_gstin: inv.supplierGstin,
-          supplier_name: null,
-          invoice_number: inv.invoiceNum,
-          invoice_date: new Date(inv.invoiceDate),
-          invoice_value: inv.totalValue.toFixed(2),
-          // taxable_value: totalValue - igst - cgst - sgst (best approximation from parser output)
-          taxable_value: inv.totalValue
-            .minus(inv.igst)
-            .minus(inv.cgst)
-            .minus(inv.sgst)
-            .toFixed(2),
-          igst: inv.igst.toFixed(2),
-          cgst: inv.cgst.toFixed(2),
-          sgst: inv.sgst.toFixed(2),
-          place_of_supply: inv.pos || null,
-          ims_action: 'PENDING' as const,
-        })),
-        skipDuplicates: true,
-      })
-    }
+    // Replace-all: delete existing IMS records (and their recon results) then insert fresh
+    await replaceImsInvoices(session.id, parsedFile.invoices)
 
     // Update session: ims_uploaded_at, ims_file_url, status
     session = await prisma.uploadSession.update({

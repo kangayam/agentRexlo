@@ -31,7 +31,7 @@ function timeAgo(iso: string): string {
   return `${Math.floor(diff / 86400)} days ago`
 }
 
-export function NotificationBell({ dark = false }: { dark?: boolean }) {
+export function NotificationBell({ dark = false, compact = false }: { dark?: boolean; compact?: boolean }) {
   const [data, setData] = useState<NotificationsResponse>({ notifications: [], unreadCount: 0 })
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -91,6 +91,64 @@ export function NotificationBell({ dark = false }: { dark?: boolean }) {
     } catch {
       // silently ignore
     }
+  }
+
+  if (compact) {
+    return (
+      <div ref={containerRef} className="relative">
+        <button
+          type="button"
+          onClick={handleOpen}
+          className="relative w-9 h-9 rounded-lg bg-slate-50 border border-slate-200
+                     flex items-center justify-center hover:bg-slate-100 transition-colors"
+        >
+          <Bell className="w-4 h-4 text-slate-500" />
+          {data.unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500
+                             text-white text-[9px] font-bold flex items-center justify-center
+                             border-2 border-white">
+              {data.unreadCount > 9 ? '9+' : data.unreadCount}
+            </span>
+          )}
+        </button>
+
+        {open && (
+          <div className="absolute top-full right-0 mt-1 w-80 rounded-lg border border-gray-200 bg-white shadow-lg z-50">
+            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Notifications
+              </span>
+              {data.unreadCount > 0 && (
+                <button type="button" onClick={markAllRead} className="text-xs text-blue-600 hover:text-blue-800">
+                  Mark all read
+                </button>
+              )}
+            </div>
+            {data.notifications.length === 0 ? (
+              <p className="px-4 py-6 text-center text-sm text-gray-400">No notifications</p>
+            ) : (
+              <ul className="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                {data.notifications.map(n => (
+                  <li
+                    key={n.id}
+                    onClick={() => !n.isRead && markRead(n.id)}
+                    className={`cursor-pointer px-4 py-3 hover:bg-gray-50 ${!n.isRead ? 'bg-blue-50' : ''}`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm text-gray-800 line-clamp-2">{n.message}</p>
+                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${TYPE_LABELS[n.type].className}`}>
+                        {TYPE_LABELS[n.type].label}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-400">{timeAgo(n.createdAt)}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (

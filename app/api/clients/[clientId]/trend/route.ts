@@ -73,7 +73,11 @@ export async function GET(
     const label = new Date(Number(yyyy), Number(mm) - 1, 1)
       .toLocaleString('en-IN', { month: 'short', year: '2-digit' })
 
-    return { period, label, itcInBooks: itcInBooks.toFixed(2), itcCleared: itcCleared.toFixed(2), score, band: qualityBand(score) }
+    const leakagePct = itcInBooks.gt(0)
+      ? Math.round(itcInBooks.minus(itcCleared).div(itcInBooks).toNumber() * 100)
+      : 0
+
+    return { period, label, itcInBooks: itcInBooks.toFixed(2), itcCleared: itcCleared.toFixed(2), score, band: qualityBand(score), leakagePct }
   }))
 
   return NextResponse.json({ periods: periodData })
