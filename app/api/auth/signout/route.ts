@@ -10,7 +10,6 @@ export async function POST() {
 
   const cookieStore = await cookies()
   cookieStore.delete('actingAsClientId')
-  cookieStore.delete('srv_token')
 
   return NextResponse.json({ ok: true })
 }

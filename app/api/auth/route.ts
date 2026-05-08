@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import { STARTUP_TOKEN } from '@/lib/auth/startup-token'
+
 
 export async function POST(request: Request) {
   const body = await request.json()
@@ -81,7 +81,6 @@ export async function POST(request: Request) {
 
     const redirectTo = dbUser.role === 'CLIENT' ? '/client/dashboard' : '/ca/dashboard'
     const res = NextResponse.json({ redirectTo })
-    res.cookies.set('srv_token', STARTUP_TOKEN, { httpOnly: true, sameSite: 'lax', path: '/' })
     return res
   }
 
