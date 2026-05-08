@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'This invitation is invalid or has expired.' }, { status: 400 })
   }
 
-  const origin = new URL(request.url).origin
+  const origin = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
   const supabase = await createServerClient()
   const { data, error: authError } = await supabase.auth.signUp({
     email: client.contact_email,
