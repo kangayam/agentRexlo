@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const { email, password, name, orgName } = body as {
       email: string; password: string; name: string; orgName: string
     }
-    const origin = new URL(request.url).origin
+    const origin = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
     const { error } = await supabase.auth.signUp({
       email,
       password,
