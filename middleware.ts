@@ -23,18 +23,21 @@ export async function middleware(request: NextRequest) {
     },
   )
 
-  // Refreshes the session token and forwards the updated cookie to both
-  // the Server Component and the browser. Must call getUser() not getSession().
-  await supabase.auth.getUser()
+  // Refreshes the Supabase session token so Server Components get fresh cookies.
+  // Wrapped in a race so a slow/unreachable Supabase API never blocks page loads.
+  await Promise.race([
+    supabase.auth.getUser(),
+    new Promise(resolve => setTimeout(resolve, 3000)),
+  ])
 
   return supabaseResponse
 }
 
 export const config = {
+  // Exclude API routes — they do their own auth via getAuthedUser().
+  // Exclude static assets and public auth pages.
   matcher: [
     '/ca/:path*',
     '/client/:path*',
-    '/api/:path*',
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
