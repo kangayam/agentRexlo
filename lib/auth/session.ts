@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db/prisma'
 
