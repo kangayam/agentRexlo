@@ -16,16 +16,20 @@ export default function ResetPage() {
     if (params.get('mode') === 'confirm') setMode('confirm')
   }, [])
 
+  const [submittedEmail, setSubmittedEmail] = useState('')
+
   async function handleRequest(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
     setLoading(true)
     const fd = new FormData(e.currentTarget)
+    const email = fd.get('email') as string
     await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reset-request', email: fd.get('email') }),
+      body: JSON.stringify({ action: 'reset-request', email }),
     })
+    setSubmittedEmail(email)
     setSent(true)
     setLoading(false)
   }
@@ -69,6 +73,27 @@ export default function ResetPage() {
     )
   }
 
+  if (sent) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Check your inbox</CardTitle>
+            <CardDescription>We sent a reset link to <strong>{submittedEmail}</strong>.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-slate-600">
+              Click the link in the email to set a new password. If you don&apos;t see it, check your spam folder.
+            </p>
+            <p className="text-center text-sm">
+              <a href="/login" className="text-slate-500 underline">Back to login</a>
+            </p>
+          </CardContent>
+        </Card>
+      </main>
+    )
+  }
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
       <Card className="w-full max-w-md">
@@ -77,24 +102,18 @@ export default function ResetPage() {
           <CardDescription>Enter your email and we&apos;ll send you a reset link.</CardDescription>
         </CardHeader>
         <CardContent>
-          {sent ? (
-            <p className="text-sm text-slate-600">
-              If an account exists for that email, you&apos;ll receive a reset link within a few minutes.
+          <form onSubmit={handleRequest} className="space-y-4">
+            <div className="space-y-1">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" name="email" type="email" required />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Sending…' : 'Send reset link'}
+            </Button>
+            <p className="text-center text-sm">
+              <a href="/login" className="text-slate-500 underline">Back to login</a>
             </p>
-          ) : (
-            <form onSubmit={handleRequest} className="space-y-4">
-              <div className="space-y-1">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" required />
-              </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Sending…' : 'Send reset link'}
-              </Button>
-              <p className="text-center text-sm">
-                <a href="/login" className="text-slate-500 underline">Back to login</a>
-              </p>
-            </form>
-          )}
+          </form>
         </CardContent>
       </Card>
     </main>
