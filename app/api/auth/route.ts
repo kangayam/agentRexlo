@@ -87,7 +87,7 @@ export async function POST(request: Request) {
   // Reset request: send password-reset email (always 200 to prevent enumeration)
   if (action === 'reset-request') {
     const { email } = body as { email: string }
-    const origin = new URL(request.url).origin
+    const origin = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${origin}/auth/callback?next=/reset`,
     })
