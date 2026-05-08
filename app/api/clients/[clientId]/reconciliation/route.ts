@@ -1,8 +1,16 @@
+export const dynamic = 'force-dynamic'
+
+
 import { NextResponse } from 'next/server'
+
 import { getAuthedUser } from '@/lib/auth/session'
+
 import { prisma } from '@/lib/db/prisma'
+
 import { computeSummaryCards } from '@/lib/dashboard/client'
+
 import type { ReconRow } from '@/lib/dashboard/client'
+
 import Decimal from 'decimal.js'
 
 export async function GET(

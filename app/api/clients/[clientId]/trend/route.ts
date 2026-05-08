@@ -1,6 +1,12 @@
+export const dynamic = 'force-dynamic'
+
+
 import { NextResponse } from 'next/server'
+
 import { getAuthedUser } from '@/lib/auth/session'
+
 import { prisma } from '@/lib/db/prisma'
+
 import Decimal from 'decimal.js'
 
 function qualityBand(score: number): string {

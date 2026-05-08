@@ -1,9 +1,18 @@
+export const dynamic = 'force-dynamic'
+
+
 import { NextRequest, NextResponse } from 'next/server'
+
 import { getAuthedUser } from '@/lib/auth/session'
+
 import { prisma } from '@/lib/db/prisma'
+
 import { computeSummaryCards } from '@/lib/dashboard/client'
+
 import { cookies } from 'next/headers'
+
 import Decimal from 'decimal.js'
+
 import type { ReconRow } from '@/lib/dashboard/client'
 
 export async function GET(req: NextRequest) {

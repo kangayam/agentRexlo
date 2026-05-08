@@ -1,6 +1,12 @@
+export const dynamic = 'force-dynamic'
+
+
 import { NextRequest, NextResponse } from 'next/server'
+
 import { getAuthedUser } from '@/lib/auth/session'
+
 import { prisma } from '@/lib/db/prisma'
+
 import { sendNotification } from '@/lib/notifications/index'
 
 export async function POST(req: NextRequest) {

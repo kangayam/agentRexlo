@@ -1,9 +1,18 @@
+export const dynamic = 'force-dynamic'
+
+
 import { NextResponse } from 'next/server'
+
 import { createServerClient } from '@/lib/supabase/server'
+
 import { prisma } from '@/lib/db/prisma'
+
 import { getAuthedUser } from '@/lib/auth/session'
+
 import { isInviteValid } from '@/lib/auth/invite'
+
 import { sendTeamInviteEmail } from '@/lib/email/resend'
+
 import { UserRole } from '@prisma/client'
 
 // GET: list team members + pending invites

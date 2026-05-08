@@ -1,7 +1,14 @@
+export const dynamic = 'force-dynamic'
+
+
 import { NextResponse } from 'next/server'
+
 import { prisma } from '@/lib/db/prisma'
+
 import { getAuthedUser } from '@/lib/auth/session'
+
 import { sendClientInviteEmail } from '@/lib/email/resend'
+
 import { UserRole } from '@prisma/client'
 
 const GSTIN_REGEX = /^[A-Z0-9]{15}$/

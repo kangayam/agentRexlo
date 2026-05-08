@@ -1,5 +1,10 @@
+export const dynamic = 'force-dynamic'
+
+
 import { NextResponse } from 'next/server'
+
 import { createServerClient } from '@/lib/supabase/server'
+
 import { prisma } from '@/lib/db/prisma'
 
 export async function POST(request: Request) {

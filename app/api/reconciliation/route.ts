@@ -1,6 +1,12 @@
+export const dynamic = 'force-dynamic'
+
+
 import { NextRequest, NextResponse } from 'next/server'
+
 import { getAuthedUser } from '@/lib/auth/session'
+
 import { prisma } from '@/lib/db/prisma'
+
 import { runReconciliation } from '@/lib/reconciliation/run'
 
 // ─── POST /api/reconciliation ─────────────────────────────────────────────────

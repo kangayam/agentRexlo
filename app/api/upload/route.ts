@@ -1,13 +1,26 @@
+export const dynamic = 'force-dynamic'
+
+
 import { NextRequest, NextResponse } from 'next/server'
+
 import { getAuthedUser } from '@/lib/auth/session'
+
 import { prisma } from '@/lib/db/prisma'
+
 import { parseIMSJson } from '@/lib/parsers/ims-json-parser'
+
 import { parseTallyCsv } from '@/lib/parsers/tally-csv-parser'
+
 import { parseTallyFile } from '@/lib/parsers/tally-excel-parser'
+
 import type { TallyColumnMap } from '@/lib/parsers/tally-excel-parser'
+
 import { uploadFile } from '@/lib/storage/index'
+
 import { runReconciliation } from '@/lib/reconciliation/run'
+
 import { sendNotification } from '@/lib/notifications/index'
+
 import { replaceImsInvoices } from '@/lib/upload/ims'
 
 // ─── GET /api/upload?clientGstinId=xxx&period=YYYY-MM ────────────────────────

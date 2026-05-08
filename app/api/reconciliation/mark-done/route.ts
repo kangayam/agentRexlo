@@ -1,5 +1,10 @@
+export const dynamic = 'force-dynamic'
+
+
 import { NextRequest, NextResponse } from 'next/server'
+
 import { getAuthedUser, getEffectiveClientId } from '@/lib/auth/session'
+
 import { prisma } from '@/lib/db/prisma'
 
 export async function PATCH(req: NextRequest) {
