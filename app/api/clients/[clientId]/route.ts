@@ -25,14 +25,16 @@ export async function GET(
   if (!client) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   return NextResponse.json({
-    firmName: client.name,
-    contactEmail: client.contact_email,
+    firmName:        client.name,
+    contactEmail:    client.contact_email,
+    archivedAt:      client.archived_at?.toISOString() ?? null,
+    currentUserRole: dbUser.role,
     gstins: client.gstins.map(g => ({ id: g.id, gstin: g.gstin, is_primary: g.is_primary })),
-    users: client.users,
+    users:  client.users,
     invite: client.invite_token
       ? {
-          token: client.invite_token,
-          email: client.contact_email,
+          token:      client.invite_token,
+          email:      client.contact_email,
           expires_at: client.invite_expires_at?.toISOString() ?? null,
         }
       : null,

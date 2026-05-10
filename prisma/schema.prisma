@@ -72,6 +72,7 @@ model User {
   role       UserRole
   org_id     String?
   client_id  String?
+  is_active  Boolean  @default(true)
   created_at DateTime @default(now())
 
   org    Organization? @relation(fields: [org_id], references: [id])
@@ -105,14 +106,17 @@ model TeamInvite {
 }
 
 model Client {
-  id                String    @id @default(uuid())
-  org_id            String
-  name              String
-  contact_email     String
-  invite_token      String?   @unique
-  invite_expires_at DateTime?
-  last_reminded_at  DateTime?
-  created_at        DateTime  @default(now())
+  id                  String    @id @default(uuid())
+  org_id              String
+  name                String
+  contact_email       String
+  invite_token        String?   @unique
+  invite_expires_at   DateTime?
+  last_reminded_at    DateTime?
+  archived_at         DateTime?
+  archived_by_id      String?
+  scheduled_delete_at DateTime?
+  created_at          DateTime  @default(now())
 
   org           Organization  @relation(fields: [org_id], references: [id])
   gstins        ClientGstin[]
