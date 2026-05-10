@@ -3,7 +3,11 @@ import { getAuthedUser } from '@/lib/auth/session'
 import { prisma } from '@/lib/db/prisma'
 import { ClientPortfolioClient } from './ClientPortfolioClient'
 
-export default async function ClientPortfolioPage() {
+export default async function ClientPortfolioPage({
+  searchParams,
+}: {
+  searchParams: { showArchived?: string }
+}) {
   let user: Awaited<ReturnType<typeof getAuthedUser>>
   try {
     user = await getAuthedUser()
@@ -14,10 +18,15 @@ export default async function ClientPortfolioPage() {
 
   if (user.role === 'CLIENT') redirect('/client/dashboard')
 
-  const orgId = user.org_id ?? ''
+  const orgId       = user.org_id ?? ''
+  const isAdmin     = user.role === 'CA_ADMIN'
+  const showArchived = isAdmin && searchParams.showArchived === 'true'
 
   const clients = await prisma.client.findMany({
-    where: { org_id: orgId },
+    where: {
+      org_id:      orgId,
+      archived_at: showArchived ? { not: null } : null,
+    },
     orderBy: { name: 'asc' },
     include: {
       gstins: {
@@ -52,18 +61,20 @@ export default async function ClientPortfolioPage() {
 
     if (!latestPeriod?.ims_uploaded_at) {
       return {
-        clientId:     client.id,
-        clientName:   client.name,
-        gstin:        primaryGstin,
+        clientId:           client.id,
+        clientName:         client.name,
+        gstin:              primaryGstin,
         state,
-        status:       'NO_UPLOAD' as const,
-        qualScore:    null as number | null,
-        qualBand:     null as string | null,
-        itcCleared:   0,
-        itcAtRisk:    0,
-        period:       null as string | null,
-        periodStatus: null as string | null,
-        lastUpload:   null as string | null,
+        status:             'NO_UPLOAD' as const,
+        qualScore:          null as number | null,
+        qualBand:           null as string | null,
+        itcCleared:         0,
+        itcAtRisk:          0,
+        period:             null as string | null,
+        periodStatus:       null as string | null,
+        lastUpload:         null as string | null,
+        archivedAt:         client.archived_at?.toISOString() ?? null,
+        scheduledDeleteAt:  client.scheduled_delete_at?.toISOString() ?? null,
       }
     }
 
@@ -109,18 +120,20 @@ export default async function ClientPortfolioPage() {
     const lastUploadDate = latestPeriod.tally_uploaded_at ?? latestPeriod.ims_uploaded_at
 
     return {
-      clientId:     client.id,
-      clientName:   client.name,
-      gstin:        primaryGstin,
+      clientId:           client.id,
+      clientName:         client.name,
+      gstin:              primaryGstin,
       state,
       status,
       qualScore,
       qualBand,
       itcCleared,
       itcAtRisk,
-      period:       latestPeriod.period,
-      periodStatus: latestPeriod.status.toLowerCase(),
-      lastUpload:   lastUploadDate?.toISOString() ?? null,
+      period:             latestPeriod.period,
+      periodStatus:       latestPeriod.status.toLowerCase(),
+      lastUpload:         lastUploadDate?.toISOString() ?? null,
+      archivedAt:         client.archived_at?.toISOString() ?? null,
+      scheduledDeleteAt:  client.scheduled_delete_at?.toISOString() ?? null,
     }
   })
 
@@ -132,5 +145,12 @@ export default async function ClientPortfolioPage() {
     noUpload:       clientRows.filter(c => c.status === 'NO_UPLOAD').length,
   }
 
-  return <ClientPortfolioClient clientRows={clientRows} summary={summary} />
+  return (
+    <ClientPortfolioClient
+      clientRows={clientRows}
+      summary={summary}
+      isAdmin={isAdmin}
+      showArchived={showArchived}
+    />
+  )
 }

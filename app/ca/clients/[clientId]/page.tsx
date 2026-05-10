@@ -12,11 +12,13 @@ import { TrendTab } from '@/components/dashboard/client-detail/TrendTab'
 type Tab = 'reconciliation' | 'analytics' | 'trend'
 
 interface ClientDetail {
-  firmName:     string
-  contactEmail: string
-  gstins:       Array<{ id: string; gstin: string; is_primary: boolean }>
-  users:        Array<{ id: string; name: string; email: string; created_at: string }>
-  invite:       { email: string; expires_at: string } | null
+  firmName:        string
+  contactEmail:    string
+  archivedAt:      string | null
+  currentUserRole: string
+  gstins:          Array<{ id: string; gstin: string; is_primary: boolean }>
+  users:           Array<{ id: string; name: string; email: string; created_at: string }>
+  invite:          { email: string; expires_at: string } | null
 }
 
 // ─── Inner component (uses useSearchParams) ───────────────────────────────────
@@ -39,9 +41,12 @@ function ClientDetailInner() {
   const [newGstin,     setNewGstin]     = useState('')
   const [addingGstin,  setAddingGstin]  = useState(false)
   const [gstinError,   setGstinError]   = useState('')
-  const [actingAs,     setActingAs]     = useState(false)
-  const [resending,    setResending]    = useState(false)
-  const [resendError,  setResendError]  = useState('')
+  const [actingAs,         setActingAs]         = useState(false)
+  const [resending,        setResending]        = useState(false)
+  const [resendError,      setResendError]      = useState('')
+  const [archiveModalOpen, setArchiveModalOpen] = useState(false)
+  const [archiveConfirm,   setArchiveConfirm]   = useState('')
+  const [archiving,        setArchiving]        = useState(false)
 
   const fetchClient = useCallback(async () => {
     const res = await fetch(`/api/clients/${clientId}`)
@@ -106,6 +111,25 @@ function ClientDetailInner() {
       setResendError('Network error — please try again')
     } finally {
       setResending(false)
+    }
+  }
+
+  const handleArchiveFromDetail = async () => {
+    setArchiving(true)
+    try {
+      const res = await fetch(`/api/ca/clients/${clientId}/archive`, { method: 'POST' })
+      if (!res.ok) {
+        const err = await res.json()
+        alert(err.error ?? 'Archive failed')
+        return
+      }
+      setArchiveModalOpen(false)
+      setArchiveConfirm('')
+      router.push('/ca/clients')
+    } catch {
+      alert('Something went wrong. Please try again.')
+    } finally {
+      setArchiving(false)
     }
   }
 
@@ -229,6 +253,37 @@ function ClientDetailInner() {
         </div>
       </div>
 
+      {/* ── Danger Zone — admin only ─────────────────────────────────────────── */}
+      {client.currentUserRole === 'CA_ADMIN' && !client.archivedAt && (
+        <div className="border border-red-200 rounded-xl overflow-hidden">
+          <div className="flex items-center gap-2 px-5 py-4 border-b border-red-100 bg-red-50/50">
+            <span className="text-sm font-bold text-red-700">Danger Zone</span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full
+                             bg-amber-50 text-amber-600 border border-amber-200">
+              Admin only
+            </span>
+          </div>
+          <div className="px-5 py-4 flex items-center justify-between gap-6 bg-white">
+            <div>
+              <p className="text-sm font-semibold text-slate-900 mb-1">Archive this client</p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Revokes portal access immediately. All reconciliation data is retained for
+                30 days and can be restored by any Admin. After 30 days, everything is
+                permanently deleted.
+              </p>
+            </div>
+            <button
+              onClick={() => setArchiveModalOpen(true)}
+              className="flex-shrink-0 h-9 px-4 rounded-lg border border-red-200
+                         bg-red-50 text-red-700 text-sm font-semibold
+                         hover:bg-red-100 transition-colors"
+            >
+              Archive Client
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Client Info (collapsed) — only on Reconciliation tab ─────────────── */}
       {activeTab === 'reconciliation' && (
       <div className="border border-slate-200 rounded-xl overflow-hidden">
@@ -314,6 +369,70 @@ function ClientDetailInner() {
         )}
       </div>
       )}
+      {/* ── Archive modal ─────────────────────────────────────────────────────── */}
+      {archiveModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center
+                        bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl p-7 max-w-md w-full shadow-2xl">
+
+            <div className="w-11 h-11 rounded-xl bg-red-50 border border-red-200
+                            flex items-center justify-center mb-5 text-lg">
+              🗑
+            </div>
+
+            <h3 className="text-base font-extrabold text-slate-900 mb-2">
+              Archive {client.firmName}?
+            </h3>
+            <p className="text-sm text-slate-500 leading-relaxed mb-5">
+              This will immediately revoke the client&apos;s portal access and move all
+              their data to the archive. You can restore it within 30 days. After 30 days,
+              all data is permanently deleted.
+            </p>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-5
+                            flex gap-2 text-xs text-amber-800 leading-relaxed">
+              Client can be restored within <strong>&nbsp;30 days</strong>&nbsp;by any Admin.
+              After 30 days data is permanently deleted.
+            </div>
+
+            <p className="text-xs font-medium text-slate-600 mb-1.5">
+              Type{' '}
+              <span className="font-mono font-bold text-slate-900">{client.firmName}</span>
+              {' '}to confirm
+            </p>
+            <input
+              type="text"
+              value={archiveConfirm}
+              onChange={e => setArchiveConfirm(e.target.value)}
+              placeholder="Type client name to confirm…"
+              className="w-full h-9 border border-slate-200 rounded-lg px-3 font-mono
+                         text-sm text-slate-900 focus:outline-none focus:border-red-400
+                         focus:ring-2 focus:ring-red-100 mb-5"
+            />
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setArchiveModalOpen(false); setArchiveConfirm('') }}
+                className="flex-1 h-10 rounded-xl border border-slate-200 bg-white
+                           text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleArchiveFromDetail}
+                disabled={
+                  archiveConfirm.toLowerCase() !== client.firmName.toLowerCase() || archiving
+                }
+                className="flex-1 h-10 rounded-xl bg-red-600 text-white text-sm font-semibold
+                           hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {archiving ? 'Archiving…' : 'Archive Client'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
