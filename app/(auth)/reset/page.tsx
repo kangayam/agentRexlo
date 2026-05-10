@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/client'
 
 export default function ResetPage() {
   const [mode, setMode] = useState<'request' | 'confirm'>('request')
@@ -24,10 +25,9 @@ export default function ResetPage() {
     setLoading(true)
     const fd = new FormData(e.currentTarget)
     const email = fd.get('email') as string
-    await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reset-request', email }),
+    const supabase = createClient()
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/reset`,
     })
     setSubmittedEmail(email)
     setSent(true)
