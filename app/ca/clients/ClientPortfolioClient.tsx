@@ -103,13 +103,6 @@ export function ClientPortfolioClient({
     { key: 'NO_UPLOAD',       label: `No Upload (${summary.noUpload})`                 },
   ]
 
-  const summaryCards = [
-    { key: 'ALL',             label: 'All Clients',      val: summary.total,          sub: 'Total active',             color: 'text-slate-900', dot: 'bg-slate-400' },
-    { key: 'RECONCILED',      label: 'Fully Reconciled', val: summary.reconciled,     sub: 'Quality ≥ 75 this period', color: 'text-green-700', dot: 'bg-green-500' },
-    { key: 'NEEDS_ATTENTION', label: 'Needs Attention',  val: summary.needsAttention, sub: 'Unmatched invoices',       color: 'text-amber-700', dot: 'bg-amber-500' },
-    { key: 'NO_UPLOAD',       label: 'No Data Uploaded', val: summary.noUpload,       sub: 'Missing this period',      color: 'text-slate-600', dot: 'bg-slate-400' },
-  ]
-
   return (
     <div className="px-8 py-6">
 
@@ -134,26 +127,137 @@ export function ClientPortfolioClient({
         </button>
       </div>
 
-      {/* Status strip */}
-      <div className="grid grid-cols-4 gap-3 mb-5">
-        {summaryCards.map(card => (
-          <button
-            key={card.key}
-            onClick={() => setFilter(card.key as 'ALL' | ClientStatus)}
-            className={`text-left bg-white rounded-xl p-4 transition-all
-                       ${activeFilter === card.key
-                         ? 'border-2 border-slate-900 shadow-sm'
-                         : 'border border-slate-200 hover:border-slate-300'
-                       }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-slate-500">{card.label}</span>
-              <span className={`w-2 h-2 rounded-full ${card.dot}`} />
-            </div>
-            <p className={`text-2xl font-extrabold ${card.color}`}>{card.val}</p>
-            <p className="text-xs text-slate-400 mt-1">{card.sub}</p>
+      {/* Client ITC Status Distribution */}
+      <div className="bg-white border border-slate-200 rounded-xl
+                      p-6 mb-5 flex items-center gap-8">
+
+        {/* Left: donut ring */}
+        <div className="flex-shrink-0 relative w-32 h-32">
+          <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+            {/* Background ring */}
+            <circle
+              cx="60" cy="60" r="48"
+              fill="none"
+              stroke="#F1F5F9"
+              strokeWidth="12"
+            />
+            {/* Segments — computed from summary counts */}
+            {(() => {
+              const total = summary.total || 1
+              const circumference = 2 * Math.PI * 48
+
+              const segments = [
+                { count: summary.reconciled,     color: '#10B981' },
+                { count: summary.needsAttention, color: '#F59E0B' },
+                { count: summary.urgent,         color: '#EF4444' },
+                { count: summary.noUpload,       color: '#CBD5E1' },
+              ]
+
+              let offset = 0
+              return segments.map((seg, i) => {
+                const pct  = seg.count / total
+                const dash = pct * circumference
+                const gap  = circumference - dash
+                const el   = (
+                  <circle
+                    key={i}
+                    cx="60" cy="60" r="48"
+                    fill="none"
+                    stroke={seg.color}
+                    strokeWidth="12"
+                    strokeDasharray={`${dash} ${gap}`}
+                    strokeDashoffset={-offset}
+                    strokeLinecap="butt"
+                  />
+                )
+                offset += dash
+                return el
+              })
+            })()}
+          </svg>
+          {/* Centre label */}
+          <div className="absolute inset-0 flex flex-col items-center
+                          justify-center pointer-events-none">
+            <span className="text-2xl font-extrabold text-slate-900 leading-none">
+              {summary.total}
+            </span>
+            <span className="text-[10px] font-semibold text-slate-400
+                             uppercase tracking-wider mt-0.5">
+              Total
+            </span>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="h-24 w-px bg-slate-100 flex-shrink-0" />
+
+        {/* Right: 4 category breakdown in 2x2 grid */}
+        <div className="flex-1 grid grid-cols-2 gap-x-12 gap-y-5">
+          {[
+            {
+              label: 'Fully Reconciled',
+              count: summary.reconciled,
+              color: 'bg-green-500',
+              textColor: 'text-green-700',
+              onClick: () => setFilter('RECONCILED'),
+            },
+            {
+              label: 'Needs Attention',
+              count: summary.needsAttention,
+              color: 'bg-amber-400',
+              textColor: 'text-amber-700',
+              onClick: () => setFilter('NEEDS_ATTENTION'),
+            },
+            {
+              label: 'Urgent — Pre-14th',
+              count: summary.urgent,
+              color: 'bg-red-500',
+              textColor: 'text-red-700',
+              onClick: () => setFilter('URGENT'),
+            },
+            {
+              label: 'No Data Uploaded',
+              count: summary.noUpload,
+              color: 'bg-slate-300',
+              textColor: 'text-slate-600',
+              onClick: () => setFilter('NO_UPLOAD'),
+            },
+          ].map((item, i) => (
+            <button
+              key={i}
+              onClick={item.onClick}
+              className="flex items-center gap-3 text-left group"
+            >
+              <div className={`w-1 h-10 rounded-full flex-shrink-0 ${item.color}`} />
+              <div>
+                <p className="text-xs text-slate-500 font-medium group-hover:text-slate-700
+                              transition-colors">
+                  {item.label}
+                </p>
+                <p className={`text-xl font-extrabold mt-0.5 ${item.textColor}`}>
+                  {item.count}{' '}
+                  <span className="text-sm font-normal text-slate-400">
+                    Client{item.count !== 1 ? 's' : ''}
+                  </span>
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Download report — top right corner */}
+        <div className="self-start flex-shrink-0">
+          <button className="flex items-center gap-1.5 text-xs text-slate-500
+                             hover:text-slate-700 font-medium transition-colors">
+            Download Report
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
           </button>
-        ))}
+        </div>
       </div>
 
       {/* Search + filter toolbar */}
