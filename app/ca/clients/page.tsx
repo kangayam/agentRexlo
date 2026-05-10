@@ -1,147 +1,136 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { getAuthedUser } from '@/lib/auth/session'
+import { prisma } from '@/lib/db/prisma'
+import { ClientPortfolioClient } from './ClientPortfolioClient'
 
-import { useCallback, useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-
-interface ClientRow {
-  id: string
-  firmName: string
-  primaryGstin: string
-  status: 'active' | 'invited' | 'pending'
-  createdAt: string
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  active: 'bg-green-100 text-green-800',
-  invited: 'bg-yellow-100 text-yellow-800',
-  pending: 'bg-gray-100 text-gray-600',
-}
-
-export default function CAClientsPage() {
-  const [clients, setClients] = useState<ClientRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [firmName, setFirmName] = useState('')
-  const [gstin, setGstin] = useState('')
-  const [email, setEmail] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [formError, setFormError] = useState('')
-  const [fetchError, setFetchError] = useState('')
-
-  const fetchClients = useCallback(async () => {
-    try {
-      const res = await fetch('/api/clients')
-      if (!res.ok) throw new Error('Failed to load clients')
-      const data = await res.json()
-      setClients(data.clients ?? [])
-    } catch {
-      setFetchError('Failed to load clients. Please refresh.')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => { fetchClients() }, [fetchClients])
-
-  const handleAddClient = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
-    setFormError('')
-    try {
-      const res = await fetch('/api/clients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create', firmName, primaryGstin: gstin.toUpperCase(), contactEmail: email }),
-      })
-      const data = await res.json()
-      if (!res.ok) { setFormError(data.error ?? 'Failed'); return }
-      setShowForm(false)
-      setFirmName(''); setGstin(''); setEmail('')
-      fetchClients()
-    } catch {
-      setFormError('Network error')
-    } finally {
-      setSubmitting(false)
-    }
+export default async function ClientPortfolioPage() {
+  let user: Awaited<ReturnType<typeof getAuthedUser>>
+  try {
+    user = await getAuthedUser()
+  } catch {
+    redirect('/login')
+    return
   }
 
-  if (loading) return <div className="p-8 text-gray-500">Loading clients…</div>
-  if (fetchError) return <div className="p-8 text-red-600">{fetchError}</div>
+  if (user.role === 'CLIENT') redirect('/client/dashboard')
 
-  return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
-        <Button onClick={() => setShowForm(v => !v)}>
-          {showForm ? 'Cancel' : '+ Add Client'}
-        </Button>
-      </div>
+  const orgId = user.org_id ?? ''
 
-      {showForm && (
-        <form onSubmit={handleAddClient} className="bg-white border rounded-xl p-6 space-y-4 shadow-sm">
-          <h2 className="font-semibold text-gray-800">Add new client</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <Label htmlFor="firmName">Firm name</Label>
-              <Input id="firmName" value={firmName} onChange={e => setFirmName(e.target.value)} required placeholder="ABC Enterprises" />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="gstin">Primary GSTIN</Label>
-              <Input id="gstin" value={gstin} onChange={e => setGstin(e.target.value.toUpperCase())} required maxLength={15} placeholder="27AABCU9603R1ZX" />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="email">Contact email</Label>
-              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="owner@firm.com" />
-            </div>
-          </div>
-          {formError && <p className="text-sm text-red-600">{formError}</p>}
-          <Button type="submit" disabled={submitting}>
-            {submitting ? 'Adding…' : 'Add Client & Send Invite'}
-          </Button>
-        </form>
-      )}
+  const clients = await prisma.client.findMany({
+    where: { org_id: orgId },
+    orderBy: { name: 'asc' },
+    include: {
+      gstins: {
+        include: {
+          upload_sessions: {
+            orderBy: { period: 'desc' },
+            take: 1,
+            include: {
+              ims_invoices: {
+                include: {
+                  reconciliation_result: {
+                    select: { outcome: true, itc_at_risk: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
 
-      {!showForm && clients.length === 0 ? (
-        <p className="text-gray-500">No clients yet. Add your first client above.</p>
-      ) : (
-        <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="text-left p-4 font-medium text-gray-600">Firm Name</th>
-                <th className="text-left p-4 font-medium text-gray-600">Primary GSTIN</th>
-                <th className="text-left p-4 font-medium text-gray-600">Status</th>
-                <th className="text-left p-4 font-medium text-gray-600">Added</th>
-                <th className="p-4" />
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {clients.map(c => (
-                <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="p-4 font-medium text-gray-900">{c.firmName}</td>
-                  <td className="p-4 font-mono text-gray-700">{c.primaryGstin}</td>
-                  <td className="p-4">
-                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_STYLES[c.status]}`}>
-                      {c.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-gray-500">
-                    {new Date(c.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  </td>
-                  <td className="p-4 text-right">
-                    <Link href={`/ca/clients/${c.id}`} className="text-indigo-600 hover:underline text-sm font-medium">
-                      View →
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  )
+  const clientRows = clients.map(client => {
+    const primaryGstin = client.gstins.find(g => g.is_primary)?.gstin
+      ?? client.gstins[0]?.gstin
+      ?? '—'
+    const state = primaryGstin !== '—' ? primaryGstin.substring(0, 2) : '—'
+
+    const latestPeriod = client.gstins
+      .flatMap(g => g.upload_sessions)
+      .sort((a, b) => b.period.localeCompare(a.period))[0] ?? null
+
+    if (!latestPeriod?.ims_uploaded_at) {
+      return {
+        clientId:     client.id,
+        clientName:   client.name,
+        gstin:        primaryGstin,
+        state,
+        status:       'NO_UPLOAD' as const,
+        qualScore:    null as number | null,
+        qualBand:     null as string | null,
+        itcCleared:   0,
+        itcAtRisk:    0,
+        period:       null as string | null,
+        periodStatus: null as string | null,
+        lastUpload:   null as string | null,
+      }
+    }
+
+    const results = latestPeriod.ims_invoices
+      .map(inv => inv.reconciliation_result)
+      .filter((r): r is NonNullable<typeof r> => r !== null)
+
+    const itcCleared = results
+      .filter(r => r.outcome === 'AUTO_ACCEPTED')
+      .reduce((s, r) => s + parseFloat(r.itc_at_risk), 0)
+
+    const itcAtRisk = results
+      .filter(r => r.outcome !== 'AUTO_ACCEPTED')
+      .reduce((s, r) => s + parseFloat(r.itc_at_risk), 0)
+
+    const itcTotal = itcCleared + itcAtRisk || 1
+    const total    = results.length || 1
+    const accepted = results.filter(r => r.outcome === 'AUTO_ACCEPTED').length
+    const autoRate  = Math.round((accepted / total) * 100)
+    const recovRate = Math.round((itcCleared / itcTotal) * 100)
+    const qualScore = Math.min(100, Math.round((autoRate * 0.5) + (recovRate * 0.3) + 20))
+    const qualBand  = qualScore >= 90 ? 'Excellent'
+                    : qualScore >= 75 ? 'Good'
+                    : qualScore >= 60 ? 'Fair'
+                    : qualScore >= 45 ? 'Poor'
+                    : 'Critical'
+
+    const today        = new Date()
+    const daysUntil14  = 14 - today.getDate()
+    const isPreDeadline = daysUntil14 >= 0 && daysUntil14 <= 8
+
+    let status: 'RECONCILED' | 'NEEDS_ATTENTION' | 'URGENT' | 'NO_UPLOAD'
+    if (itcAtRisk > 0 && isPreDeadline) {
+      status = 'URGENT'
+    } else if (itcAtRisk > 0) {
+      status = 'NEEDS_ATTENTION'
+    } else if (qualScore >= 75) {
+      status = 'RECONCILED'
+    } else {
+      status = 'NEEDS_ATTENTION'
+    }
+
+    const lastUploadDate = latestPeriod.tally_uploaded_at ?? latestPeriod.ims_uploaded_at
+
+    return {
+      clientId:     client.id,
+      clientName:   client.name,
+      gstin:        primaryGstin,
+      state,
+      status,
+      qualScore,
+      qualBand,
+      itcCleared,
+      itcAtRisk,
+      period:       latestPeriod.period,
+      periodStatus: latestPeriod.status.toLowerCase(),
+      lastUpload:   lastUploadDate?.toISOString() ?? null,
+    }
+  })
+
+  const summary = {
+    total:          clientRows.length,
+    reconciled:     clientRows.filter(c => c.status === 'RECONCILED').length,
+    needsAttention: clientRows.filter(c => c.status === 'NEEDS_ATTENTION').length,
+    urgent:         clientRows.filter(c => c.status === 'URGENT').length,
+    noUpload:       clientRows.filter(c => c.status === 'NO_UPLOAD').length,
+  }
+
+  return <ClientPortfolioClient clientRows={clientRows} summary={summary} />
 }
