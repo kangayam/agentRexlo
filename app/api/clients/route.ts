@@ -58,37 +58,79 @@ export async function POST(request: Request) {
 
   // ── Create new client ──────────────────────────────────────────────────────
   if (action === 'create') {
-    const { firmName, primaryGstin, contactEmail } = body as {
-      firmName: string
-      primaryGstin: string
-      contactEmail: string
-    }
-    if (!firmName?.trim()) return NextResponse.json({ error: 'Firm name is required' }, { status: 400 })
-    if (!GSTIN_REGEX.test(primaryGstin?.toUpperCase() ?? '')) {
-      return NextResponse.json({ error: 'Invalid GSTIN — must be 15 alphanumeric characters (uppercase)' }, { status: 400 })
+    const { firmName, primaryGstin, contactEmail, additionalGstins = [] } = body as {
+      firmName:         string
+      primaryGstin:     string
+      contactEmail:     string
+      additionalGstins?: string[]
     }
 
-    const normalizedGstin = primaryGstin.toUpperCase()
-    const existing = await prisma.clientGstin.findUnique({ where: { gstin: normalizedGstin } })
-    if (existing) return NextResponse.json({ error: 'This GSTIN is already registered' }, { status: 400 })
+    if (!firmName?.trim())
+      return NextResponse.json({ error: 'Firm name is required' }, { status: 400 })
+
+    if (!GSTIN_REGEX.test(primaryGstin?.toUpperCase() ?? ''))
+      return NextResponse.json(
+        { error: 'Invalid primary GSTIN — must be 15 alphanumeric characters' },
+        { status: 400 }
+      )
+
+    if (!Array.isArray(additionalGstins) || additionalGstins.length > 10)
+      return NextResponse.json(
+        { error: 'Maximum 10 additional GSTINs allowed' },
+        { status: 400 }
+      )
+
+    // Validate each additional GSTIN format
+    for (const g of additionalGstins) {
+      if (!GSTIN_REGEX.test(g?.toUpperCase() ?? ''))
+        return NextResponse.json(
+          { error: `Invalid additional GSTIN "${g}" — must be 15 alphanumeric characters` },
+          { status: 400 }
+        )
+    }
+
+    const normalizedPrimary    = primaryGstin.toUpperCase()
+    const normalizedAdditional = additionalGstins.map(g => g.toUpperCase())
+    const allGstins            = [normalizedPrimary, ...normalizedAdditional]
+
+    // Reject duplicates within submission
+    const unique = new Set(allGstins)
+    if (unique.size !== allGstins.length)
+      return NextResponse.json(
+        { error: 'Duplicate GSTINs in submission — each GSTIN must be unique' },
+        { status: 400 }
+      )
+
+    // Check all GSTINs against existing records
+    for (const gstin of allGstins) {
+      const existing = await prisma.clientGstin.findUnique({ where: { gstin } })
+      if (existing)
+        return NextResponse.json(
+          { error: `GSTIN ${gstin} is already registered` },
+          { status: 400 }
+        )
+    }
 
     const org = await prisma.organization.findUniqueOrThrow({
       where: { id: dbUser.org_id },
       select: { name: true },
     })
 
-    const inviteToken = crypto.randomUUID()
+    const inviteToken     = crypto.randomUUID()
     const inviteExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
     const client = await prisma.client.create({
       data: {
-        org_id: dbUser.org_id,
-        name: firmName.trim(),
-        contact_email: contactEmail.trim(),
-        invite_token: inviteToken,
+        org_id:            dbUser.org_id,
+        name:              firmName.trim(),
+        contact_email:     contactEmail.trim(),
+        invite_token:      inviteToken,
         invite_expires_at: inviteExpiresAt,
         gstins: {
-          create: { gstin: normalizedGstin, is_primary: true },
+          create: [
+            { gstin: normalizedPrimary, is_primary: true },
+            ...normalizedAdditional.map(g => ({ gstin: g, is_primary: false })),
+          ],
         },
       },
       include: { gstins: true },
