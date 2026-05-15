@@ -19,16 +19,7 @@ function BrowserMockup({ slug, label }: ScreenshotProps) {
         <div className="flex-1 ml-3 h-5 bg-white rounded border border-slate-200" />
       </div>
       {/* Screenshot area */}
-      {/* Replace with actual screenshot: {slug} */}
-      {/* <img src={`/screenshots/${slug}.png`} alt={label} className="w-full" /> */}
-      <div
-        data-screenshot={slug}
-        className="h-80 bg-slate-100 flex flex-col items-center justify-center"
-      >
-        <div className="w-12 h-12 rounded-xl bg-slate-200 mb-3" />
-        <p className="text-sm font-medium text-slate-500">{label}</p>
-        <p className="text-xs text-slate-400 mt-1">[Screenshot: {slug}]</p>
-      </div>
+      <img src={`/${slug}.png`} alt={label} className="w-full" />
     </div>
   )
 }
