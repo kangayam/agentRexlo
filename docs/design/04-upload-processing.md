@@ -38,6 +38,18 @@ The client can also manually select a period from a dropdown when uploading.
 
 ---
 
+## Multi-GSTIN Clients
+
+A client can have multiple GSTINs — one per state they operate in. GSTINs can be added:
+- **At creation** — primary GSTIN required, up to 10 additional GSTINs optional (Add Client form at `/ca/clients/new`)
+- **Post-creation** — via the "Client Info & Settings" panel on the client detail page
+
+Each GSTIN has its own upload sessions, IMS invoices, and reconciliation results. Reconciliation runs independently per GSTIN. Analytics and dashboard views aggregate across all GSTINs for a client.
+
+State names are auto-derived from the first 2 digits of the GSTIN (e.g. `27` → Maharashtra, `29` → Karnataka) using `lib/gstin-state.ts`.
+
+---
+
 ## Upload Session States
 
 Each client GSTIN + period has one `UploadSession` record tracking what's been uploaded.
