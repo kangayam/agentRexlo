@@ -8,6 +8,7 @@ import { getAuthedUser } from '@/lib/auth/session'
 import { prisma } from '@/lib/db/prisma'
 
 import Decimal from 'decimal.js'
+import { computeQualityScore } from '@/lib/quality-score'
 
 function leakageCause(outcome: string, reasonCode: string): { cause: string; recoverable: boolean } {
   if (outcome === 'NOT_IN_BOOKS')
@@ -111,10 +112,16 @@ export async function GET(
     .toFixed(2)
 
   // — Quality score —
+  const { qualityScore: score, qualityBand: scoreBand } = computeQualityScore(
+    results.map(r => ({
+      outcome: r.outcome as 'AUTO_ACCEPTED' | 'AUTO_REJECTED' | 'PENDING_REVIEW' | 'NOT_IN_BOOKS',
+      igst:    parseFloat(r.ims_invoice.igst),
+      cgst:    parseFloat(r.ims_invoice.cgst),
+      sgst:    parseFloat(r.ims_invoice.sgst),
+    }))
+  )
   const autoAcceptRate  = totalInvoices > 0 ? autoAccepted / totalInvoices : 0
-  // ITC recovery rate = value of auto-accepted invoices / total ITC value
   const itcRecoveryRate = totalValue.gt(0) ? autoAcceptedValue.div(totalValue).toNumber() : 1
-  const score = Math.round((autoAcceptRate * 50) + (itcRecoveryRate * 30) + (0.8 * 20))
 
   // — ITC Aging —
   const today = new Date()
@@ -161,7 +168,7 @@ export async function GET(
     leakage: { items: leakageItems, totalRecoverable, total: leakageTotal.toFixed(2) },
     quality: {
       score,
-      band: qualityBand(score),
+      band: scoreBand,
       autoAcceptRate:    Math.round(autoAcceptRate * 100),
       itcRecoveryRate:   Math.round(itcRecoveryRate * 100),
       deadlineAdherence: 80,

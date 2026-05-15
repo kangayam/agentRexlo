@@ -8,6 +8,7 @@ import { getAuthedUser } from '@/lib/auth/session'
 import { prisma } from '@/lib/db/prisma'
 
 import Decimal from 'decimal.js'
+import { computeQualityScore } from '@/lib/quality-score'
 
 function qualityBand(score: number): string {
   if (score >= 90) return 'Excellent'
@@ -71,9 +72,14 @@ export async function GET(
       else { nonAuto++; if (r.is_done) doneNonAuto++ }
     }
 
-    const autoAcceptRate  = total > 0 ? autoAcc / total : 0
-    const itcRecoveryRate = nonAuto > 0 ? doneNonAuto / nonAuto : 1
-    const score = Math.round((autoAcceptRate * 50) + (itcRecoveryRate * 30) + (0.8 * 20))
+    const { qualityScore: score, qualityBand: band } = computeQualityScore(
+      results.map(r => ({
+        outcome: r.outcome as 'AUTO_ACCEPTED' | 'AUTO_REJECTED' | 'PENDING_REVIEW' | 'NOT_IN_BOOKS',
+        igst:    parseFloat(r.ims_invoice.igst),
+        cgst:    parseFloat(r.ims_invoice.cgst),
+        sgst:    parseFloat(r.ims_invoice.sgst),
+      }))
+    )
 
     const [yyyy, mm] = period.split('-')
     const label = new Date(Number(yyyy), Number(mm) - 1, 1)
@@ -83,7 +89,7 @@ export async function GET(
       ? Math.round(itcInBooks.minus(itcCleared).div(itcInBooks).toNumber() * 100)
       : 0
 
-    return { period, label, itcInBooks: itcInBooks.toFixed(2), itcCleared: itcCleared.toFixed(2), score, band: qualityBand(score), leakagePct }
+    return { period, label, itcInBooks: itcInBooks.toFixed(2), itcCleared: itcCleared.toFixed(2), score, band, leakagePct }
   }))
 
   return NextResponse.json({ periods: periodData })
