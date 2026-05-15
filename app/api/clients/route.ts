@@ -101,14 +101,17 @@ export async function POST(request: Request) {
         { status: 400 }
       )
 
-    // Check all GSTINs against existing records
-    for (const gstin of allGstins) {
-      const existing = await prisma.clientGstin.findUnique({ where: { gstin } })
-      if (existing)
-        return NextResponse.json(
-          { error: `GSTIN ${gstin} is already registered` },
-          { status: 400 }
-        )
+    // Check all GSTINs against existing records in one query
+    const conflicts = await prisma.clientGstin.findMany({
+      where: { gstin: { in: allGstins } },
+      select: { gstin: true },
+    })
+    if (conflicts.length > 0) {
+      const conflictList = conflicts.map(c => c.gstin).join(', ')
+      return NextResponse.json(
+        { error: `GSTIN${conflicts.length > 1 ? 's' : ''} already registered: ${conflictList}` },
+        { status: 400 }
+      )
     }
 
     const org = await prisma.organization.findUniqueOrThrow({
@@ -139,7 +142,10 @@ export async function POST(request: Request) {
     try {
       await sendClientInviteEmail({ to: contactEmail.trim(), caOrgName: org.name, token: inviteToken })
     } catch (err) {
-      await prisma.client.delete({ where: { id: client.id } })
+      await prisma.$transaction([
+        prisma.clientGstin.deleteMany({ where: { client_id: client.id } }),
+        prisma.client.delete({ where: { id: client.id } }),
+      ])
       const message = err instanceof Error ? err.message : 'Failed to send invite email'
       return NextResponse.json({ error: `Email not sent: ${message}` }, { status: 500 })
     }
