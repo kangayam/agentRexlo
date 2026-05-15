@@ -64,3 +64,18 @@
 .animate-pulse-dot {
   animation: pulse-dot 2s ease-in-out infinite;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.fade-in.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
