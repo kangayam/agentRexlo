@@ -1,3 +1,5 @@
+'use client'
+
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { Play } from 'lucide-react'
 

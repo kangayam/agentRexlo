@@ -1,3 +1,5 @@
+'use client'
+
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { Cpu, Eye, ShieldCheck, RefreshCw, BarChart2, Building2 } from 'lucide-react'
 
