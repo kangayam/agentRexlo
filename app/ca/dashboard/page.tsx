@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
 import { getAuthedUser } from '@/lib/auth/session'
 import { prisma } from '@/lib/db/prisma'
-import { deriveClientStatus, deriveQualityBand, sortCaRows } from '@/lib/dashboard/ca'
+import { deriveClientStatus, sortCaRows } from '@/lib/dashboard/ca'
+import { computeQualityScore } from '@/lib/quality-score'
 import type { CaClientRow } from '@/lib/dashboard/ca'
 import { CaClientTable } from '@/components/dashboard/CaClientTable'
 import Decimal from 'decimal.js'
@@ -82,7 +83,8 @@ export default async function CADashboardPage() {
     doneNonAutoAccepted: number
   }
 
-  const clientStats = new Map<string, ClientStats>()
+  const clientStats   = new Map<string, ClientStats>()
+  const clientResults = new Map<string, { outcome: 'AUTO_ACCEPTED' | 'AUTO_REJECTED' | 'PENDING_REVIEW' | 'NOT_IN_BOOKS'; igst: number; cgst: number; sgst: number }[]>()
 
   for (const r of allResults) {
     const cid = r.ims_invoice.upload_session.client_gstin.client_id
@@ -106,6 +108,14 @@ export default async function CADashboardPage() {
       .plus(r.ims_invoice.cgst)
       .plus(r.ims_invoice.sgst)
     stats.itcInBooks = stats.itcInBooks.plus(invoiceItc)
+
+    if (!clientResults.has(cid)) clientResults.set(cid, [])
+    clientResults.get(cid)!.push({
+      outcome: r.outcome as 'AUTO_ACCEPTED' | 'AUTO_REJECTED' | 'PENDING_REVIEW' | 'NOT_IN_BOOKS',
+      igst:    parseFloat(r.ims_invoice.igst),
+      cgst:    parseFloat(r.ims_invoice.cgst),
+      sgst:    parseFloat(r.ims_invoice.sgst),
+    })
 
     if (r.outcome === 'AUTO_ACCEPTED') {
       stats.autoAccepted += 1
@@ -135,11 +145,9 @@ export default async function CADashboardPage() {
     const doneNonAutoAccepted = stats?.doneNonAutoAccepted ?? 0
     const itcInBooks          = stats?.itcInBooks ?? new Decimal(0)
 
-    const autoAcceptRate  = totalInvoices > 0 ? autoAccepted / totalInvoices : 0
-    const itcRecoveryRate = nonAutoAccepted > 0 ? doneNonAutoAccepted / nonAutoAccepted : 1
-    const qualityScore    = hasUpload
-      ? Math.round((autoAcceptRate * 50) + (itcRecoveryRate * 30) + (0.8 * 20))
-      : 0
+    const { qualityScore, qualityBand } = hasUpload
+      ? computeQualityScore(clientResults.get(c.id) ?? [])
+      : { qualityScore: 0, qualityBand: 'Critical' as const }
 
     const leakagePct = itcInBooks.gt(0)
       ? parseFloat(new Decimal(itcLeakage).div(itcInBooks).times(100).toFixed(1))
@@ -156,7 +164,7 @@ export default async function CADashboardPage() {
       itcLeakage,
       leakagePct,
       qualityScore,
-      qualityBand:   deriveQualityBand(qualityScore),
+      qualityBand,
       daysUntil14th,
       pre14thAtRisk,
       scoreHistory:  [],
