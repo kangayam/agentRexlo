@@ -23,10 +23,10 @@ const STATE_CODES: Record<string, string> = {
   '22': 'Chhattisgarh',
   '23': 'Madhya Pradesh',
   '24': 'Gujarat',
-  '25': 'Daman & Diu',
-  '26': 'Dadra & Nagar Haveli',
+  '25': 'Daman & Diu',              // Separate GSTN code retained post-2020 merger
+  '26': 'Dadra & Nagar Haveli',     // Separate GSTN code retained post-2020 merger
   '27': 'Maharashtra',
-  '28': 'Andhra Pradesh',
+  '28': 'Andhra Pradesh',   // Seemandhra — pre-bifurcation registrations retain this code
   '29': 'Karnataka',
   '30': 'Goa',
   '31': 'Lakshadweep',
@@ -35,7 +35,7 @@ const STATE_CODES: Record<string, string> = {
   '34': 'Puducherry',
   '35': 'Andaman & Nicobar',
   '36': 'Telangana',
-  '37': 'Andhra Pradesh',
+  '37': 'Andhra Pradesh',   // New Andhra Pradesh — post-2014 Telangana bifurcation
   '38': 'Ladakh',
   '97': 'Other Territory',
   '99': 'Centre Jurisdiction',

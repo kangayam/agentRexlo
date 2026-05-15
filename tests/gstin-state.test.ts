@@ -37,4 +37,16 @@ describe('getStateFromGstin', () => {
   test('works with partially-typed GSTIN (2 chars)', () => {
     expect(getStateFromGstin('27')).toBe('Maharashtra')
   })
+
+  test('returns Andhra Pradesh for 28-prefix (pre-bifurcation)', () => {
+    expect(getStateFromGstin('28AABCS1234A1ZX')).toBe('Andhra Pradesh')
+  })
+
+  test('returns Andhra Pradesh for 37-prefix (post-bifurcation)', () => {
+    expect(getStateFromGstin('37AABCS1234A1ZX')).toBe('Andhra Pradesh')
+  })
+
+  test('returns Other Territory for 97-prefix', () => {
+    expect(getStateFromGstin('97AABCS1234A1ZX')).toBe('Other Territory')
+  })
 })
