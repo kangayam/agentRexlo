@@ -57,30 +57,32 @@ export function FinalCTA() {
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit}
-                className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-3">
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="Your email address"
-              required
-              className="flex-1 h-12 px-4 rounded-xl bg-white/10 backdrop-blur-sm
-                         border border-white/20 text-white placeholder:text-white/50
-                         focus:outline-none focus:ring-2 focus:ring-white/30 text-sm"
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="h-12 px-6 rounded-xl bg-[#0f1629] text-white font-bold text-sm
-                         hover:bg-[#1e2d4d] transition-colors whitespace-nowrap
-                         disabled:opacity-60 disabled:cursor-not-allowed">
-              {loading ? 'Sending…' : 'Book a Free Call'}
-            </button>
-          </form>
-          {error && (
-            <p className="text-white/80 text-xs mb-3">{error}</p>
-          )}
+          <>
+            <form onSubmit={handleSubmit}
+                  className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-3">
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Your email address"
+                required
+                className="flex-1 h-12 px-4 rounded-xl bg-white/10 backdrop-blur-sm
+                           border border-white/20 text-white placeholder:text-white/50
+                           focus:outline-none focus:ring-2 focus:ring-white/30 text-sm"
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="h-12 px-6 rounded-xl bg-[#0f1629] text-white font-bold text-sm
+                           hover:bg-[#1e2d4d] transition-colors whitespace-nowrap
+                           disabled:opacity-60 disabled:cursor-not-allowed">
+                {loading ? 'Sending…' : 'Book a Free Call'}
+              </button>
+            </form>
+            {error && (
+              <p className="text-white/80 text-xs mb-3">{error}</p>
+            )}
+          </>
         )}
 
         <p className="text-xs text-white/60 mb-6">
