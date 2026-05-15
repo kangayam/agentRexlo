@@ -8,6 +8,7 @@ import { ClientAnalyticsTab }  from '@/components/dashboard/client-portal/Client
 import { ClientHistoryTab }    from '@/components/dashboard/client-portal/ClientHistoryTab'
 import { formatPeriod }        from '@/lib/format'
 import type { ReconResult, FilingPeriod, ComputedDashboard } from '@/components/dashboard/client-portal/types'
+import { computeQualityScore } from '@/lib/quality-score'
 
 type Tab = 'dashboard' | 'analytics' | 'history'
 
@@ -98,18 +99,21 @@ function ClientDashboardInner() {
       pendingReview:    results.filter(r => r.result === 'PENDING_REVIEW').reduce((s, r) => s + r.itcAtRisk, 0),
     }
 
-    // Quality score
+    // Quality score — canonical shared formula
     const total         = results.length || 1
     const accepted      = results.filter(r => r.result === 'AUTO_ACCEPTED').length
     const autoAcceptPct = Math.round((accepted / total) * 100)
     const totalITC      = itcSafe + itcAtRisk + itcBlocked + itcUnverified || 1
     const recoveryRate  = Math.round((itcSafe / totalITC) * 100)
-    const qualityScore  = Math.round((autoAcceptPct * 0.5) + (recoveryRate * 0.3) + 20)
-    const qualityBand   = qualityScore >= 90 ? 'Excellent'
-                        : qualityScore >= 75 ? 'Good'
-                        : qualityScore >= 60 ? 'Fair'
-                        : qualityScore >= 45 ? 'Poor'
-                        : 'Critical'
+
+    const { qualityScore, qualityBand } = computeQualityScore(
+      results.map(r => ({
+        outcome: r.result as 'AUTO_ACCEPTED' | 'AUTO_REJECTED' | 'PENDING_REVIEW' | 'NOT_IN_BOOKS',
+        igst:    r.igst,
+        cgst:    r.cgst,
+        sgst:    r.sgst,
+      }))
+    )
 
     return {
       itcSafe, itcAtRisk, itcBlocked, itcUnverified,

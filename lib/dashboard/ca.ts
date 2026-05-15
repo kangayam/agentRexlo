@@ -1,7 +1,7 @@
 import Decimal from 'decimal.js'
 
 export type ClientStatus = 'Urgent' | 'Pending' | 'All Done' | 'No Upload'
-export type QualityBand = 'Excellent' | 'Good' | 'Fair' | 'Poor'
+export type QualityBand = 'Excellent' | 'Good' | 'Fair' | 'Poor' | 'Critical'
 
 export interface CaClientRow {
   clientId:       string

@@ -17,6 +17,7 @@ const BAND_PILL: Record<QualityBand, string> = {
   Good:      'bg-blue-50 text-blue-700 border-blue-200',
   Fair:      'bg-amber-50 text-amber-700 border-amber-200',
   Poor:      'bg-red-50 text-red-700 border-red-200',
+  Critical:  'bg-red-100 text-red-800 border-red-300',
 }
 
 type FilterTab = 'All' | 'Pre-14th' | 'Critical' | 'No Upload'

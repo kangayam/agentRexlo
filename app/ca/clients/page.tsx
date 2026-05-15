@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getAuthedUser } from '@/lib/auth/session'
 import { prisma } from '@/lib/db/prisma'
 import { ClientPortfolioClient } from './ClientPortfolioClient'
+import { computeQualityScore } from '@/lib/quality-score'
 
 export default async function ClientPortfolioPage({
   searchParams,
@@ -36,7 +37,10 @@ export default async function ClientPortfolioPage({
             take: 1,
             include: {
               ims_invoices: {
-                include: {
+                select: {
+                  igst: true,
+                  cgst: true,
+                  sgst: true,
                   reconciliation_result: {
                     select: { outcome: true, itc_at_risk: true },
                   },
@@ -78,29 +82,27 @@ export default async function ClientPortfolioPage({
       }
     }
 
-    const results = latestPeriod.ims_invoices
-      .map(inv => inv.reconciliation_result)
-      .filter((r): r is NonNullable<typeof r> => r !== null)
+    const reconResults = latestPeriod.ims_invoices
+      .filter(inv => inv.reconciliation_result !== null)
+      .map(inv => ({
+        outcome: inv.reconciliation_result!.outcome as 'AUTO_ACCEPTED' | 'AUTO_REJECTED' | 'PENDING_REVIEW' | 'NOT_IN_BOOKS',
+        igst:    parseFloat(inv.igst),
+        cgst:    parseFloat(inv.cgst),
+        sgst:    parseFloat(inv.sgst),
+        itcAtRisk: parseFloat(inv.reconciliation_result!.itc_at_risk),
+      }))
 
-    const itcCleared = results
+    // ITC cleared = tax value (igst+cgst+sgst) of AUTO_ACCEPTED invoices
+    const itcCleared = reconResults
       .filter(r => r.outcome === 'AUTO_ACCEPTED')
-      .reduce((s, r) => s + parseFloat(r.itc_at_risk), 0)
+      .reduce((s, r) => s + r.igst + r.cgst + r.sgst, 0)
 
-    const itcAtRisk = results
+    // ITC at risk = itc_at_risk field for non-AUTO_ACCEPTED invoices
+    const itcAtRisk = reconResults
       .filter(r => r.outcome !== 'AUTO_ACCEPTED')
-      .reduce((s, r) => s + parseFloat(r.itc_at_risk), 0)
+      .reduce((s, r) => s + r.itcAtRisk, 0)
 
-    const itcTotal = itcCleared + itcAtRisk || 1
-    const total    = results.length || 1
-    const accepted = results.filter(r => r.outcome === 'AUTO_ACCEPTED').length
-    const autoRate  = Math.round((accepted / total) * 100)
-    const recovRate = Math.round((itcCleared / itcTotal) * 100)
-    const qualScore = Math.min(100, Math.round((autoRate * 0.5) + (recovRate * 0.3) + 20))
-    const qualBand  = qualScore >= 90 ? 'Excellent'
-                    : qualScore >= 75 ? 'Good'
-                    : qualScore >= 60 ? 'Fair'
-                    : qualScore >= 45 ? 'Poor'
-                    : 'Critical'
+    const { qualityScore: qualScore, qualityBand: qualBand } = computeQualityScore(reconResults)
 
     const today        = new Date()
     const daysUntil14  = 14 - today.getDate()
