@@ -25,8 +25,8 @@ const spaceMono = Space_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "AgentFlow Core",
-  description: "AI-powered ITC reconciliation for Chartered Accountants",
+  title: 'AgentGST — AI-Native GST Intelligence for CA Firms',
+  description: 'AI agents that help CA firms double revenue per client and triple client capacity. Automated reconciliation, ITC recovery, and branded client portals.',
 }
 
 export default function RootLayout({
