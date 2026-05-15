@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronRight, Plus, X } from 'lucide-react'
 import { getStateFromGstin } from '@/lib/gstin-state'
@@ -18,6 +18,7 @@ function GstinInput({
   error,
   placeholder,
   isPrimary,
+  inputId,
 }: {
   value:       string
   onChange:    (v: string) => void
@@ -25,20 +26,26 @@ function GstinInput({
   error?:      string
   placeholder: string
   isPrimary:   boolean
+  inputId?:    string
 }) {
   const state   = getStateFromGstin(value)
   const isValid = GSTIN_REGEX.test(value)
+  const errorId = inputId ? `${inputId}-error` : undefined
 
   return (
     <div>
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <input
+            id={inputId}
             type="text"
             value={value}
             onChange={e => onChange(normalizeGstin(e.target.value))}
             placeholder={placeholder}
             maxLength={15}
+            aria-required={isPrimary}
+            aria-invalid={!!error}
+            aria-describedby={error && errorId ? errorId : undefined}
             className={`w-full h-10 px-3 pr-24 text-sm font-mono border rounded-lg bg-white
                        text-slate-900 placeholder:text-slate-400 placeholder:font-sans
                        focus:outline-none focus:ring-2 transition-colors
@@ -79,7 +86,7 @@ function GstinInput({
           {isValid && <span className="ml-2 text-green-600 font-medium">✓</span>}
         </p>
       )}
-      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+      {error && <p id={errorId} className="text-xs text-red-600 mt-1">{error}</p>}
     </div>
   )
 }
@@ -89,7 +96,8 @@ export default function NewClientPage() {
 
   const [firmName,          setFirmName]          = useState('')
   const [primaryGstin,      setPrimaryGstin]      = useState('')
-  const [additionalGstins,  setAdditionalGstins]  = useState<string[]>([])
+  const [additionalGstins,  setAdditionalGstins]  = useState<{ id: number; value: string }[]>([])
+  const nextId = useRef(0)
   const [email,             setEmail]             = useState('')
   const [submitting,        setSubmitting]        = useState(false)
   const [apiError,          setApiError]          = useState('')
@@ -102,12 +110,12 @@ export default function NewClientPage() {
 
   function handleAddGstin() {
     if (additionalGstins.length >= MAX_ADDITIONAL) return
-    setAdditionalGstins(p => [...p, ''])
+    setAdditionalGstins(p => [...p, { id: nextId.current++, value: '' }])
     setAdditionalErrors(p => [...p, ''])
   }
 
   function handleAdditionalChange(index: number, value: string) {
-    setAdditionalGstins(p => p.map((g, i) => i === index ? normalizeGstin(value) : g))
+    setAdditionalGstins(p => p.map((g, i) => i === index ? { ...g, value: normalizeGstin(value) } : g))
     setAdditionalErrors(p => p.map((e, i) => i === index ? '' : e))
   }
 
@@ -136,9 +144,9 @@ export default function NewClientPage() {
     setFieldErrors(errs)
 
     const addErrs = additionalGstins.map((g, i) => {
-      if (!GSTIN_REGEX.test(g)) return 'Must be exactly 15 alphanumeric characters'
-      if (g === primaryGstin) return 'Duplicate of primary GSTIN'
-      if (additionalGstins.indexOf(g) !== i) return 'Duplicate GSTIN'
+      if (!GSTIN_REGEX.test(g.value)) return 'Must be exactly 15 alphanumeric characters'
+      if (g.value === primaryGstin) return 'Duplicate of primary GSTIN'
+      if (additionalGstins.findIndex((x, j) => x.value === g.value && j !== i) !== -1) return 'Duplicate GSTIN'
       return ''
     })
     setAdditionalErrors(addErrs)
@@ -161,7 +169,7 @@ export default function NewClientPage() {
           action:           'create',
           firmName:         firmName.trim(),
           primaryGstin,
-          additionalGstins: additionalGstins.filter(g => g.length > 0),
+          additionalGstins: additionalGstins.filter(g => g.value.length > 0).map(g => g.value),
           contactEmail:     email.trim(),
         }),
       })
@@ -229,6 +237,7 @@ export default function NewClientPage() {
               error={fieldErrors.primaryGstin}
               placeholder="e.g. 27AABCU9603R1ZX"
               isPrimary
+              inputId="primary-gstin"
             />
           </div>
 
@@ -250,14 +259,15 @@ export default function NewClientPage() {
               <div className="border border-slate-200 rounded-xl overflow-hidden mb-2">
                 <div className="divide-y divide-slate-100">
                   {additionalGstins.map((g, i) => (
-                    <div key={i} className="px-3 py-2.5">
+                    <div key={g.id} className="px-3 py-2.5">
                       <GstinInput
-                        value={g}
+                        value={g.value}
                         onChange={v => handleAdditionalChange(i, v)}
                         onRemove={() => handleRemoveGstin(i)}
                         error={additionalErrors[i]}
                         placeholder="e.g. 29AABCU9603R1ZX"
                         isPrimary={false}
+                        inputId={`additional-gstin-${g.id}`}
                       />
                     </div>
                   ))}
