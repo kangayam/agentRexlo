@@ -9,11 +9,30 @@ export function FinalCTA() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email.trim()) return
-    // Placeholder: replace with actual form submission
-    setSubmitted(true)
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('https://formspree.io/f/xbdwveej', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      if (res.ok) {
+        setSubmitted(true)
+      } else {
+        setError('Something went wrong. Please email us directly.')
+      }
+    } catch {
+      setError('Something went wrong. Please email us directly.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -39,7 +58,7 @@ export function FinalCTA() {
           </div>
         ) : (
           <form onSubmit={handleSubmit}
-                className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-6">
+                className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-3">
             <input
               type="email"
               value={email}
@@ -52,14 +71,19 @@ export function FinalCTA() {
             />
             <button
               type="submit"
+              disabled={loading}
               className="h-12 px-6 rounded-xl bg-[#0f1629] text-white font-bold text-sm
-                         hover:bg-[#1e2d4d] transition-colors whitespace-nowrap">
-              Book a Free Call
+                         hover:bg-[#1e2d4d] transition-colors whitespace-nowrap
+                         disabled:opacity-60 disabled:cursor-not-allowed">
+              {loading ? 'Sending…' : 'Book a Free Call'}
             </button>
           </form>
+          {error && (
+            <p className="text-white/80 text-xs mb-3">{error}</p>
+          )}
         )}
 
-        <p className="text-xs text-white/60 mb-8">
+        <p className="text-xs text-white/60 mb-6">
           Or email us directly:{' '}
           <a href="mailto:partners@agentgst.in"
              className="underline hover:text-white transition-colors">
