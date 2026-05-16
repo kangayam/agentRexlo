@@ -17,7 +17,7 @@ export function Hero() {
       <div
         ref={ref}
         className="max-w-7xl mx-auto w-full px-6 py-20
-                   grid grid-cols-1 lg:grid-cols-[52%_48%] gap-12 lg:gap-16
+                   grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-14
                    items-center"
       >
 
@@ -89,7 +89,7 @@ export function Hero() {
 
         {/* ── RIGHT — product image ── */}
         <div className="flex items-center justify-center lg:justify-end">
-          <div className="w-full max-w-[540px] rounded-2xl overflow-hidden
+          <div className="w-full max-w-none rounded-2xl overflow-hidden
                           border border-slate-200
                           shadow-[0_8px_32px_rgba(0,60,80,0.10),0_2px_8px_rgba(0,0,0,0.05)]">
             <Image
