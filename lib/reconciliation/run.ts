@@ -1,6 +1,6 @@
 import type { NormalizedImsInvoice } from '@/lib/parsers/ims-json-parser'
 import type { NormalizedTallyRow } from '@/lib/parsers/tally-csv-parser'
-import { normalizeInvoiceNumber } from '@/lib/reconciliation/normalize'
+import { normalizeGstin, normalizeInvoiceNumber } from '@/lib/reconciliation/normalize'
 import { reconcile } from '@/lib/reconciliation/index'
 import { prisma } from '@/lib/db/prisma'
 import type { ReconciliationOutcome, MatchLevel } from '@prisma/client'
@@ -40,11 +40,12 @@ export async function runReconciliation(uploadSessionId: string): Promise<ReconC
     where: { upload_session_id: uploadSessionId },
   })
 
-  // 3a. Build lookup: normalised invoiceNum → ImsInvoice.id
-  //     (duplicate normalised keys will point to the first seen — engine dedupes anyway)
+  // 3a. Build lookup: normalised GSTIN::invoiceNum → ImsInvoice.id
+  //     Keying on GSTIN prevents two suppliers sharing the same invoice# from
+  //     colliding and pointing to the wrong DB row.
   const imsUuidByKey = new Map<string, string>()
   for (const row of imsRows) {
-    const key = normalizeInvoiceNumber(row.invoice_number)
+    const key = `${normalizeGstin(row.supplier_gstin)}::${normalizeInvoiceNumber(row.invoice_number)}`
     if (!imsUuidByKey.has(key)) {
       imsUuidByKey.set(key, row.id)
     }
@@ -89,7 +90,7 @@ export async function runReconciliation(uploadSessionId: string): Promise<ReconC
 
   // 5. Upsert each result — preserving is_done / done_at / done_by_id
   const upserts = results.map(r => {
-    const normKey = normalizeInvoiceNumber(r.imsInvoiceNum)
+    const normKey = `${normalizeGstin(r.imsGstin)}::${normalizeInvoiceNumber(r.imsInvoiceNum)}`
     const imsUuid = imsUuidByKey.get(normKey)
 
     // If we somehow can't find the UUID, skip gracefully (should never happen)

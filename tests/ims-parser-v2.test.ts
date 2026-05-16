@@ -74,6 +74,13 @@ describe('parseIMSJson — GSTN docdata/b2b format', () => {
     expect(inv.invoiceDate?.getDate()).toBe(2)
   })
 
+  it('DD-MM-YYYY: toISOString preserves the calendar date regardless of server timezone', () => {
+    const inv = parseIMSJson(GSTN_DOCDATA).invoices[0]
+    // On IST (+5:30) new Date(y,m,d) creates local midnight = prior UTC day → wrong date stored in DB.
+    // Fix: use Date.UTC so toISOString always yields the same calendar date.
+    expect(inv.invoiceDate?.toISOString().slice(0, 10)).toBe('2026-02-02')
+  })
+
   it('sums tax across multiple itms entries', () => {
     const input = {
       gstin: '27X',
@@ -117,6 +124,11 @@ describe('parseIMSJson — flat invoice array format', () => {
     expect(inv.invoiceDate).toBeInstanceOf(Date)
     expect(inv.invoiceDate?.getFullYear()).toBe(2026)
     expect(inv.invoiceDate?.getMonth()).toBe(2)  // March
+  })
+
+  it('DD/MM/YYYY: toISOString preserves the calendar date regardless of server timezone', () => {
+    const inv = parseIMSJson(FLAT_FORMAT).invoices[0]
+    expect(inv.invoiceDate?.toISOString().slice(0, 10)).toBe('2026-03-01')
   })
 
   it('reads flat tax fields directly', () => {

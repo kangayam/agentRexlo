@@ -7,6 +7,7 @@ vi.mock('@/lib/db/prisma', () => ({
       findMany: vi.fn(),
       deleteMany: vi.fn(),
       createMany: vi.fn(),
+      update:    vi.fn(),
     },
     reconciliationResult: {
       deleteMany: vi.fn(),
@@ -37,28 +38,30 @@ describe('replaceImsInvoices', () => {
     vi.clearAllMocks()
   })
 
-  it('deletes reconciliation results then IMS invoices before inserting new ones', async () => {
-    const existingIds = ['id-old-1', 'id-old-2']
-    vi.mocked(prisma.imsInvoice.findMany).mockResolvedValue(
-      existingIds.map(id => ({ id })) as never
-    )
+  it('stale rows (not in new upload) have their recon results deleted then are deleted themselves', async () => {
+    // Old rows have different supplier+invoice# than the new upload → they are stale
+    vi.mocked(prisma.imsInvoice.findMany).mockResolvedValue([
+      { id: 'id-old-1', supplier_gstin: 'STALE-GSTIN', invoice_number: 'OLD-001' },
+      { id: 'id-old-2', supplier_gstin: 'STALE-GSTIN', invoice_number: 'OLD-002' },
+    ] as never)
     vi.mocked(prisma.reconciliationResult.deleteMany).mockResolvedValue({ count: 2 })
     vi.mocked(prisma.imsInvoice.deleteMany).mockResolvedValue({ count: 2 })
     vi.mocked(prisma.imsInvoice.createMany).mockResolvedValue({ count: 1 })
 
+    // makeInvoice() → supplierGstin='29AABCU9603R1ZX', invoiceNo='INV-001' (not stale)
     await replaceImsInvoices('session-123', [makeInvoice()])
 
-    // Must delete recon results first (FK constraint: recon refs ims_invoice)
+    // Recon results for stale rows deleted first (FK constraint)
     expect(prisma.reconciliationResult.deleteMany).toHaveBeenCalledWith({
-      where: { ims_invoice_id: { in: existingIds } },
+      where: { ims_invoice_id: { in: ['id-old-1', 'id-old-2'] } },
     })
 
-    // Must then delete IMS invoices
+    // Stale ImsInvoice rows deleted by ID (not session-wide wipe)
     expect(prisma.imsInvoice.deleteMany).toHaveBeenCalledWith({
-      where: { upload_session_id: 'session-123' },
+      where: { id: { in: ['id-old-1', 'id-old-2'] } },
     })
 
-    // Must insert the new invoices
+    // New invoice created (it had no matching existing row)
     expect(prisma.imsInvoice.createMany).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.arrayContaining([
@@ -71,21 +74,24 @@ describe('replaceImsInvoices', () => {
     )
   })
 
-  it('skips reconciliationResult.deleteMany when no existing invoices', async () => {
+  it('calls neither deleteMany when there are no existing invoices and nothing to delete', async () => {
     vi.mocked(prisma.imsInvoice.findMany).mockResolvedValue([])
-    vi.mocked(prisma.imsInvoice.deleteMany).mockResolvedValue({ count: 0 })
     vi.mocked(prisma.imsInvoice.createMany).mockResolvedValue({ count: 0 })
 
     await replaceImsInvoices('session-new', [])
 
+    // No stale rows → no deletes of any kind
     expect(prisma.reconciliationResult.deleteMany).not.toHaveBeenCalled()
-    expect(prisma.imsInvoice.deleteMany).toHaveBeenCalled()
+    expect(prisma.imsInvoice.deleteMany).not.toHaveBeenCalled()
   })
 
-  it('inserts exactly M new records even when N old records existed — no accumulation', async () => {
-    vi.mocked(prisma.imsInvoice.findMany).mockResolvedValue(
-      ['old-1', 'old-2', 'old-3'].map(id => ({ id })) as never
-    )
+  it('stale rows are removed and M new rows created — no accumulation', async () => {
+    // Old rows have different invoice# than the 2 new invoices → all stale
+    vi.mocked(prisma.imsInvoice.findMany).mockResolvedValue([
+      { id: 'old-1', supplier_gstin: 'STALE-GSTIN', invoice_number: 'STALE-001' },
+      { id: 'old-2', supplier_gstin: 'STALE-GSTIN', invoice_number: 'STALE-002' },
+      { id: 'old-3', supplier_gstin: 'STALE-GSTIN', invoice_number: 'STALE-003' },
+    ] as never)
     vi.mocked(prisma.reconciliationResult.deleteMany).mockResolvedValue({ count: 3 })
     vi.mocked(prisma.imsInvoice.deleteMany).mockResolvedValue({ count: 3 })
     vi.mocked(prisma.imsInvoice.createMany).mockResolvedValue({ count: 2 })
@@ -98,7 +104,7 @@ describe('replaceImsInvoices', () => {
     await replaceImsInvoices('session-123', newInvoices)
 
     const createCall = vi.mocked(prisma.imsInvoice.createMany).mock.calls[0][0]
-    // Exactly 2 records inserted — old 3 are gone, not accumulated
+    // Exactly 2 records created — old 3 are stale-deleted, not accumulated
     expect((createCall as { data: unknown[] }).data).toHaveLength(2)
   })
 
@@ -144,5 +150,32 @@ describe('replaceImsInvoices', () => {
     const createCall = vi.mocked(prisma.imsInvoice.createMany).mock.calls[0][0]
     const row = (createCall as { data: Record<string, unknown>[] }).data[0]
     expect(row.invoice_date).toEqual(new Date(0))
+  })
+
+  it('re-uploading the same invoice# updates in-place — ReconciliationResult (is_done) is NOT deleted', async () => {
+    // Existing row matches the new invoice by supplier_gstin + invoice_number
+    vi.mocked(prisma.imsInvoice.findMany).mockResolvedValue([
+      { id: 'existing-id-1', supplier_gstin: '29AABCU9603R1ZX', invoice_number: 'INV-001' },
+    ] as never)
+    vi.mocked(prisma.imsInvoice.update).mockResolvedValue({} as never)
+    vi.mocked(prisma.imsInvoice.createMany).mockResolvedValue({ count: 0 })
+
+    // makeInvoice() defaults: supplierGstin='29AABCU9603R1ZX', invoiceNo='INV-001'
+    await replaceImsInvoices('session-123', [makeInvoice()])
+
+    // ReconciliationResult must NOT be deleted — is_done is preserved
+    expect(prisma.reconciliationResult.deleteMany).not.toHaveBeenCalled()
+    // ImsInvoice row must NOT be deleted — it is updated in-place
+    expect(prisma.imsInvoice.deleteMany).not.toHaveBeenCalled()
+    // The existing row must be updated in-place (same id → FK to ReconciliationResult intact)
+    expect(prisma.imsInvoice.update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'existing-id-1' } }),
+    )
+    // No new rows created (the invoice already existed)
+    const createCalls = vi.mocked(prisma.imsInvoice.createMany).mock.calls
+    const createCount = createCalls.length === 0
+      ? 0
+      : (createCalls[0][0] as { data: unknown[] }).data.length
+    expect(createCount).toBe(0)
   })
 })

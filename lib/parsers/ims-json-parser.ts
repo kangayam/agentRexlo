@@ -196,11 +196,11 @@ function parseAnyDate(dateStr: string): Date | null {
   if (!dateStr) return null
   if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
     const [d, m, y] = dateStr.split('-')
-    return new Date(+y, +m - 1, +d)
+    return new Date(Date.UTC(+y, +m - 1, +d))
   }
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
     const [d, m, y] = dateStr.split('/')
-    return new Date(+y, +m - 1, +d)
+    return new Date(Date.UTC(+y, +m - 1, +d))
   }
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return new Date(dateStr)
   const native = new Date(dateStr)

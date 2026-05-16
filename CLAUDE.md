@@ -103,7 +103,7 @@ The golden test set lives at `data/fixtures/`:
 - `27AABCU9603R1ZX-recon-expected-2026-02.csv` — **expected engine output**
 - `FIXTURES.md` — scenario catalogue + aggregate sanity numbers
 
-Any change to `lib/reconciliation/` or `lib/parsers/` must keep `tests/reconciliation.test.ts` green against this expected output. The 9 scenarios covered: `EXACT_MATCH`, `WRONG_GSTIN`, `NOT_IN_BOOKS`, `VALUE_OVER_10`, `VALUE_MISMATCH_2_10`, `FORMAT_VARIATION`, `INVOICE_NUMBER_MISMATCH`, `DATE_GAP`, `DUPLICATE`. Expected totals: 41 AUTO_ACCEPTED, 4 AUTO_REJECTED, 3 PENDING_REVIEW, 1 NOT_IN_BOOKS over 47 rows.
+Any change to `lib/reconciliation/` or `lib/parsers/` must keep `tests/reconciliation.test.ts` green against this expected output. The 9 scenarios covered: `EXACT_MATCH`, `WRONG_GSTIN`, `NOT_IN_BOOKS`, `VALUE_OVER_10`, `VALUE_MISMATCH_2_10`, `FORMAT_VARIATION`, `INVOICE_NUMBER_MISMATCH`, `DATE_GAP`, `DUPLICATE`. Expected totals: 43 AUTO_ACCEPTED, 3 AUTO_REJECTED, 3 PENDING_REVIEW, 1 NOT_IN_BOOKS over 50 rows.
 
 ## Phase scope — what we are NOT building yet
 
