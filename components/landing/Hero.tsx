@@ -85,8 +85,8 @@ export function Hero() {
           </div>
         </div>
 
-        {/* ── RIGHT — product image ── */}
-        <div className="flex items-center justify-center lg:justify-end">
+        {/* ── RIGHT — product image + AI agent bar ── */}
+        <div className="flex flex-col items-center justify-center lg:justify-end gap-4">
           <div className="w-full max-w-none">
             <Image
               src="/agentgst-hero.png"
@@ -96,6 +96,23 @@ export function Hero() {
               priority
               className="w-full h-auto object-cover"
             />
+          </div>
+
+          {/* Animated AI agent status bar */}
+          <div className="ai-bar-enter w-full flex items-center gap-3
+                          bg-white border border-slate-200 rounded-xl
+                          px-5 py-3 shadow-sm">
+            {/* Pulsing teal dot */}
+            <span className="relative flex h-2.5 w-2.5 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full
+                               rounded-full bg-[#00a896] opacity-60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#00a896]" />
+            </span>
+
+            {/* Typewriter text */}
+            <span className="ai-typing text-sm font-semibold text-[#0d1f2d] tracking-tight">
+              AI Agents working for you
+            </span>
           </div>
         </div>
 
