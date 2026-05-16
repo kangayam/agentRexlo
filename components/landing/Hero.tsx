@@ -26,8 +26,8 @@ export function Hero() {
 
           {/* Pilot badge */}
           <div className="inline-flex items-center gap-2 self-start px-3.5 py-1.5 rounded-md
-                          bg-amber-50 border border-amber-300 text-amber-800
-                          text-xs font-bold mb-6 tracking-wide">
+                          bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E]
+                          text-[13px] font-semibold mb-6 tracking-[0.02em]">
             🚀 Now accepting CA Pilot Partners — 30 spots remaining
           </div>
 
