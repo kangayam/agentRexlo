@@ -47,15 +47,14 @@ export function Hero() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <a href="#cta"
-               className="px-7 py-3.5 rounded-lg bg-[#00a896] text-white font-bold text-sm
-                          hover:bg-[#008f80] transition-colors
-                          shadow-[0_4px_14px_rgba(0,168,150,0.25)]">
+               className="px-7 py-3.5 rounded-lg bg-[#0d1f2d] text-white font-bold text-sm
+                          hover:bg-[#1e3448] transition-colors
+                          shadow-[0_4px_14px_rgba(13,31,45,0.18)]">
               Join Pilot Program
             </a>
             <a href="#how-it-works"
-               className="px-7 py-3.5 rounded-lg border border-slate-300 text-[#0d1f2d]
-                          font-semibold text-sm hover:border-slate-400 hover:bg-white/60
-                          transition-colors bg-transparent">
+               className="px-7 py-3.5 rounded-lg bg-[#0d1f2d] text-white font-semibold text-sm
+                          hover:bg-[#1e3448] transition-colors">
               See How It Works
             </a>
           </div>

@@ -17,7 +17,7 @@ export function Nav() {
 
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <span className="text-[#00a896] font-extrabold text-xl tracking-tight">AgentGST</span>
+          <span className="text-[#0d1f2d] font-extrabold text-xl tracking-tight">AgentGST</span>
           <span className="hidden sm:inline-flex text-[10px] font-bold px-2.5 py-1 rounded-full
                            bg-indigo-50 text-indigo-600 border border-indigo-200 tracking-wider uppercase">
             Powered by Agentic AI
@@ -33,8 +33,8 @@ export function Nav() {
             </a>
           ))}
           <a href="#cta"
-             className="px-4 py-2 rounded-lg bg-[#00a896] text-white text-sm font-bold
-                        hover:bg-[#008f80] transition-colors">
+             className="px-4 py-2 rounded-lg bg-[#0d1f2d] text-white text-sm font-bold
+                        hover:bg-[#1e3448] transition-colors">
             Join Pilot Program
           </a>
         </div>
@@ -63,8 +63,8 @@ export function Nav() {
           <div className="pt-3">
             <a href="#cta"
                onClick={() => setOpen(false)}
-               className="block w-full text-center py-3 rounded-lg bg-[#00a896] text-white
-                          text-sm font-bold hover:bg-[#008f80] transition-colors">
+               className="block w-full text-center py-3 rounded-lg bg-[#0d1f2d] text-white
+                          text-sm font-bold hover:bg-[#1e3448] transition-colors">
               Join Pilot Program
             </a>
           </div>
