@@ -87,9 +87,7 @@ export function Hero() {
 
         {/* ── RIGHT — product image ── */}
         <div className="flex items-center justify-center lg:justify-end">
-          <div className="w-full max-w-none rounded-2xl overflow-hidden
-                          border border-slate-200
-                          shadow-[0_8px_32px_rgba(0,60,80,0.10),0_2px_8px_rgba(0,0,0,0.05)]">
+          <div className="w-full max-w-none">
             <Image
               src="/agentgst-hero.png"
               alt="AgentGST — AI-Powered GST Reconciliation Dashboard"
