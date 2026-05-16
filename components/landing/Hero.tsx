@@ -33,9 +33,8 @@ export function Hero() {
 
           {/* Headline — all black */}
           <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0d1f2d]
-                         leading-[1.15] tracking-tight mb-5">
-            Turn GST Compliance Into<br />
-            Your Biggest Revenue Driver
+                         leading-[1.15] tracking-tight mb-5 max-w-lg">
+            Turn GST Compliance Into Your Biggest Revenue Driver
           </h1>
 
           {/* Sub-headline — all black */}
