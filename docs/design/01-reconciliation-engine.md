@@ -1,7 +1,7 @@
 # Reconciliation Engine
 **Type:** Low-Level Design (LLD)  
 **Audience:** Developers + CA firm partners  
-**Last updated:** 2026-05-15  
+**Last updated:** 2026-05-16  
 **Source files:** `lib/reconciliation/`, `lib/parsers/`
 
 ---
@@ -103,15 +103,15 @@ Once a Tally candidate is found (or not), the classifier applies 6 rules **in st
 
 ## Worked Example (Golden Test Set)
 
-The golden test set lives in `data/fixtures/` and covers exactly 47 IMS invoices for GSTIN `27AABCU9603R1ZX`, period February 2026. Expected totals:
+The golden test set lives in `data/fixtures/` and covers 51 IMS invoice entries (50 unique GSTIN+invoice# pairs + 1 deliberate duplicate) for GSTIN `27AABCU9603R1ZX`, period February 2026. The duplicate pair collapses to one result row, giving 50 result rows total. Expected totals:
 
-| Outcome | Count |
-|---|---|
-| AUTO_ACCEPTED | 41 |
-| AUTO_REJECTED | 4 |
-| PENDING_REVIEW | 3 |
-| NOT_IN_BOOKS | 1 |
-| **Total** | **49 rows** (47 IMS + 2 duplicates → 49 results) |
+| Outcome | Count | Scenarios |
+|---|---|---|
+| AUTO_ACCEPTED | 43 | 42 EXACT_MATCH + 1 FORMAT_VARIATION |
+| AUTO_REJECTED | 3 | 1 WRONG_GSTIN + 1 VALUE_OVER_10 + 1 DUPLICATE |
+| PENDING_REVIEW | 3 | 1 VALUE_MISMATCH_2_10 + 1 INVOICE_NUMBER_MISMATCH + 1 DATE_GAP |
+| NOT_IN_BOOKS | 1 | — |
+| **Total** | **50 rows** | — |
 
 ### Example: FORMAT_VARIATION scenario
 - IMS invoice number: `INV/2026/001`
@@ -137,8 +137,10 @@ The golden test set lives in `data/fixtures/` and covers exactly 47 IMS invoices
 
 | File type | Re-upload behaviour |
 |---|---|
-| IMS JSON | **Replace-all** — existing IMS invoices and their reconciliation results are deleted, new file is inserted. "Done" marks are preserved where the invoice still appears in the new upload. |
-| Tally CSV/Excel | **Replace-all** — existing Tally entries for this session are deleted and replaced. |
+| IMS JSON | **Additive / upsert-by-key** — existing `ImsInvoice` rows are matched to the new upload by `GSTIN::invoice#`. Matched rows are **updated in-place** (same DB row ID), so the linked `ReconciliationResult` FK stays alive and `is_done` / `done_at` are preserved. Invoices absent from the new file are deleted along with their reconciliation results. Genuinely new invoices are inserted. |
+| Tally CSV/Excel | **Replace-all** — existing Tally entries for this session are deleted and replaced entirely. |
+
+**Why different behaviours?** Tally is the CA's own books — a re-export always represents the full current state. The IMS file comes from GSTN and may be uploaded incrementally or corrected; the CA may have already actioned some invoices (`is_done = true`), and those actions must survive the re-upload.
 
 ---
 

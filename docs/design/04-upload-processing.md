@@ -1,7 +1,7 @@
 # Upload Processing
 **Type:** Low-Level Design (LLD)  
 **Audience:** Developers + CA firm partners  
-**Last updated:** 2026-05-15  
+**Last updated:** 2026-05-16  
 **Source files:** `lib/parsers/`, `lib/upload/`, `app/api/upload/route.ts`
 
 ---
@@ -79,7 +79,7 @@ The IMS JSON has a specific nested structure from GSTN. The parser:
 |---|---|---|
 | `supplierGstin` | `ctin` | Uppercase |
 | `invoiceNo` | `inum` | Lowercase, strip `/\-_# `, remove leading zeros |
-| `invoiceDate` | `dt` | `DD-MM-YYYY` → `YYYY-MM-DD` |
+| `invoiceDate` | `idt` | `DD-MM-YYYY` → UTC midnight `Date` (uses `Date.UTC` — not local time, so stored date is timezone-safe) |
 | `totalValue` | `val` | Decimal, 2dp |
 | `igst` | `itms[].itm_det.iamt` | Sum across line items, Decimal |
 | `cgst` | `itms[].itm_det.camt` | Sum across line items, Decimal |
@@ -118,12 +118,18 @@ Tally exports have no fixed column order — CAs use different Tally configurati
 
 | File | Behaviour |
 |---|---|
-| **IMS JSON** | **Replace-all**: existing IMS invoices and their reconciliation results are deleted, new file is inserted fresh. Source: `lib/upload/ims.ts` |
-| **Tally CSV/Excel** | **Replace-all**: existing Tally entries for this session are deleted and replaced. |
+| **IMS JSON** | **Additive / upsert-by-key** — see details below. Source: `lib/upload/ims.ts` |
+| **Tally CSV/Excel** | **Replace-all** — existing Tally entries for this session are deleted and replaced entirely. |
 
-**Why replace-all?** GSTN may correct or add invoices between uploads. Replacing ensures the database always reflects the latest file, not an accumulation of old + new data.
+### IMS re-upload detail
 
-**Is_done preservation:** When IMS is re-uploaded, any invoice that still appears in the new file and was previously marked `is_done = true` retains its done status. The CA's work is not lost.
+`replaceImsInvoices` matches each invoice in the new file to existing `ImsInvoice` rows by the key `GSTIN::invoice#` (FIFO queue per key to handle genuine duplicate invoices):
+
+1. **Matched rows** — updated in-place (same DB row ID). The `ReconciliationResult` foreign key stays alive, so `is_done`, `done_at`, and `done_by_id` are preserved. The CA's actioned status survives the re-upload.
+2. **New invoices** (no matching existing row) — inserted via `createMany`.
+3. **Stale rows** (existed before, absent from new file) — their `ReconciliationResult` rows are deleted first (FK constraint), then the `ImsInvoice` rows are deleted.
+
+**Why additive for IMS, replace-all for Tally?** Tally is the CA's own books — a re-export is always a full, current snapshot. The IMS file comes from GSTN and CAs may have already actioned some invoices (`is_done = true`); those actions must survive the re-upload.
 
 ---
 
