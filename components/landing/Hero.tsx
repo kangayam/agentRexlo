@@ -24,22 +24,22 @@ export function Hero() {
         {/* ── LEFT ── */}
         <div className="flex flex-col">
 
-          {/* Pilot badge — 13px / semibold / tracking 0.02em */}
+          {/* Pilot badge */}
           <div className="inline-flex items-center gap-2 self-start px-3.5 py-1.5 rounded-md
                           bg-amber-50 border border-amber-300 text-amber-800
-                          text-[13px] font-semibold mb-6 tracking-[0.02em]">
+                          text-xs font-bold mb-6 tracking-wide">
             🚀 Now accepting CA Pilot Partners — 30 spots remaining
           </div>
 
-          {/* Super headline — 56px→64px / black 900 / leading 1.1 / tracking -0.04em */}
-          <h1 className="text-[56px] lg:text-[64px] font-black text-[#0d1f2d]
-                         leading-[1.1] tracking-[-0.04em] mb-5 max-w-lg">
+          {/* Headline — all black */}
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0d1f2d]
+                         leading-[1.15] tracking-tight mb-5 max-w-lg">
             Turn GST Compliance Into Your Biggest Revenue Driver
           </h1>
 
-          {/* Sub-headline — 20px / medium 500 / leading 1.5 / gray-600 */}
-          <p className="text-[20px] text-gray-600 font-medium
-                        max-w-xl mb-8 leading-[1.5]">
+          {/* Sub-headline — all black */}
+          <p className="text-base sm:text-lg text-[#0d1f2d] font-normal
+                        max-w-xl mb-8 leading-relaxed">
             AI agents handle IMS reconciliation, ITC recovery, and client reports —
             so your firm earns more from every client without working more hours.
           </p>
@@ -75,8 +75,8 @@ export function Hero() {
               <div key={s.label}
                    className={`px-5 py-5 text-center
                      ${i < stats.length - 1 ? 'border-r border-slate-200' : ''}`}>
-                <div className="text-[48px] font-bold text-[#0d1f2d] leading-none mb-1"
-                     style={{ fontFamily: 'var(--font-geist-mono)' }}>
+                <div className="text-2xl sm:text-3xl font-extrabold text-[#0d1f2d]
+                                tracking-tight mb-1">
                   {s.value}
                 </div>
                 <div className="text-xs text-slate-500 font-medium leading-snug">{s.label}</div>
