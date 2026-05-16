@@ -75,7 +75,7 @@ export function Hero() {
               <div key={s.label}
                    className={`px-5 py-5 text-center
                      ${i < stats.length - 1 ? 'border-r border-slate-200' : ''}`}>
-                <div className="text-2xl sm:text-3xl font-extrabold text-[#00a896]
+                <div className="text-2xl sm:text-3xl font-extrabold text-[#0d1f2d]
                                 tracking-tight mb-1">
                   {s.value}
                 </div>
