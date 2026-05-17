@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
+import Image from 'next/image'
 
 export function Nav() {
   const [open, setOpen] = useState(false)
@@ -17,7 +18,14 @@ export function Nav() {
 
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <span className="text-[#0d1f2d] font-extrabold text-xl tracking-tight">AgentGST</span>
+          <Image
+            src="/logo.png"
+            alt="AgentGST"
+            width={120}
+            height={36}
+            priority
+            className="h-9 w-auto object-contain"
+          />
           <span className="hidden sm:inline-flex text-[10px] font-bold px-2.5 py-1 rounded-full
                            bg-indigo-50 text-indigo-600 border border-indigo-200 tracking-wider uppercase">
             Powered by Agentic AI
