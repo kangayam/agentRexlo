@@ -24,21 +24,21 @@ export function Hero() {
         {/* ── LEFT ── */}
         <div className="flex flex-col">
 
-          {/* Pilot badge */}
+          {/* Pilot badge — AgentFlow Orange accent */}
           <div className="inline-flex items-center gap-2 self-start px-3.5 py-1.5 rounded-md
-                          bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E]
+                          bg-[#fff7ed] border border-[#ff8a00]/30 text-[#ff8a00]
                           text-[13px] font-semibold mb-6 tracking-[0.02em]">
             🚀 Now accepting CA Pilot Partners — 30 spots remaining
           </div>
 
-          {/* Headline — all black */}
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0d1f2d]
+          {/* Headline — Slate-900 */}
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0f172a]
                          leading-[1.15] tracking-tight mb-5 max-w-lg">
             Turn GST Compliance Into Your Biggest Revenue Driver
           </h1>
 
-          {/* Sub-headline — all black */}
-          <p className="text-base sm:text-lg text-[#0d1f2d] font-normal
+          {/* Body — Slate-500 */}
+          <p className="text-base sm:text-lg text-[#64748b] font-normal
                         max-w-xl mb-8 leading-relaxed">
             AI agents handle IMS reconciliation, ITC recovery, and client reports —
             so your firm earns more from every client without working more hours.
@@ -47,9 +47,9 @@ export function Hero() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <a href="#cta"
-               className="px-7 py-3.5 rounded-lg bg-[#0d1f2d] text-white font-bold text-sm
-                          hover:bg-[#1e3448] transition-colors
-                          shadow-[0_4px_14px_rgba(13,31,45,0.18)]">
+               className="px-7 py-3.5 rounded-lg bg-[#ff8a00] text-white font-bold text-sm
+                          hover:bg-[#e67a00] transition-colors
+                          shadow-[0_4px_14px_rgba(255,138,0,0.30)]">
               Join Pilot Program
             </a>
             <a href="#how-it-works"

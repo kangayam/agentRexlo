@@ -41,8 +41,8 @@ export function Nav() {
             </a>
           ))}
           <a href="#cta"
-             className="px-4 py-2 rounded-lg bg-[#0d1f2d] text-white text-sm font-bold
-                        hover:bg-[#1e3448] transition-colors">
+             className="px-4 py-2 rounded-lg bg-[#ff8a00] text-white text-sm font-bold
+                        hover:bg-[#e67a00] transition-colors">
             Join Pilot Program
           </a>
         </div>
@@ -71,8 +71,8 @@ export function Nav() {
           <div className="pt-3">
             <a href="#cta"
                onClick={() => setOpen(false)}
-               className="block w-full text-center py-3 rounded-lg bg-[#0d1f2d] text-white
-                          text-sm font-bold hover:bg-[#1e3448] transition-colors">
+               className="block w-full text-center py-3 rounded-lg bg-[#ff8a00] text-white
+                          text-sm font-bold hover:bg-[#e67a00] transition-colors">
               Join Pilot Program
             </a>
           </div>
