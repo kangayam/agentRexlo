@@ -31,15 +31,15 @@ export function Hero() {
             🚀 Now accepting CA Pilot Partners — 30 spots remaining
           </div>
 
-          {/* Headline — Geist Sans 56px / 700 / -0.02em */}
-          <h1 className="text-[56px] font-bold text-[#0d1f2d]
-                         leading-[1.1] tracking-[-0.02em] mb-5 max-w-lg">
+          {/* Headline — all black */}
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0d1f2d]
+                         leading-[1.15] tracking-tight mb-5 max-w-lg">
             Turn GST Compliance Into Your Biggest Revenue Driver
           </h1>
 
-          {/* Body — 24px / 400 / slate-500 */}
-          <p className="text-[24px] text-[#64748b] font-normal
-                        max-w-xl mb-8 leading-[1.5]">
+          {/* Sub-headline — all black */}
+          <p className="text-base sm:text-lg text-[#0d1f2d] font-normal
+                        max-w-xl mb-8 leading-relaxed">
             AI agents handle IMS reconciliation, ITC recovery, and client reports —
             so your firm earns more from every client without working more hours.
           </p>
