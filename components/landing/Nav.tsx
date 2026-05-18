@@ -7,29 +7,26 @@ export function Nav() {
   const [open, setOpen] = useState(false)
 
   const links = [
-    { label: 'Features',     href: '#features'     },
-    { label: 'How It Works', href: '#how-it-works'  },
-    { label: 'Pricing',      href: '#pricing'       },
+    { label: 'Products',   href: '#features'   },
+    { label: 'Solutions',  href: '#who-its-for' },
+    { label: 'Resources',  href: '#screenshots' },
+    { label: 'Pricing',    href: '#pricing'     },
   ]
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 
         {/* Logo */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center">
           <Image
-            src="/logo.png"
-            alt="AgentGST"
+            src="/rexlo-logo.png"
+            alt="Rexlo"
             width={120}
             height={36}
             priority
-            className="h-9 w-auto object-contain"
+            className="h-8 w-auto object-contain"
           />
-          <span className="hidden sm:inline-flex text-[10px] font-bold px-2.5 py-1 rounded-full
-                           bg-indigo-50 text-indigo-600 border border-indigo-200 tracking-wider uppercase">
-            Powered by Agentic AI
-          </span>
         </div>
 
         {/* Desktop links */}
@@ -40,10 +37,14 @@ export function Nav() {
               {l.label}
             </a>
           ))}
+          <a href="/login"
+             className="text-sm text-indigo-600 font-semibold hover:text-indigo-700 transition-colors">
+            Sign in
+          </a>
           <a href="#cta"
-             className="px-4 py-2 rounded-lg bg-[#ff8a00] text-white text-sm font-bold
-                        hover:bg-[#e67a00] transition-colors">
-            Join Pilot Program
+             className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold
+                        hover:bg-indigo-700 transition-colors shadow-sm">
+            Request a Demo
           </a>
         </div>
 
@@ -68,12 +69,18 @@ export function Nav() {
               {l.label}
             </a>
           ))}
-          <div className="pt-3">
+          <div className="pt-3 flex flex-col gap-2">
+            <a href="/login"
+               onClick={() => setOpen(false)}
+               className="block w-full text-center py-3 rounded-lg border border-indigo-200
+                          text-indigo-600 text-sm font-semibold">
+              Sign in
+            </a>
             <a href="#cta"
                onClick={() => setOpen(false)}
-               className="block w-full text-center py-3 rounded-lg bg-[#ff8a00] text-white
-                          text-sm font-bold hover:bg-[#e67a00] transition-colors">
-              Join Pilot Program
+               className="block w-full text-center py-3 rounded-lg bg-indigo-600 text-white
+                          text-sm font-bold hover:bg-indigo-700 transition-colors">
+              Request a Demo
             </a>
           </div>
         </div>
