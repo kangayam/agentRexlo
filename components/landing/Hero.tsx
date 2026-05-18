@@ -1,121 +1,78 @@
 'use client'
 
-import Image from 'next/image'
-import { useFadeIn } from '@/hooks/useFadeIn'
-
-const stats = [
-  { value: '5×',    label: 'ROI in Month 1'            },
-  { value: '+₹36L', label: 'Annual Revenue Uplift'      },
-  { value: '3×',    label: 'Client Capacity, Same Team' },
-]
-
 export function Hero() {
-  const ref = useFadeIn()
-
   return (
-    <section className="min-h-screen bg-[#F4F9FB] flex flex-col justify-center pt-16">
-      <div
-        ref={ref}
-        className="max-w-7xl mx-auto w-full px-6 py-20
-                   grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-14
-                   items-center"
-      >
+    <section className="relative min-h-screen bg-white flex flex-col justify-center pt-16 overflow-hidden">
 
-        {/* ── LEFT ── */}
-        <div className="flex flex-col">
+      {/* Gradient blobs */}
+      <div className="pointer-events-none absolute -top-24 -right-24 w-[500px] h-[500px] rounded-full
+                      bg-[radial-gradient(circle,rgba(139,92,246,0.18)_0%,rgba(99,102,241,0.08)_40%,transparent_70%)]" />
+      <div className="pointer-events-none absolute bottom-0 -left-16 w-[360px] h-[360px] rounded-full
+                      bg-[radial-gradient(circle,rgba(236,72,153,0.10)_0%,transparent_70%)]" />
 
-          {/* Pilot badge — AgentFlow Orange accent */}
-          <div className="inline-flex items-center gap-2 self-start px-3.5 py-1.5 rounded-md
-                          bg-[#fff7ed] border border-[#ff8a00]/30 text-[#ff8a00]
-                          text-[13px] font-semibold mb-6 tracking-[0.02em]">
-            🚀 Now accepting CA Pilot Partners — 30 spots remaining
+      <div className="relative z-10 max-w-4xl mx-auto px-6 pt-20 pb-0 text-center">
+
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-200
+                        rounded-full px-4 py-1.5 mb-8 text-xs font-semibold text-indigo-600 tracking-wide">
+          ✦ Powered by Agentic AI
+        </div>
+
+        {/* Headline */}
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900
+                       leading-[1.1] tracking-tight mb-6">
+          Turn GST Compliance Into Your{' '}
+          <span className="bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500
+                           bg-clip-text text-transparent">
+            Biggest Revenue Driver
+          </span>
+        </h1>
+
+        {/* Subtext */}
+        <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+          AI agents handle IMS reconciliation, ITC recovery, and client reports — so your firm
+          earns more from every client without working more hours.
+        </p>
+
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
+          <a href="#cta"
+             className="px-8 py-3.5 rounded-xl bg-indigo-600 text-white font-bold text-sm
+                        hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200">
+            Request a Demo →
+          </a>
+          <a href="#screenshots"
+             className="px-8 py-3.5 rounded-xl border border-indigo-200 text-indigo-600
+                        font-semibold text-sm hover:bg-indigo-50 transition-colors bg-white">
+            ▶ Watch 2-min overview
+          </a>
+        </div>
+
+        {/* Dashboard peek */}
+        <div className="mx-4 sm:mx-8 rounded-t-2xl overflow-hidden border border-slate-200
+                        border-b-0 shadow-[0_-8px_40px_rgba(99,102,241,0.15)]">
+          {/* Browser chrome bar */}
+          <div className="bg-slate-900 px-4 py-3 flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-slate-600" />
+            <span className="w-3 h-3 rounded-full bg-slate-600" />
+            <span className="w-3 h-3 rounded-full bg-slate-600" />
+            <span className="ml-4 text-[10px] text-slate-500">app.rexlo.in/ca/dashboard</span>
           </div>
-
-          {/* Headline — Slate-900 */}
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0f172a]
-                         leading-[1.15] tracking-tight mb-5 max-w-lg">
-            Turn GST Compliance Into Your Biggest Revenue Driver
-          </h1>
-
-          {/* Body — Slate-500 */}
-          <p className="text-base sm:text-lg text-[#64748b] font-normal
-                        max-w-xl mb-8 leading-relaxed">
-            AI agents handle IMS reconciliation, ITC recovery, and client reports —
-            so your firm earns more from every client without working more hours.
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <a href="#cta"
-               className="px-7 py-3.5 rounded-lg bg-[#ff8a00] text-white font-bold text-sm
-                          hover:bg-[#e67a00] transition-colors
-                          shadow-[0_4px_14px_rgba(255,138,0,0.30)]">
-              Join Pilot Program
-            </a>
-            <a href="#how-it-works"
-               className="px-7 py-3.5 rounded-lg bg-[#0d1f2d] text-white font-semibold text-sm
-                          hover:bg-[#1e3448] transition-colors">
-              See How It Works
-            </a>
-          </div>
-
-          {/* Trust line */}
-          <p className="text-xs text-slate-500 mb-10 flex items-center gap-2">
-            <span>30-day free pilot</span>
-            <span className="w-1 h-1 rounded-full bg-slate-300 inline-block" />
-            <span>No credit card</span>
-            <span className="w-1 h-1 rounded-full bg-slate-300 inline-block" />
-            <span>Cancel anytime</span>
-          </p>
-
-          {/* Stats bar */}
-          <div className="grid grid-cols-3 border border-slate-200 rounded-xl overflow-hidden bg-white
-                          shadow-sm">
-            {stats.map((s, i) => (
-              <div key={s.label}
-                   className={`px-5 py-5 text-center
-                     ${i < stats.length - 1 ? 'border-r border-slate-200' : ''}`}>
-                <div className="text-2xl sm:text-3xl font-extrabold text-[#0d1f2d]
-                                tracking-tight mb-1">
-                  {s.value}
-                </div>
-                <div className="text-xs text-slate-500 font-medium leading-snug">{s.label}</div>
+          {/* Stat cards row */}
+          <div className="bg-slate-900 px-6 py-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { val: '₹2,20,443',  lbl: 'ITC Cleared',    color: 'text-emerald-400' },
+              { val: '₹13,72,253', lbl: 'ITC Leakage',    color: 'text-red-400'     },
+              { val: '41 / 100',   lbl: 'Quality Score',  color: 'text-blue-400'    },
+              { val: '2',          lbl: 'Active Clients',  color: 'text-amber-400'   },
+            ].map(s => (
+              <div key={s.lbl} className="bg-slate-800 rounded-lg px-4 py-3">
+                <div className={`text-sm font-bold ${s.color} mb-0.5`}>{s.val}</div>
+                <div className="text-[11px] text-slate-500">{s.lbl}</div>
               </div>
             ))}
           </div>
         </div>
-
-        {/* ── RIGHT — product image + AI agent bar ── */}
-        <div className="flex flex-col items-center justify-center lg:justify-end gap-4">
-          <div className="w-full max-w-none">
-            <Image
-              src="/agentgst-hero.png"
-              alt="AgentGST — AI-Powered GST Reconciliation Dashboard"
-              width={1080}
-              height={740}
-              priority
-              className="w-full h-auto object-cover"
-            />
-          </div>
-
-          {/* Animated AI agent status bar */}
-          <div className="ai-bar-enter w-full flex items-center gap-3
-                          bg-white border border-slate-200 rounded-xl
-                          px-5 py-3 shadow-sm">
-            {/* Pulsing teal dot */}
-            <span className="relative flex h-2.5 w-2.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full
-                               rounded-full bg-[#00a896] opacity-60" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#00a896]" />
-            </span>
-
-            {/* Typewriter text */}
-            <span className="ai-typing text-sm font-semibold text-[#0d1f2d] tracking-tight">
-              AI Agents working for you
-            </span>
-          </div>
-        </div>
-
       </div>
     </section>
   )
