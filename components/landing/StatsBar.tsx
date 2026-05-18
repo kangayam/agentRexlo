@@ -5,16 +5,21 @@ const stats = [
   { value: '60%', label: 'Fewer govt notices'      },
 ]
 
+// Per-cell border classes — mobile (2-col) and desktop (4-col) handled separately
+const cellBorders = [
+  'border-r border-b border-slate-200 md:border-b-0',          // 0: left  top-row
+  'border-b border-slate-200 md:border-r md:border-b-0',       // 1: right top-row
+  'border-r border-slate-200',                                   // 2: left  bottom-row
+  '',                                                            // 3: right bottom-row
+]
+
 export function StatsBar() {
   return (
     <section className="bg-white py-6 px-6">
       <div className="max-w-5xl mx-auto border border-slate-200 rounded-2xl overflow-hidden">
         <div className="grid grid-cols-2 md:grid-cols-4">
           {stats.map((s, i) => (
-            <div key={s.label}
-                 className={`px-8 py-8 text-center
-                   ${i < stats.length - 1 ? 'border-r border-slate-200' : ''}
-                   ${i < 2 ? 'border-b border-slate-200 md:border-b-0' : ''}`}>
+            <div key={s.label} className={`px-8 py-8 text-center ${cellBorders[i]}`}>
               <div className="text-3xl font-black bg-gradient-to-r from-indigo-500 to-violet-500
                               bg-clip-text text-transparent mb-1">
                 {s.value}
