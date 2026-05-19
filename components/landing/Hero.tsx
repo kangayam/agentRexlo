@@ -68,7 +68,6 @@ export function Hero() {
               <video
                 src="/Four AI-Powered Modules.mp4"
                 autoPlay
-                loop
                 muted
                 playsInline
                 className="w-full h-auto block"
