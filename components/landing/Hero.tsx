@@ -63,8 +63,7 @@ export function Hero() {
             <div className="pointer-events-none absolute inset-0 rounded-2xl
                             bg-[radial-gradient(circle,rgba(99,102,241,0.10)_0%,transparent_70%)]" />
 
-            <div className="relative w-full rounded-2xl overflow-hidden border border-slate-200
-                            shadow-2xl shadow-indigo-100">
+            <div className="relative w-full rounded-2xl overflow-hidden">
               <video
                 src="/Four AI-Powered Modules.mp4"
                 autoPlay
