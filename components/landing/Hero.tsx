@@ -58,20 +58,15 @@ export function Hero() {
           </div>
 
           {/* ── RIGHT: Video ── */}
-          <div className="relative flex items-center justify-center">
-            {/* Subtle glow behind video */}
-            <div className="pointer-events-none absolute inset-0 rounded-2xl
-                            bg-[radial-gradient(circle,rgba(99,102,241,0.10)_0%,transparent_70%)]" />
-
-            <div className="relative w-full rounded-2xl overflow-hidden">
-              <video
-                src="/Four AI-Powered Modules.mp4"
-                autoPlay
-                muted
-                playsInline
-                className="w-full h-auto block"
-              />
-            </div>
+          <div className="flex items-center justify-center">
+            <video
+              src="/Four AI-Powered Modules.mp4"
+              autoPlay
+              muted
+              playsInline
+              style={{ backgroundColor: 'white', mixBlendMode: 'multiply' }}
+              className="w-full h-auto block"
+            />
           </div>
 
         </div>
