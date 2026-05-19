@@ -24,7 +24,7 @@ export function Hero() {
             </div>
 
             {/* Headline */}
-            <h1 className="font-geist font-bold text-[3.75rem] text-[#0f172a]
+            <h1 className="font-geist font-bold text-[2.75rem] text-[#0f172a]
                            leading-[1.1] tracking-[-0.04em] mb-6">
               Turn GST Compliance Into Your{' '}
               <span className="bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500
@@ -34,7 +34,7 @@ export function Hero() {
             </h1>
 
             {/* Subtext */}
-            <p className="text-[20px] font-medium text-[#64748b] max-w-xl mb-10 leading-relaxed">
+            <p className="text-[16px] font-medium text-[#64748b] max-w-xl mb-10 leading-relaxed">
               AI agents handle IMS reconciliation, ITC recovery, and client reports — so your
               firm earns more from every client without working more hours.
             </p>
