@@ -4,9 +4,11 @@ export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center pt-16 overflow-hidden" style={{ backgroundColor: '#f8f8f8' }}>
 
-      {/* Gradient blob — left side only, away from the video */}
+      {/* Gradient blobs */}
+      <div className="pointer-events-none absolute -top-24 -right-24 w-[500px] h-[500px] rounded-full
+                      bg-[radial-gradient(circle,rgba(139,92,246,0.18)_0%,rgba(99,102,241,0.08)_40%,transparent_70%)]" />
       <div className="pointer-events-none absolute bottom-0 -left-16 w-[360px] h-[360px] rounded-full
-                      bg-[radial-gradient(circle,rgba(236,72,153,0.07)_0%,transparent_70%)]" />
+                      bg-[radial-gradient(circle,rgba(236,72,153,0.10)_0%,transparent_70%)]" />
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -63,6 +65,7 @@ export function Hero() {
               muted
               playsInline
               className="w-full h-auto block"
+              style={{ mixBlendMode: 'multiply' }}
             />
           </div>
 
