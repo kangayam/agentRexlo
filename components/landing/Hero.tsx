@@ -2,7 +2,7 @@
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen bg-white flex items-center pt-16 overflow-hidden">
+    <section className="relative min-h-screen flex items-center pt-16 overflow-hidden" style={{ backgroundColor: '#f8f8f8' }}>
 
       {/* Gradient blobs */}
       <div className="pointer-events-none absolute -top-24 -right-24 w-[500px] h-[500px] rounded-full
@@ -64,7 +64,6 @@ export function Hero() {
               autoPlay
               muted
               playsInline
-              style={{ backgroundColor: 'white', mixBlendMode: 'multiply' }}
               className="w-full h-auto block"
             />
           </div>
