@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const points = [
   {
@@ -29,7 +29,7 @@ const points = [
   },
 ]
 
-const PAUSE_MS  = 3000   // hold still for 3s
+const PAUSE_MS  = 4000   // hold all cards visible for 4s
 const SCROLL_MS = 16000  // slowly scroll through in 16s
 const CYCLE_MS  = PAUSE_MS + SCROLL_MS + PAUSE_MS
 
@@ -39,17 +39,17 @@ function easeInOut(t: number) {
 
 function Card({ p, i }: { p: typeof points[0]; i: number }) {
   return (
-    <div className="flex gap-5 items-start bg-slate-800/60 rounded-2xl p-6
+    <div className="flex gap-4 items-start bg-slate-800/60 rounded-xl p-4
                     border border-slate-700 shadow-lg shadow-black/20 backdrop-blur-sm">
-      <div className="w-10 h-10 rounded-xl bg-indigo-900/60 border border-indigo-700
-                      flex items-center justify-center text-lg flex-shrink-0">
+      <div className="w-9 h-9 rounded-lg bg-indigo-900/60 border border-indigo-700
+                      flex items-center justify-center text-base flex-shrink-0">
         {p.icon}
       </div>
-      <div>
-        <h3 className="text-sm font-black text-white mb-1">{p.title}</h3>
-        <p className="text-sm text-slate-400 leading-relaxed">{p.body}</p>
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-black text-white mb-0.5">{p.title}</h3>
+        <p className="text-xs text-slate-400 leading-relaxed">{p.body}</p>
       </div>
-      <span className="text-[10px] font-bold text-slate-600 tracking-widest ml-auto flex-shrink-0 mt-1">
+      <span className="text-[10px] font-bold text-slate-600 tracking-widest flex-shrink-0 mt-0.5">
         0{i + 1}
       </span>
     </div>
@@ -57,32 +57,44 @@ function Card({ p, i }: { p: typeof points[0]; i: number }) {
 }
 
 export function AgenticAdvantage() {
-  const trackRef = useRef<HTMLDivElement>(null)
-  const rafRef   = useRef<number>(0)
-  const startRef = useRef<number | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const trackRef     = useRef<HTMLDivElement>(null)
+  const rafRef       = useRef<number>(0)
+  const startRef     = useRef<number | null>(null)
+  const [isPaused, setIsPaused]     = useState(true)
+  const [containerH, setContainerH] = useState(460)
 
   useEffect(() => {
-    const track = trackRef.current
-    if (!track) return
+    const track     = trackRef.current
+    const container = containerRef.current
+    if (!track || !container) return
+
+    // Measure one full set of cards and set container height to fit all
+    const oneSetHeight = track.scrollHeight / 2
+    setContainerH(oneSetHeight)
 
     function animate(ts: number) {
       if (!startRef.current) startRef.current = ts
       const elapsed = (ts - startRef.current) % CYCLE_MS
 
       let progress = 0
+      let paused   = false
+
       if (elapsed < PAUSE_MS) {
-        // Phase 1: hold still — all cards visible
         progress = 0
+        paused   = true
       } else if (elapsed < PAUSE_MS + SCROLL_MS) {
-        // Phase 2: smooth scroll
         progress = easeInOut((elapsed - PAUSE_MS) / SCROLL_MS)
+        paused   = false
       } else {
-        // Phase 3: hold at end
         progress = 1
+        paused   = true
       }
 
-      const halfHeight = track.scrollHeight / 2
-      track.style.transform = `translateY(-${progress * halfHeight}px)`
+      setIsPaused(paused)
+
+      const half = track.scrollHeight / 2
+      track.style.transform = `translateY(-${progress * half}px)`
       rafRef.current = requestAnimationFrame(animate)
     }
 
@@ -114,22 +126,30 @@ export function AgenticAdvantage() {
           </div>
 
           {/* Right — cinematic pause-scroll-pause */}
-          <div className="relative h-[460px] overflow-hidden">
-
-            {/* Top fade */}
-            <div className="pointer-events-none absolute top-0 left-0 right-0 h-20 z-10
-                            bg-gradient-to-b from-[#0f172a] to-transparent" />
-            {/* Bottom fade */}
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-20 z-10
-                            bg-gradient-to-t from-[#0f172a] to-transparent" />
+          <div
+            ref={containerRef}
+            className="relative overflow-hidden transition-all duration-300"
+            style={{ height: containerH }}
+          >
+            {/* Fades — hidden during pause so all cards are fully visible */}
+            <div
+              className="pointer-events-none absolute top-0 left-0 right-0 h-16 z-10
+                         bg-gradient-to-b from-[#0f172a] to-transparent transition-opacity duration-500"
+              style={{ opacity: isPaused ? 0 : 1 }}
+            />
+            <div
+              className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 z-10
+                         bg-gradient-to-t from-[#0f172a] to-transparent transition-opacity duration-500"
+              style={{ opacity: isPaused ? 0 : 1 }}
+            />
 
             {/* Track — duplicated for seamless loop */}
-            <div ref={trackRef} className="flex flex-col gap-5 will-change-transform">
+            <div ref={trackRef} className="flex flex-col gap-3 will-change-transform">
               {points.map(p => <Card key={`a-${p.title}`} p={p} i={points.indexOf(p)} />)}
               {points.map(p => <Card key={`b-${p.title}`} p={p} i={points.indexOf(p)} />)}
             </div>
-
           </div>
+
         </div>
       </div>
     </section>
