@@ -36,7 +36,7 @@ export function FourModules() {
             How It Works
           </p>
           <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-4">
-            Four Agents. One Platform. Zero Spreadsheets.
+            Four AI Agents. One Platform. Zero Spreadsheets.
           </h2>
           <p className="text-base text-slate-500 max-w-2xl mx-auto">
             Each agent handles a specific part of your monthly GST workflow — so you and your
