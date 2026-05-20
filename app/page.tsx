@@ -5,7 +5,9 @@ import { Hero }        from '@/components/landing/Hero'
 import { TrustedBy }   from '@/components/landing/TrustedBy'
 import { WhoItsFor }   from '@/components/landing/WhoItsFor'
 import { StatsBar }    from '@/components/landing/StatsBar'
-import { Screenshots } from '@/components/landing/Screenshots'
+import { FourModules }      from '@/components/landing/FourModules'
+import { AgenticAdvantage } from '@/components/landing/AgenticAdvantage'
+import { Screenshots }      from '@/components/landing/Screenshots'
 import { Pricing }     from '@/components/landing/Pricing'
 import { FinalCTA }    from '@/components/landing/FinalCTA'
 import { Footer }      from '@/components/landing/Footer'
@@ -26,6 +28,8 @@ export default async function Home() {
       <TrustedBy />
       <WhoItsFor />
       <StatsBar />
+      <FourModules />
+      <AgenticAdvantage />
       <Screenshots />
       <Pricing />
       <FinalCTA />
