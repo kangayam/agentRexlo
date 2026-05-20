@@ -16,7 +16,7 @@ const cellBorders = [
 export function StatsBar() {
   return (
     <section className="bg-white py-6 px-6">
-      <div className="max-w-5xl mx-auto border border-slate-200 rounded-2xl overflow-hidden">
+      <div className="max-w-5xl mx-auto border border-[#e2e8f0] rounded-2xl overflow-hidden">
         <div className="grid grid-cols-2 md:grid-cols-4">
           {stats.map((s, i) => (
             <div key={s.label} className={`px-8 py-8 text-center ${cellBorders[i]}`}>

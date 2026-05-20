@@ -2,7 +2,7 @@
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center pt-16 overflow-hidden" style={{ backgroundColor: '#f7f7f7' }}>
+    <section className="relative min-h-screen flex items-center pt-16 overflow-hidden" style={{ backgroundColor: '#f8fafc' }}>
 
       {/* Gradient blobs */}
       <div className="pointer-events-none absolute -top-24 -right-24 w-[500px] h-[500px] rounded-full

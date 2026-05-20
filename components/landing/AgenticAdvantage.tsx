@@ -40,7 +40,7 @@ function easeInOut(t: number) {
 function Card({ p, i }: { p: typeof points[0]; i: number }) {
   return (
     <div className="flex gap-4 items-start bg-white rounded-xl p-4
-                    border border-slate-200 shadow-sm">
+                    border border-[#e2e8f0] shadow-sm">
       <div className="w-9 h-9 rounded-lg bg-[#f0fdf4] border border-[#dcfce7]
                       flex items-center justify-center text-base flex-shrink-0">
         {p.icon}
@@ -103,7 +103,7 @@ export function AgenticAdvantage() {
   }, [])
 
   return (
-    <section className="py-24 px-6 overflow-hidden" style={{ backgroundColor: '#f7f7f7' }}>
+    <section className="py-24 px-6 overflow-hidden" style={{ backgroundColor: '#f8fafc' }}>
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
@@ -134,12 +134,12 @@ export function AgenticAdvantage() {
             {/* Fades — hidden during pause so all cards are fully visible */}
             <div
               className="pointer-events-none absolute top-0 left-0 right-0 h-16 z-10
-                         bg-gradient-to-b from-[#f7f7f7] to-transparent transition-opacity duration-500"
+                         bg-gradient-to-b from-[#f8fafc] to-transparent transition-opacity duration-500"
               style={{ opacity: isPaused ? 0 : 1 }}
             />
             <div
               className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 z-10
-                         bg-gradient-to-t from-[#f7f7f7] to-transparent transition-opacity duration-500"
+                         bg-gradient-to-t from-[#f8fafc] to-transparent transition-opacity duration-500"
               style={{ opacity: isPaused ? 0 : 1 }}
             />
 

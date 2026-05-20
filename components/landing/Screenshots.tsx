@@ -53,7 +53,7 @@ function Pill({ label }: { label: string }) {
 
 function ScreenshotCard({ slug, label }: { slug: string; label: string }) {
   return (
-    <div className="rounded-xl overflow-hidden border border-slate-200 shadow-lg shadow-slate-200/60 w-full">
+    <div className="rounded-xl overflow-hidden border border-[#e2e8f0] shadow-lg shadow-slate-200/60 w-full">
       <div className="bg-slate-100 px-4 py-2.5 flex items-center gap-2 border-b border-slate-200">
         <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
         <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
@@ -67,7 +67,7 @@ function ScreenshotCard({ slug, label }: { slug: string; label: string }) {
 
 export function Screenshots() {
   return (
-    <section id="screenshots" className="bg-slate-50 py-24 px-6">
+    <section id="screenshots" className="bg-[#f8fafc] py-24 px-6">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}

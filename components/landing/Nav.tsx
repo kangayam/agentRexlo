@@ -60,7 +60,7 @@ export function Nav() {
             <a key={l.label} href={l.href}
                onClick={() => setOpen(false)}
                className="block py-3 text-sm text-slate-600 hover:text-slate-900 transition-colors
-                          font-medium border-b border-slate-100">
+                          font-medium border-b border-[#e2e8f0]">
               {l.label}
             </a>
           ))}
