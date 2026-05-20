@@ -61,7 +61,6 @@ export function Hero() {
           <div className="flex items-center justify-center">
             <video
               src="/Four AI-Powered Modules.mp4"
-              poster="/ca-dashboard.png"
               autoPlay
               muted
               playsInline
