@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import localFont from "next/font/local"
-import { Inter, Space_Mono } from "next/font/google"
+import { Nunito, Open_Sans, Space_Mono } from "next/font/google"
 import { GoogleAnalytics } from '@next/third-parties/google'
 import "./globals.css"
 
@@ -14,10 +14,15 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
   weight: "100 900",
 })
-const inter = Inter({
+const nunito = Nunito({
   subsets: ["latin"],
-  variable: "--font-inter",
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-nunito",
+  weight: ["400", "600", "700", "800", "900"],
+})
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  variable: "--font-open-sans",
+  weight: ["300", "400", "500", "600", "700", "800"],
 })
 const spaceMono = Space_Mono({
   subsets: ["latin"],
@@ -26,8 +31,8 @@ const spaceMono = Space_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'AgentGST — AI-Native GST Intelligence for CA Firms',
-  description: 'AI agents that help CA firms double revenue per client and triple client capacity. Automated reconciliation, ITC recovery, and branded client portals.',
+  title: 'Rexlo — AI-Powered GST Intelligence for CA Firms',
+  description: 'AI agents that help CA firms recover ITC, automate reconciliation, and triple client capacity. Turn GST compliance into your biggest revenue driver.',
 }
 
 export default function RootLayout({
@@ -36,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${spaceMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${nunito.variable} ${openSans.variable} ${spaceMono.variable} antialiased`}
       >
         {children}
       </body>

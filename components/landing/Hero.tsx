@@ -2,7 +2,7 @@
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center pt-16 overflow-hidden" style={{ backgroundColor: '#f8f8f8' }}>
+    <section className="relative min-h-screen flex items-center pt-16 overflow-hidden" style={{ backgroundColor: '#f7f7f7' }}>
 
       {/* Gradient blobs */}
       <div className="pointer-events-none absolute -top-24 -right-24 w-[500px] h-[500px] rounded-full
@@ -17,17 +17,17 @@ export function Hero() {
           <div className="flex flex-col">
 
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-200
-                            rounded-full px-4 py-1.5 mb-8 text-xs font-semibold text-indigo-600
+            <div className="inline-flex items-center gap-2 bg-[#f0fdf4] border border-[#bbf7d0]
+                            rounded-full px-4 py-1.5 mb-8 text-xs font-semibold text-[#4eb564]
                             tracking-wide self-start">
               ✦ Powered by Agentic AI
             </div>
 
             {/* Headline */}
-            <h1 className="font-geist font-bold text-[2.75rem] text-[#0f172a]
+            <h1 className="font-[family-name:var(--font-nunito)] font-bold text-[2.75rem] text-[#002124]
                            leading-[1.1] tracking-[-0.04em] mb-6">
               Turn GST Compliance Into Your{' '}
-              <span className="bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500
+              <span className="bg-gradient-to-r from-[#4eb564] via-[#62cac3] to-[#00FE89]
                                bg-clip-text text-transparent">
                 Biggest Revenue Driver
               </span>
@@ -42,13 +42,13 @@ export function Hero() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <a href="#cta"
-                 className="px-8 py-3.5 rounded-xl bg-indigo-600 text-white font-bold text-sm
-                            hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200
+                 className="px-8 py-3.5 rounded-xl bg-[#4eb564] text-white font-bold text-sm
+                            hover:bg-[#3da055] transition-colors shadow-md shadow-[#bbf7d0]
                             text-center">
                 Request a Demo →
               </a>
               <a href="#screenshots"
-                 className="text-sm text-slate-500 hover:text-indigo-600 transition-colors font-medium">
+                 className="text-sm text-slate-500 hover:text-[#4eb564] transition-colors font-medium">
                 ▶ Watch 2-min overview
               </a>
             </div>

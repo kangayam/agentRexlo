@@ -34,7 +34,7 @@ export function Problem() {
         </p>
 
         {/* Headline */}
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-[#0f172a] leading-tight mb-4 max-w-3xl">
+        <h2 className="text-4xl sm:text-5xl font-extrabold text-[#002124] leading-tight mb-4 max-w-3xl">
           Tax Filing Is Becoming a Commodity. Advisory Is the Future.
         </h2>
 
@@ -48,7 +48,7 @@ export function Problem() {
             <div key={card.title}
                  className="rounded-xl border border-amber-200 bg-white p-6
                             shadow-sm shadow-amber-100/50">
-              <h3 className="text-base font-bold text-[#0f172a] mb-4">{card.title}</h3>
+              <h3 className="text-base font-bold text-[#002124] mb-4">{card.title}</h3>
               <ul className="space-y-3">
                 {card.points.map(pt => (
                   <li key={pt} className="flex items-start gap-3 text-sm text-[#64748b]">
@@ -63,7 +63,7 @@ export function Problem() {
 
         {/* Callout */}
         <div className="rounded-xl border border-[#00bfad]/40 bg-[#00bfad]/5 px-8 py-6 text-center">
-          <p className="text-base sm:text-lg font-bold text-[#0f172a] leading-relaxed">
+          <p className="text-base sm:text-lg font-bold text-[#002124] leading-relaxed">
             What if you could productize and scale high-margin advisory across every client
             — with AI?
           </p>

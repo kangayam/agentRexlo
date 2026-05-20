@@ -41,7 +41,7 @@ function Card({ p, i }: { p: typeof points[0]; i: number }) {
   return (
     <div className="flex gap-4 items-start bg-white rounded-xl p-4
                     border border-slate-200 shadow-sm">
-      <div className="w-9 h-9 rounded-lg bg-indigo-50 border border-indigo-100
+      <div className="w-9 h-9 rounded-lg bg-[#f0fdf4] border border-[#dcfce7]
                       flex items-center justify-center text-base flex-shrink-0">
         {p.icon}
       </div>
@@ -103,18 +103,18 @@ export function AgenticAdvantage() {
   }, [])
 
   return (
-    <section className="py-24 px-6 overflow-hidden" style={{ backgroundColor: '#f8f8f8' }}>
+    <section className="py-24 px-6 overflow-hidden" style={{ backgroundColor: '#f7f7f7' }}>
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
           {/* Left — heading */}
           <div className="lg:sticky lg:top-24">
-            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-indigo-600 mb-4">
+            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#4eb564] mb-4">
               Why Rexlo Is Different
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-5 leading-tight">
               Your CAs Stopped Being Data Entry Operators.{' '}
-              <span className="bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500
+              <span className="bg-gradient-to-r from-[#4eb564] via-[#62cac3] to-[#00FE89]
                                bg-clip-text text-transparent">
                 Tonight.
               </span>
@@ -134,12 +134,12 @@ export function AgenticAdvantage() {
             {/* Fades — hidden during pause so all cards are fully visible */}
             <div
               className="pointer-events-none absolute top-0 left-0 right-0 h-16 z-10
-                         bg-gradient-to-b from-[#f8f8f8] to-transparent transition-opacity duration-500"
+                         bg-gradient-to-b from-[#f7f7f7] to-transparent transition-opacity duration-500"
               style={{ opacity: isPaused ? 0 : 1 }}
             />
             <div
               className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 z-10
-                         bg-gradient-to-t from-[#f8f8f8] to-transparent transition-opacity duration-500"
+                         bg-gradient-to-t from-[#f7f7f7] to-transparent transition-opacity duration-500"
               style={{ opacity: isPaused ? 0 : 1 }}
             />
 

@@ -16,8 +16,9 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ['var(--font-inter)', 'Inter', 'sans-serif'],
-        mono: ['var(--font-space-mono)', 'Space Mono', 'monospace'],
+        sans:  ['var(--font-inter)', 'Inter', 'sans-serif'],
+        mono:  ['var(--font-space-mono)', 'Space Mono', 'monospace'],
+        geist: ['var(--font-geist-sans)', 'Inter', 'SF Pro Display', 'sans-serif'],
       },
       colors: {
         border:      'hsl(var(--border))',

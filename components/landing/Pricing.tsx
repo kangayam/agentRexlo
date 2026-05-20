@@ -51,19 +51,19 @@ export function Pricing() {
             <div key={tier.name}
                  className={`rounded-2xl p-8 border ${
                    tier.featured
-                     ? 'border-indigo-400 bg-indigo-50 relative'
+                     ? 'border-[#4eb564] bg-[#f0fdf4] relative'
                      : 'border-slate-200 bg-white'
                  }`}>
               {tier.featured && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                  <span className="px-4 py-1 rounded-full bg-indigo-600 text-white
+                  <span className="px-4 py-1 rounded-full bg-[#4eb564] text-white
                                    text-[10px] font-bold tracking-wide">
                     MOST POPULAR
                   </span>
                 </div>
               )}
               <p className={`text-[10px] font-bold tracking-[0.15em] uppercase mb-4 ${
-                tier.featured ? 'text-indigo-600' : 'text-slate-400'
+                tier.featured ? 'text-[#4eb564]' : 'text-slate-400'
               }`}>
                 {tier.name}
               </p>
@@ -73,8 +73,8 @@ export function Pricing() {
               <a href="#cta"
                  className={`block w-full text-center py-3 rounded-xl text-sm font-bold transition-colors ${
                    tier.featured
-                     ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                     : 'border border-slate-200 text-slate-700 hover:border-indigo-300 hover:text-indigo-600'
+                     ? 'bg-[#4eb564] text-white hover:bg-[#3da055]'
+                     : 'border border-slate-200 text-slate-700 hover:border-[#86efac] hover:text-[#4eb564]'
                  }`}>
                 Get Started
               </a>

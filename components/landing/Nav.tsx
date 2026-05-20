@@ -38,7 +38,7 @@ export function Nav() {
             </a>
           ))}
           <a href="/login"
-             className="text-sm text-indigo-600 font-semibold hover:text-indigo-700 transition-colors">
+             className="text-sm text-[#4eb564] font-semibold hover:text-[#3da055] transition-colors">
             Sign in
           </a>
         </div>
@@ -67,8 +67,8 @@ export function Nav() {
           <div className="pt-3">
             <a href="/login"
                onClick={() => setOpen(false)}
-               className="block w-full text-center py-3 rounded-lg border border-indigo-200
-                          text-indigo-600 text-sm font-semibold">
+               className="block w-full text-center py-3 rounded-lg border border-[#bbf7d0]
+                          text-[#4eb564] text-sm font-semibold">
               Sign in
             </a>
           </div>

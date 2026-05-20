@@ -28,7 +28,7 @@ export function Economics() {
         <p className="text-xs font-bold tracking-[0.15em] uppercase text-[#00bfad] mb-4">
           The Economics
         </p>
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-[#0f172a] mb-4 leading-tight">
+        <h2 className="text-4xl sm:text-5xl font-extrabold text-[#002124] mb-4 leading-tight">
           What This Looks Like in Your P&amp;L
         </h2>
         <p className="text-base text-[#64748b] mb-14 max-w-2xl">
@@ -58,7 +58,7 @@ export function Economics() {
               <tbody>
                 {tableRows.map((row, i) => (
                   <tr key={row.label} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                    <td className="py-3 px-4 text-sm font-medium text-[#0f172a]">{row.label}</td>
+                    <td className="py-3 px-4 text-sm font-medium text-[#002124]">{row.label}</td>
                     <td className="py-3 px-4 text-sm text-center text-[#64748b] bg-red-50/30">
                       {row.today}
                     </td>

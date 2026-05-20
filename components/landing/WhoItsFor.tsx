@@ -17,8 +17,8 @@ export function WhoItsFor() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* CA Card */}
-          <div className="bg-violet-50 border border-violet-200 rounded-2xl p-8">
-            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-violet-600 mb-4">
+          <div className="bg-[#f0fdfa] border border-[#99f6e4] rounded-2xl p-8">
+            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#4eb564] mb-4">
               FOR CHARTERED ACCOUNTANTS
             </p>
             <h3 className="text-xl font-black text-slate-900 mb-3 leading-snug">
@@ -36,20 +36,20 @@ export function WhoItsFor() {
                 'Revenue: ₹8K/client → ₹17K/client',
               ].map(item => (
                 <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
-                  <span className="text-violet-600 font-bold mt-0.5">✓</span>
+                  <span className="text-[#4eb564] font-bold mt-0.5">✓</span>
                   {item}
                 </li>
               ))}
             </ul>
             <a href="#cta"
-               className="text-sm font-bold text-violet-600 hover:text-violet-700 transition-colors">
+               className="text-sm font-bold text-[#4eb564] hover:text-[#3da055] transition-colors">
               Join CA Pilot Program →
             </a>
           </div>
 
           {/* Business Card */}
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-8">
-            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-emerald-600 mb-4">
+          <div className="bg-[#f0fdfa] border border-[#99f6e4] rounded-2xl p-8">
+            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#62cac3] mb-4">
               FOR BUSINESSES &amp; CFOS
             </p>
             <h3 className="text-xl font-black text-slate-900 mb-3 leading-snug">
@@ -67,13 +67,13 @@ export function WhoItsFor() {
                 'Working capital freed in weeks, not months',
               ].map(item => (
                 <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
-                  <span className="text-emerald-600 font-bold mt-0.5">✓</span>
+                  <span className="text-[#62cac3] font-bold mt-0.5">✓</span>
                   {item}
                 </li>
               ))}
             </ul>
             <a href="#cta"
-               className="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
+               className="text-sm font-bold text-[#62cac3] hover:text-[#0d9488] transition-colors">
               See Business ROI Calculator →
             </a>
           </div>

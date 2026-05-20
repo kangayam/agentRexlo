@@ -20,7 +20,7 @@ export function StatsBar() {
         <div className="grid grid-cols-2 md:grid-cols-4">
           {stats.map((s, i) => (
             <div key={s.label} className={`px-8 py-8 text-center ${cellBorders[i]}`}>
-              <div className="text-3xl font-black bg-gradient-to-r from-indigo-500 to-violet-500
+              <div className="text-3xl font-black bg-gradient-to-r from-[#4eb564] to-[#62cac3]
                               bg-clip-text text-transparent mb-1">
                 {s.value}
               </div>

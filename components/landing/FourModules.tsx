@@ -32,7 +32,7 @@ export function FourModules() {
 
         {/* Header */}
         <div className="text-center mb-16">
-          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-indigo-600 mb-4">
+          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#4eb564] mb-4">
             How It Works
           </p>
           <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-4">
@@ -48,8 +48,8 @@ export function FourModules() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {modules.map(m => (
             <div key={m.number}
-                 className="group relative bg-slate-50 hover:bg-indigo-50 border border-slate-200
-                            hover:border-indigo-200 rounded-2xl p-8 transition-all duration-200">
+                 className="group relative bg-slate-50 hover:bg-[#f0fdf4] border border-slate-200
+                            hover:border-[#bbf7d0] rounded-2xl p-8 transition-all duration-200">
 
               {/* Number + icon */}
               <div className="flex items-center justify-between mb-5">
@@ -71,7 +71,7 @@ export function FourModules() {
               </p>
 
               {/* Hover accent line */}
-              <div className="absolute bottom-0 left-8 right-8 h-0.5 bg-indigo-500 rounded-full
+              <div className="absolute bottom-0 left-8 right-8 h-0.5 bg-[#4eb564] rounded-full
                               scale-x-0 group-hover:scale-x-100 transition-transform duration-200
                               origin-left" />
             </div>

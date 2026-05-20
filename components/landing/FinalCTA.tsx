@@ -33,7 +33,7 @@ export function FinalCTA() {
   }
 
   return (
-    <section id="cta" className="bg-violet-50 py-24 px-6 relative overflow-hidden">
+    <section id="cta" className="bg-[#f0fdfa] py-24 px-6 relative overflow-hidden">
 
       {/* Blob */}
       <div className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full
@@ -41,7 +41,7 @@ export function FinalCTA() {
 
       <div className="relative z-10 max-w-2xl mx-auto text-center">
 
-        <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-indigo-600 mb-5">
+        <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#4eb564] mb-5">
           30-DAY FREE PILOT
         </p>
         <h2 className="text-4xl sm:text-5xl font-black text-slate-900 mb-4 leading-tight">
@@ -54,7 +54,7 @@ export function FinalCTA() {
         </p>
 
         {submitted ? (
-          <div className="bg-white border border-indigo-200 rounded-2xl px-6 py-5 mb-6">
+          <div className="bg-white border border-[#bbf7d0] rounded-2xl px-6 py-5 mb-6">
             <p className="text-slate-900 font-semibold text-base">
               🎉 Thanks! We&apos;ll be in touch within 24 hours.
             </p>
@@ -71,14 +71,14 @@ export function FinalCTA() {
                 required
                 className="flex-1 h-12 px-4 rounded-xl bg-white border border-slate-200
                            text-slate-900 placeholder:text-slate-400
-                           focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
+                           focus:outline-none focus:ring-2 focus:ring-[#86efac] text-sm"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="h-12 px-6 rounded-xl bg-indigo-600 text-white font-bold text-sm
-                           hover:bg-indigo-700 transition-colors whitespace-nowrap
-                           disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-indigo-200">
+                className="h-12 px-6 rounded-xl bg-[#4eb564] text-white font-bold text-sm
+                           hover:bg-[#3da055] transition-colors whitespace-nowrap
+                           disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-[#bbf7d0]">
                 {loading ? 'Sending…' : 'Request a Demo →'}
               </button>
             </form>
@@ -90,8 +90,8 @@ export function FinalCTA() {
           <a href="https://wa.me/91XXXXXXXXXX"
              target="_blank" rel="noopener noreferrer"
              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl
-                        border border-indigo-200 text-indigo-600 text-sm font-semibold
-                        hover:bg-indigo-50 transition-colors bg-white">
+                        border border-[#bbf7d0] text-[#4eb564] text-sm font-semibold
+                        hover:bg-[#f0fdf4] transition-colors bg-white">
             💬 Talk to us on WhatsApp
           </a>
         </div>

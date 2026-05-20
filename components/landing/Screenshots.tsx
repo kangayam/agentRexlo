@@ -16,7 +16,7 @@ const rows: Row[] = [
     screenshotLeft: false,
     screenshot: { slug: 'ca-dashboard', label: 'CA Client Overview Dashboard' },
     tag: 'FOR CA FIRMS',
-    tagColor: 'text-indigo-600',
+    tagColor: 'text-[#4eb564]',
     heading: 'Your Entire Client Portfolio, Intelligently Monitored',
     body: 'See ITC cleared, ITC at risk, quality scores, and urgent actions across all your clients — in one view. No more chasing Excel sheets or calling clients to check status.',
     pills: ['ITC Leakage Alerts', 'Quality Scores', 'Urgent Actions'],
@@ -25,7 +25,7 @@ const rows: Row[] = [
     screenshotLeft: true,
     screenshot: { slug: 'client-portal', label: 'Client Action Queue' },
     tag: 'ACTION QUEUE',
-    tagColor: 'text-indigo-600',
+    tagColor: 'text-[#4eb564]',
     heading: 'Plain-English Instructions for Every Invoice',
     body: 'Clients see exactly what to do on the GSTN portal — no jargon, no confusion. Accept, reject, or defer. Mark done. ITC protected.',
     pills: ['ITC Trend Charts', 'Quality Score Trends', 'Export PDF'],
@@ -34,7 +34,7 @@ const rows: Row[] = [
     screenshotLeft: false,
     screenshot: { slug: 'itc-leakage', label: 'ITC Leakage Analytics' },
     tag: 'ITC RECOVERY',
-    tagColor: 'text-indigo-600',
+    tagColor: 'text-[#4eb564]',
     heading: 'Know Exactly Where Every Rupee Is Leaking',
     body: 'AI breaks down ITC leakage by root cause — value mismatches, non-filing suppliers, invoices missing from books — with recoverable amounts flagged and prioritized by rupee impact.',
     pills: ['Root Cause Analysis', 'Recoverable ITC', 'Supplier Risk'],
@@ -44,7 +44,7 @@ const rows: Row[] = [
 function Pill({ label }: { label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full
-                     bg-indigo-50 border border-indigo-200 text-indigo-600
+                     bg-[#f0fdf4] border border-[#bbf7d0] text-[#4eb564]
                      text-xs font-semibold">
       ✓ {label}
     </span>
@@ -72,7 +72,7 @@ export function Screenshots() {
 
         {/* Header */}
         <div className="text-center mb-20">
-          <p className="text-xs font-bold tracking-[0.15em] uppercase text-indigo-600 mb-4">
+          <p className="text-xs font-bold tracking-[0.15em] uppercase text-[#4eb564] mb-4">
             See It In Action
           </p>
           <h2 className="text-4xl sm:text-5xl font-black text-slate-900 mb-4">
@@ -117,8 +117,8 @@ export function Screenshots() {
                         shadow-sm relative overflow-hidden">
           <div className="pointer-events-none absolute -top-10 -right-10 w-48 h-48 rounded-full
                           bg-[radial-gradient(circle,rgba(99,102,241,0.10)_0%,transparent_70%)]" />
-          <div className="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center mb-5
-                          shadow-lg shadow-indigo-200 relative z-10">
+          <div className="w-14 h-14 rounded-full bg-[#4eb564] flex items-center justify-center mb-5
+                          shadow-lg shadow-[#bbf7d0] relative z-10">
             <Play className="w-6 h-6 text-white ml-0.5" />
           </div>
           <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10">
