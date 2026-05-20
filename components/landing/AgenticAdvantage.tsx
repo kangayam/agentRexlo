@@ -1,3 +1,5 @@
+'use client'
+
 const points = [
   {
     title: 'Always On',
@@ -26,13 +28,44 @@ const points = [
   },
 ]
 
+function Card({ p, i }: { p: typeof points[0]; i: number }) {
+  return (
+    <div className="flex gap-5 items-start bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+      <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100
+                      flex items-center justify-center text-lg flex-shrink-0">
+        {p.icon}
+      </div>
+      <div>
+        <h3 className="text-sm font-black text-slate-900 mb-1">{p.title}</h3>
+        <p className="text-sm text-slate-500 leading-relaxed">{p.body}</p>
+      </div>
+      <span className="text-[10px] font-bold text-slate-300 tracking-widest ml-auto flex-shrink-0 mt-1">
+        0{i + 1}
+      </span>
+    </div>
+  )
+}
+
 export function AgenticAdvantage() {
   return (
-    <section className="py-24 px-6" style={{ backgroundColor: '#f8f8f8' }}>
-      <div className="max-w-6xl mx-auto">
+    <section className="py-24 px-6 overflow-hidden" style={{ backgroundColor: '#f8f8f8' }}>
 
-        {/* Header */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+      {/* Keyframe injection */}
+      <style>{`
+        @keyframes scrollUp {
+          0%   { transform: translateY(0); }
+          100% { transform: translateY(-50%); }
+        }
+        .scroll-track {
+          animation: scrollUp 18s linear infinite;
+        }
+        .scroll-track:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
           {/* Left — sticky heading */}
           <div className="lg:sticky lg:top-24">
@@ -52,29 +85,29 @@ export function AgenticAdvantage() {
             </p>
           </div>
 
-          {/* Right — points list */}
-          <div className="flex flex-col gap-6">
-            {points.map((p, i) => (
-              <div key={p.title}
-                   className="flex gap-5 items-start bg-white rounded-2xl p-6
-                              border border-slate-200 shadow-sm">
-                {/* Icon */}
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100
-                                flex items-center justify-center text-lg flex-shrink-0">
-                  {p.icon}
-                </div>
-                {/* Text */}
-                <div>
-                  <h3 className="text-sm font-black text-slate-900 mb-1">{p.title}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{p.body}</p>
-                </div>
-                {/* Number */}
-                <span className="text-[10px] font-bold text-slate-300 tracking-widest ml-auto
-                                 flex-shrink-0 mt-1">
-                  0{i + 1}
-                </span>
-              </div>
-            ))}
+          {/* Right — cinematic scroll */}
+          <div className="relative h-[420px] overflow-hidden">
+
+            {/* Top fade */}
+            <div className="pointer-events-none absolute top-0 left-0 right-0 h-16 z-10
+                            bg-gradient-to-b from-[#f8f8f8] to-transparent" />
+
+            {/* Bottom fade */}
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 z-10
+                            bg-gradient-to-t from-[#f8f8f8] to-transparent" />
+
+            {/* Scrolling track — duplicated for seamless loop */}
+            <div className="scroll-track flex flex-col gap-5">
+              {/* First set */}
+              {points.map((p, i) => (
+                <Card key={`a-${p.title}`} p={p} i={i} />
+              ))}
+              {/* Duplicate for seamless loop */}
+              {points.map((p, i) => (
+                <Card key={`b-${p.title}`} p={p} i={i} />
+              ))}
+            </div>
+
           </div>
 
         </div>
