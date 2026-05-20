@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useRef } from 'react'
 
 const points = [
   {
@@ -28,9 +29,18 @@ const points = [
   },
 ]
 
+const PAUSE_MS  = 3000   // hold still for 3s
+const SCROLL_MS = 16000  // slowly scroll through in 16s
+const CYCLE_MS  = PAUSE_MS + SCROLL_MS + PAUSE_MS
+
+function easeInOut(t: number) {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+}
+
 function Card({ p, i }: { p: typeof points[0]; i: number }) {
   return (
-    <div className="flex gap-5 items-start bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+    <div className="flex gap-5 items-start bg-white rounded-2xl p-6
+                    border border-slate-200 shadow-sm">
       <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100
                       flex items-center justify-center text-lg flex-shrink-0">
         {p.icon}
@@ -47,27 +57,45 @@ function Card({ p, i }: { p: typeof points[0]; i: number }) {
 }
 
 export function AgenticAdvantage() {
+  const trackRef = useRef<HTMLDivElement>(null)
+  const rafRef   = useRef<number>(0)
+  const startRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track) return
+
+    function animate(ts: number) {
+      if (!startRef.current) startRef.current = ts
+      const elapsed = (ts - startRef.current) % CYCLE_MS
+
+      let progress = 0
+      if (elapsed < PAUSE_MS) {
+        // Phase 1: hold still — all cards visible
+        progress = 0
+      } else if (elapsed < PAUSE_MS + SCROLL_MS) {
+        // Phase 2: smooth scroll
+        progress = easeInOut((elapsed - PAUSE_MS) / SCROLL_MS)
+      } else {
+        // Phase 3: hold at end
+        progress = 1
+      }
+
+      const halfHeight = track.scrollHeight / 2
+      track.style.transform = `translateY(-${progress * halfHeight}px)`
+      rafRef.current = requestAnimationFrame(animate)
+    }
+
+    rafRef.current = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [])
+
   return (
     <section className="py-24 px-6 overflow-hidden" style={{ backgroundColor: '#f8f8f8' }}>
-
-      {/* Keyframe injection */}
-      <style>{`
-        @keyframes scrollUp {
-          0%   { transform: translateY(0); }
-          100% { transform: translateY(-50%); }
-        }
-        .scroll-track {
-          animation: scrollUp 18s linear infinite;
-        }
-        .scroll-track:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
-
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-          {/* Left — sticky heading */}
+          {/* Left — heading */}
           <div className="lg:sticky lg:top-24">
             <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-indigo-600 mb-4">
               Why Rexlo Is Different
@@ -85,31 +113,23 @@ export function AgenticAdvantage() {
             </p>
           </div>
 
-          {/* Right — cinematic scroll */}
-          <div className="relative h-[420px] overflow-hidden">
+          {/* Right — cinematic pause-scroll-pause */}
+          <div className="relative h-[460px] overflow-hidden">
 
             {/* Top fade */}
-            <div className="pointer-events-none absolute top-0 left-0 right-0 h-16 z-10
+            <div className="pointer-events-none absolute top-0 left-0 right-0 h-20 z-10
                             bg-gradient-to-b from-[#f8f8f8] to-transparent" />
-
             {/* Bottom fade */}
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 z-10
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-20 z-10
                             bg-gradient-to-t from-[#f8f8f8] to-transparent" />
 
-            {/* Scrolling track — duplicated for seamless loop */}
-            <div className="scroll-track flex flex-col gap-5">
-              {/* First set */}
-              {points.map((p, i) => (
-                <Card key={`a-${p.title}`} p={p} i={i} />
-              ))}
-              {/* Duplicate for seamless loop */}
-              {points.map((p, i) => (
-                <Card key={`b-${p.title}`} p={p} i={i} />
-              ))}
+            {/* Track — duplicated for seamless loop */}
+            <div ref={trackRef} className="flex flex-col gap-5 will-change-transform">
+              {points.map(p => <Card key={`a-${p.title}`} p={p} i={points.indexOf(p)} />)}
+              {points.map(p => <Card key={`b-${p.title}`} p={p} i={points.indexOf(p)} />)}
             </div>
 
           </div>
-
         </div>
       </div>
     </section>
