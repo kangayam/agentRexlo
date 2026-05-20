@@ -51,13 +51,33 @@
 
 @layer base {
   * { @apply border-border; }
+
+  /* ── Global page underlay ── */
   body {
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: #F8FAFC; /* Slate-50 — page underlay */
+    color: #0F172A;             /* Slate-900 — primary text */
     font-family: var(--font-open-sans), 'Open Sans', sans-serif;
   }
+
+  /* ── Headings use Nunito (Ample Soft Pro equivalent) ── */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-nunito), 'Nunito', sans-serif;
+    color: #0F172A;
+  }
+
+  /* ── White lifted panel — reusable utility ── */
+  .panel {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+    border-radius: 1rem;
+  }
+
+  /* ── Info block (gray-50 tint) ── */
+  .info-block {
+    background-color: #F9FAFB;
+    border: 1px solid #E2E8F0;
+    border-radius: 0.75rem;
   }
 }
 

@@ -48,7 +48,7 @@ export function FourModules() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {modules.map(m => (
             <div key={m.number}
-                 className="group relative bg-slate-50 hover:bg-[#f0fdf4] border border-slate-200
+                 className="group relative bg-[#F9FAFB] hover:bg-white border border-slate-200
                             hover:border-[#bbf7d0] rounded-2xl p-8 transition-all duration-200">
 
               {/* Number + icon */}

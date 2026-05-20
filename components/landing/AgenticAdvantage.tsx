@@ -40,7 +40,7 @@ function easeInOut(t: number) {
 function Card({ p, i }: { p: typeof points[0]; i: number }) {
   return (
     <div className="flex gap-4 items-start bg-white rounded-xl p-4
-                    border border-[#e2e8f0] shadow-sm">
+                    border border-[#E2E8F0] shadow-sm">
       <div className="w-9 h-9 rounded-lg bg-[#f0fdf4] border border-[#dcfce7]
                       flex items-center justify-center text-base flex-shrink-0">
         {p.icon}

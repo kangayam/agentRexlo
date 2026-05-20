@@ -91,7 +91,7 @@ export function FinalCTA() {
              target="_blank" rel="noopener noreferrer"
              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl
                         border border-[#bbf7d0] text-[#4eb564] text-sm font-semibold
-                        hover:bg-[#f0fdf4] transition-colors bg-white">
+                        hover:bg-[#F9FAFB] transition-colors bg-white">
             💬 Talk to us on WhatsApp
           </a>
         </div>

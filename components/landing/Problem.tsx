@@ -25,7 +25,7 @@ export function Problem() {
   const ref = useFadeIn()
 
   return (
-    <section id="features" className="bg-[#f8fafc] py-24 px-6">
+    <section id="features" className="bg-[#F8FAFC] py-24 px-6">
       <div ref={ref} className="max-w-5xl mx-auto">
 
         {/* Label */}

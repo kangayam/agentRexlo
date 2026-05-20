@@ -17,7 +17,7 @@ export function WhoItsFor() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* CA Card */}
-          <div className="bg-[#f0fdfa] border border-[#99f6e4] rounded-2xl p-8">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-8 shadow-sm">
             <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#4eb564] mb-4">
               FOR CHARTERED ACCOUNTANTS
             </p>
@@ -48,7 +48,7 @@ export function WhoItsFor() {
           </div>
 
           {/* Business Card */}
-          <div className="bg-[#f0fdfa] border border-[#99f6e4] rounded-2xl p-8">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-8 shadow-sm">
             <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#62cac3] mb-4">
               FOR BUSINESSES &amp; CFOS
             </p>

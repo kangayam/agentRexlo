@@ -67,7 +67,7 @@ function ScreenshotCard({ slug, label }: { slug: string; label: string }) {
 
 export function Screenshots() {
   return (
-    <section id="screenshots" className="bg-[#f8fafc] py-24 px-6">
+    <section id="screenshots" className="bg-[#F8FAFC] py-24 px-6">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}

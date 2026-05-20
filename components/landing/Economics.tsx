@@ -21,7 +21,7 @@ export function Economics() {
   const ref = useFadeIn()
 
   return (
-    <section id="pricing" className="bg-[#f8fafc] py-24 px-6">
+    <section id="pricing" className="bg-[#F8FAFC] py-24 px-6">
       <div ref={ref} className="max-w-6xl mx-auto">
 
         {/* Header */}

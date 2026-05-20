@@ -8,7 +8,7 @@ export function TrustedBy() {
   ]
 
   return (
-    <section className="bg-[#f7f7f7] border-y border-[#e2e8f0] py-10 px-6">
+    <section className="bg-[#f7f7f7] border-y border-[#E2E8F0] py-10 px-6">
       <div className="max-w-5xl mx-auto text-center">
         <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-6">
           Trusted by CA firms managing ₹500Cr+ in ITC across India
