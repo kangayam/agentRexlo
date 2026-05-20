@@ -41,11 +41,6 @@ export function Nav() {
              className="text-sm text-indigo-600 font-semibold hover:text-indigo-700 transition-colors">
             Sign in
           </a>
-          <a href="#cta"
-             className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold
-                        hover:bg-indigo-700 transition-colors shadow-sm">
-            Request a Demo
-          </a>
         </div>
 
         {/* Mobile hamburger */}
@@ -69,18 +64,12 @@ export function Nav() {
               {l.label}
             </a>
           ))}
-          <div className="pt-3 flex flex-col gap-2">
+          <div className="pt-3">
             <a href="/login"
                onClick={() => setOpen(false)}
                className="block w-full text-center py-3 rounded-lg border border-indigo-200
                           text-indigo-600 text-sm font-semibold">
               Sign in
-            </a>
-            <a href="#cta"
-               onClick={() => setOpen(false)}
-               className="block w-full text-center py-3 rounded-lg bg-indigo-600 text-white
-                          text-sm font-bold hover:bg-indigo-700 transition-colors">
-              Request a Demo
             </a>
           </div>
         </div>
