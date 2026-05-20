@@ -39,17 +39,17 @@ function easeInOut(t: number) {
 
 function Card({ p, i }: { p: typeof points[0]; i: number }) {
   return (
-    <div className="flex gap-4 items-start bg-slate-800/60 rounded-xl p-4
-                    border border-slate-700 shadow-lg shadow-black/20 backdrop-blur-sm">
-      <div className="w-9 h-9 rounded-lg bg-indigo-900/60 border border-indigo-700
+    <div className="flex gap-4 items-start bg-white rounded-xl p-4
+                    border border-slate-200 shadow-sm">
+      <div className="w-9 h-9 rounded-lg bg-indigo-50 border border-indigo-100
                       flex items-center justify-center text-base flex-shrink-0">
         {p.icon}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-black text-white mb-0.5">{p.title}</h3>
-        <p className="text-xs text-slate-400 leading-relaxed">{p.body}</p>
+        <h3 className="text-sm font-black text-slate-900 mb-0.5">{p.title}</h3>
+        <p className="text-xs text-slate-500 leading-relaxed">{p.body}</p>
       </div>
-      <span className="text-[10px] font-bold text-slate-600 tracking-widest flex-shrink-0 mt-0.5">
+      <span className="text-[10px] font-bold text-slate-300 tracking-widest flex-shrink-0 mt-0.5">
         0{i + 1}
       </span>
     </div>
@@ -103,23 +103,23 @@ export function AgenticAdvantage() {
   }, [])
 
   return (
-    <section className="py-24 px-6 overflow-hidden" style={{ backgroundColor: '#0f172a' }}>
+    <section className="py-24 px-6 overflow-hidden" style={{ backgroundColor: '#f8f8f8' }}>
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
           {/* Left — heading */}
           <div className="lg:sticky lg:top-24">
-            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-indigo-400 mb-4">
+            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-indigo-600 mb-4">
               Why Rexlo Is Different
             </p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-5 leading-tight">
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-5 leading-tight">
               Your CAs Stopped Being Data Entry Operators.{' '}
-              <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-pink-400
+              <span className="bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500
                                bg-clip-text text-transparent">
                 Tonight.
               </span>
             </h2>
-            <p className="text-base text-slate-400 leading-relaxed">
+            <p className="text-base text-slate-500 leading-relaxed">
               Most GST tools automate the filing. Rexlo automates the thinking — surfacing
               risks, decisions, and client opportunities before you even open a spreadsheet.
             </p>
@@ -134,12 +134,12 @@ export function AgenticAdvantage() {
             {/* Fades — hidden during pause so all cards are fully visible */}
             <div
               className="pointer-events-none absolute top-0 left-0 right-0 h-16 z-10
-                         bg-gradient-to-b from-[#0f172a] to-transparent transition-opacity duration-500"
+                         bg-gradient-to-b from-[#f8f8f8] to-transparent transition-opacity duration-500"
               style={{ opacity: isPaused ? 0 : 1 }}
             />
             <div
               className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 z-10
-                         bg-gradient-to-t from-[#0f172a] to-transparent transition-opacity duration-500"
+                         bg-gradient-to-t from-[#f8f8f8] to-transparent transition-opacity duration-500"
               style={{ opacity: isPaused ? 0 : 1 }}
             />
 
