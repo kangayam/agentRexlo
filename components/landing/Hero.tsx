@@ -40,7 +40,7 @@ export function Hero() {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
               <a href="#cta"
                  className="px-8 py-3.5 rounded-xl bg-indigo-600 text-white font-bold text-sm
                             hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200
@@ -48,9 +48,7 @@ export function Hero() {
                 Request a Demo →
               </a>
               <a href="#screenshots"
-                 className="px-8 py-3.5 rounded-xl border border-indigo-200 text-indigo-600
-                            font-semibold text-sm hover:bg-indigo-50 transition-colors bg-white
-                            text-center">
+                 className="text-sm text-slate-500 hover:text-indigo-600 transition-colors font-medium">
                 ▶ Watch 2-min overview
               </a>
             </div>
