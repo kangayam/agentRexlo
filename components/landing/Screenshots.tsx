@@ -112,22 +112,41 @@ export function Screenshots() {
         </div>
 
         {/* Video */}
-        <div className="mt-24 bg-white rounded-2xl max-w-3xl mx-auto px-8 py-16
-                        flex flex-col items-center text-center border border-slate-200
-                        shadow-sm relative overflow-hidden">
+        <a
+          href="/rexlo-video.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group mt-24 bg-white rounded-2xl max-w-3xl mx-auto px-8 py-16
+                     flex flex-col items-center text-center border border-[#E2E8F0]
+                     shadow-sm relative overflow-hidden cursor-pointer
+                     hover:border-[#4eb564] hover:shadow-md transition-all duration-200 block"
+        >
+          {/* Gradient blob */}
           <div className="pointer-events-none absolute -top-10 -right-10 w-48 h-48 rounded-full
-                          bg-[radial-gradient(circle,rgba(99,102,241,0.10)_0%,transparent_70%)]" />
-          <div className="w-14 h-14 rounded-full bg-[#4eb564] flex items-center justify-center mb-5
-                          shadow-lg shadow-[#bbf7d0] relative z-10">
-            <Play className="w-6 h-6 text-white ml-0.5" />
+                          bg-[radial-gradient(circle,rgba(78,181,100,0.12)_0%,transparent_70%)]" />
+
+          {/* Play button */}
+          <div className="w-16 h-16 rounded-full bg-[#4eb564] flex items-center justify-center mb-5
+                          shadow-lg shadow-[#bbf7d0] relative z-10
+                          group-hover:scale-110 group-hover:bg-[#3da055] transition-all duration-200">
+            <Play className="w-7 h-7 text-white ml-1" />
           </div>
-          <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10">
+
+          <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10 group-hover:text-[#4eb564] transition-colors">
             See Rexlo in action — 2 minutes
           </h3>
-          <p className="text-sm text-slate-500 relative z-10">
+          <p className="text-sm text-slate-500 relative z-10 mb-4">
             From file upload to action queue. Watch a full reconciliation cycle.
           </p>
-        </div>
+
+          {/* Open indicator */}
+          <div className="inline-flex items-center gap-2 bg-[#f0fdf4] border border-[#bbf7d0]
+                          rounded-full px-4 py-1.5 text-xs font-semibold text-[#4eb564]
+                          relative z-10 group-hover:bg-[#4eb564] group-hover:text-white
+                          transition-all duration-200">
+            <span>▶</span> Watch animated product story
+          </div>
+        </a>
 
       </div>
     </section>

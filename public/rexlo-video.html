@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rexlo — The CA Who Got His Life Back</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & base ─────────────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:  #4eb564;
+  --teal:   #62cac3;
+  --neon:   #00FE89;
+  --dark:   #002124;
+  --darker: #001012;
+  --white:  #FFFFFF;
+  --slate:  #F8FAFC;
+  --text:   #0F172A;
+  --muted:  #64748b;
+  --border: #E2E8F0;
+  --red:    #ef4444;
+  --warn:   #f59e0b;
+}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Open Sans',sans-serif}
+
+/* ── Stage — transform-origin top left for reliable scaling ─────────────── */
+#stage{
+  position:fixed;
+  width:1920px;height:1080px;
+  top:0; left:0;
+  transform-origin:top left;
+  overflow:hidden;
+}
+
+/* ── Scenes ─────────────────────────────────────────────────────────────── */
+.scene{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .6s ease;
+}
+.scene.active{opacity:1;pointer-events:auto}
+
+/* ── Controls bar ────────────────────────────────────────────────────── */
+#controls{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(0,0,0,.92);backdrop-filter:blur(12px);
+  padding:10px 24px;display:flex;align-items:center;gap:16px;
+  z-index:9999;font-family:'Open Sans',sans-serif;height:52px;
+}
+#controls button{
+  background:var(--green);color:#fff;border:none;border-radius:8px;
+  padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;
+  font-family:'Open Sans',sans-serif;
+}
+#controls button:hover{background:#3da055}
+#progress-track{
+  flex:1;height:6px;background:#1e293b;border-radius:3px;cursor:pointer;
+  position:relative;
+}
+#progress-fill{
+  height:100%;background:var(--green);border-radius:3px;width:0%;
+  transition:width .1s linear;
+}
+#time-label{color:#94a3b8;font-size:12px;font-weight:600;min-width:60px}
+#scene-label{color:var(--teal);font-size:11px;font-weight:700;min-width:180px;text-align:right}
+
+/* ── Typography helpers ──────────────────────────────────────────────── */
+.h-display{font-family:'Nunito',sans-serif;font-weight:900;line-height:1.1}
+.h-title  {font-family:'Nunito',sans-serif;font-weight:800}
+.mono     {font-family:'JetBrains Mono',monospace}
+.tag      {
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:4px 14px;border-radius:999px;font-family:'Open Sans',sans-serif;
+}
+.tag-green{background:rgba(78,181,100,.15);color:var(--green);border:1px solid rgba(78,181,100,.3)}
+.tag-teal {background:rgba(98,202,195,.15);color:var(--teal); border:1px solid rgba(98,202,195,.3)}
+.tag-neon {background:rgba(0,254,137,.12);color:var(--neon);  border:1px solid rgba(0,254,137,.3)}
+.tag-red  {background:rgba(239,68,68,.12); color:#f87171;     border:1px solid rgba(239,68,68,.3)}
+
+/* ── Card/panel ─────────────────────────────────────────────────────── */
+.panel{
+  background:#fff;border:1px solid var(--border);
+  border-radius:16px;box-shadow:0 1px 8px rgba(0,0,0,.06);
+}
+.panel-dark{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;backdrop-filter:blur(8px);
+}
+
+/* ── Animations ─────────────────────────────────────────────────────── */
+@keyframes fadeUp   {from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn   {from{opacity:0}to{opacity:1}}
+@keyframes pulse    {0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes blink    {0%,100%{opacity:1}50%{opacity:0}}
+@keyframes ticker   {0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
+@keyframes scanline {0%{top:-4px}100%{top:100%}}
+@keyframes glow     {0%,100%{box-shadow:0 0 20px rgba(0,254,137,.3)}50%{box-shadow:0 0 50px rgba(0,254,137,.7)}}
+@keyframes countUp  {from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+@keyframes barFill  {from{height:0;opacity:0}to{opacity:1}}
+@keyframes ripple   {0%{transform:scale(0);opacity:.8}100%{transform:scale(4);opacity:0}}
+@keyframes slideIn  {from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes tick     {0%,100%{transform:rotate(0deg)}50%{transform:rotate(6deg)}}
+@keyframes vibrate  {0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+@keyframes drawLine {from{stroke-dashoffset:300}to{stroke-dashoffset:0}}
+@keyframes orbit    {from{transform:rotate(0deg) translateX(120px) rotate(0deg)}to{transform:rotate(360deg) translateX(120px) rotate(-360deg)}}
+@keyframes checkPop {0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes spin     {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes sunrise  {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.anim-fadeUp{animation:fadeUp .7s ease both}
+.anim-fadeIn{animation:fadeIn .7s ease both}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+.d4{animation-delay:.4s}.d5{animation-delay:.5s}.d6{animation-delay:.6s}
+.d7{animation-delay:.7s}.d8{animation-delay:.8s}.d9{animation-delay:.9s}
+.d10{animation-delay:1s}.d12{animation-delay:1.2s}.d15{animation-delay:1.5s}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 1 — 11:47 PM Office
+═══════════════════════════════════════════════════════════ */
+#s1{background:#050d16}
+.s1-monitor{
+  width:360px;height:220px;background:#070d1a;border:2px solid #1e293b;
+  border-radius:8px 8px 0 0;position:relative;overflow:hidden;
+}
+.s1-monitor::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,254,137,.015) 2px,rgba(0,254,137,.015) 4px);
+  pointer-events:none;
+}
+.s1-scanline{
+  position:absolute;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,rgba(0,254,137,.15),transparent);
+  animation:scanline 3s linear infinite;
+}
+.s1-rows{display:flex;flex-direction:column;gap:3px;padding:12px;font-size:9px;}
+.s1-row{display:flex;gap:8px;color:#64748b;font-family:'JetBrains Mono',monospace;animation:ticker 8s linear infinite}
+.s1-cell{width:80px;overflow:hidden;white-space:nowrap}
+.s1-cell.hl{color:#ef4444}
+.clock-ring{
+  width:80px;height:80px;border-radius:50%;background:#0f1b2d;
+  border:3px solid #1e3a5f;display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.clock-hand{position:absolute;bottom:50%;left:50%;transform-origin:bottom center;border-radius:2px}
+.clock-hour{width:2px;height:22px;background:#94a3b8;margin-left:-1px;transform:rotate(330deg)}
+.clock-min {width:1.5px;height:28px;background:#e2e8f0;margin-left:-.75px;transform:rotate(282deg);animation:tick 60s linear infinite}
+.s1-sticky{
+  padding:6px 10px;background:#fef08a;border-radius:4px;
+  font-size:10px;font-family:'Open Sans',sans-serif;color:#713f12;
+  transform:rotate(-2deg);box-shadow:2px 2px 6px rgba(0,0,0,.3);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 2 — Data Chaos
+═══════════════════════════════════════════════════════════ */
+#s2{background:#050d16}
+.s2-phone{
+  width:200px;background:#0f1b2d;border:2px solid #1e3a5f;
+  border-radius:20px;padding:12px;animation:vibrate .15s ease-in-out infinite;
+}
+.s2-notification{
+  background:#1e293b;border-radius:8px;padding:8px 10px;margin-bottom:6px;
+  border-left:3px solid var(--red);font-size:11px;color:#cbd5e1;
+}
+.s2-inbox{display:flex;flex-direction:column;gap:6px}
+.s2-mail{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  background:#0f1629;border:1px solid #1e293b;border-radius:6px;
+  font-size:11px;
+}
+.s2-urgent{
+  font-size:9px;font-weight:800;color:#ef4444;letter-spacing:.1em;
+  background:rgba(239,68,68,.1);padding:2px 6px;border-radius:3px;
+  animation:pulse 1s ease infinite;
+}
+.s2-counter{
+  font-family:'Nunito',sans-serif;font-size:72px;font-weight:900;
+  color:#ef4444;line-height:1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 3 — The Cost
+═══════════════════════════════════════════════════════════ */
+#s3{background:#050d16}
+.s3-notice{
+  background:#0c0f18;border:1px solid #ef444440;border-radius:12px;
+  padding:28px 32px;
+}
+.s3-stamp{
+  display:inline-block;border:3px solid #ef4444;color:#ef4444;
+  font-size:18px;font-weight:900;padding:4px 16px;
+  transform:rotate(-12deg);letter-spacing:.1em;
+  font-family:'Nunito',sans-serif;
+}
+.s3-amount{
+  font-family:'Nunito',sans-serif;font-size:64px;font-weight:900;
+  color:#ef4444;line-height:1;text-shadow:0 0 30px rgba(239,68,68,.4);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 4 — The Turn
+═══════════════════════════════════════════════════════════ */
+#s4{background:radial-gradient(ellipse at center,#003830 0%,#050d16 70%)}
+.s4-phone{
+  width:180px;background:#050d16;border:2px solid var(--green);
+  border-radius:24px;padding:16px;text-align:center;
+  box-shadow:0 0 60px rgba(0,254,137,.3);animation:glow 2s ease infinite;
+}
+.s4-ripple{
+  position:absolute;border-radius:50%;border:2px solid var(--neon);
+  animation:ripple 2s ease-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 5 — Logo Reveal
+═══════════════════════════════════════════════════════════ */
+#s5{background:#050d16}
+.s5-logo-text{
+  font-family:'Nunito',sans-serif;font-size:140px;font-weight:900;
+  letter-spacing:.15em;color:transparent;
+  -webkit-text-stroke:2px var(--neon);
+  text-shadow:0 0 80px rgba(0,254,137,.5);
+  animation:glow 2s ease infinite;
+}
+.s5-particle{
+  position:absolute;width:4px;height:4px;border-radius:50%;background:var(--neon);
+  animation:orbit 4s linear infinite;
+}
+.s5-sub{color:var(--teal);font-size:22px;letter-spacing:.08em;font-family:'Nunito',sans-serif;font-weight:700}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 6 — Agent 01: Unified Data
+═══════════════════════════════════════════════════════════ */
+#s6{background:#050d16}
+.s6-source{
+  background:rgba(255,255,255,.04);border:1px solid rgba(98,202,195,.2);
+  border-radius:12px;padding:16px 20px;text-align:center;min-width:160px;
+}
+.s6-stream{
+  height:3px;background:linear-gradient(90deg,var(--teal),var(--green),var(--neon));
+  border-radius:2px;position:relative;overflow:hidden;
+}
+.s6-stream::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,#fff,transparent);
+  animation:scanline 1.5s linear infinite;
+}
+.s6-db{
+  background:rgba(0,254,137,.08);border:2px solid var(--neon);
+  border-radius:16px;padding:24px 32px;text-align:center;
+  box-shadow:0 0 40px rgba(0,254,137,.2);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 7 — Agent 02: Reconciliation
+═══════════════════════════════════════════════════════════ */
+#s7{background:#050d16}
+.s7-row{
+  display:flex;align-items:center;gap:12px;padding:10px 16px;
+  border-radius:8px;margin-bottom:6px;font-size:13px;
+  font-family:'JetBrains Mono',monospace;
+  transition:all .3s;
+}
+.s7-row.matched{background:rgba(78,181,100,.1);border:1px solid rgba(78,181,100,.2);color:#86efac}
+.s7-row.flagged{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
+.s7-row.pending{background:rgba(98,202,195,.08);border:1px solid rgba(98,202,195,.2);color:#5eead4}
+.s7-check{color:var(--green);font-size:18px;animation:checkPop .3s ease both}
+.s7-flag{color:#ef4444;font-size:16px}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 8 — Agent 03: ITC Recovery
+═══════════════════════════════════════════════════════════ */
+#s8{background:#050d16}
+.s8-bar-wrap{display:flex;align-items:flex-end;gap:20px;height:260px}
+.s8-bar{
+  width:80px;border-radius:8px 8px 0 0;
+  background:linear-gradient(180deg,var(--neon),var(--green));
+  animation:barFill .8s ease both;
+  box-shadow:0 0 20px rgba(0,254,137,.3);
+}
+.s8-amount{
+  font-family:'Nunito',sans-serif;font-size:72px;font-weight:900;
+  background:linear-gradient(90deg,var(--green),var(--neon));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  line-height:1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 9 — Agent 04: Client Portal
+═══════════════════════════════════════════════════════════ */
+#s9{background:radial-gradient(ellipse at 60% 40%,#003330 0%,var(--darker) 70%)}
+.s9-portal{
+  background:#fff;border-radius:16px;overflow:hidden;
+  box-shadow:0 24px 80px rgba(0,0,0,.5);width:680px;
+}
+.s9-topbar{
+  background:#050d16;padding:12px 20px;
+  display:flex;align-items:center;gap:12px;
+}
+.s9-dot{width:10px;height:10px;border-radius:50%}
+.s9-header{
+  background:linear-gradient(135deg,var(--dark),#004040);
+  padding:16px 24px;color:#fff;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.s9-card{
+  background:#f8fafc;border:1px solid #e2e8f0;
+  border-radius:10px;padding:14px 18px;
+}
+.s9-stat{font-size:22px;font-weight:800;font-family:'Nunito',sans-serif}
+.s9-stat.green{color:var(--green)}.s9-stat.red{color:#ef4444}.s9-stat.teal{color:var(--teal)}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 10 — Before vs After
+═══════════════════════════════════════════════════════════ */
+#s10{background:#050d16}
+.s10-col{flex:1;padding:32px}
+.s10-before{background:#0c0f1a;border:1px solid #1e293b;border-radius:20px}
+.s10-after{ background:rgba(78,181,100,.05);border:1px solid rgba(78,181,100,.2);border-radius:20px}
+.s10-hdr{font-family:'Nunito',sans-serif;font-size:24px;font-weight:800;letter-spacing:.05em}
+.s10-row{display:flex;justify-content:space-between;align-items:center;
+  padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:15px}
+.s10-row:last-child{border:none}
+.s10-val{font-family:'Nunito',sans-serif;font-weight:800;font-size:18px}
+.s10-val.good{color:var(--green)}.s10-val.bad{color:#ef4444}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 11 — Stats
+═══════════════════════════════════════════════════════════ */
+#s11{background:#050d16}
+.s11-stat{
+  flex:1;text-align:center;padding:48px 32px;
+  border-right:1px solid rgba(255,255,255,.06);
+}
+.s11-stat:last-child{border:none}
+.s11-num{
+  font-family:'Nunito',sans-serif;font-size:96px;font-weight:900;line-height:1;
+  background:linear-gradient(135deg,var(--green),var(--neon));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:countUp .5s ease both;
+}
+.s11-label{color:var(--muted);font-size:16px;font-weight:600;margin-top:12px}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 12 — Morning: Rajesh wins
+═══════════════════════════════════════════════════════════ */
+#s12{
+  background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 40%,#f0f9ff 100%);
+}
+.s12-window{
+  position:absolute;top:0;right:80px;width:400px;height:300px;
+  background:linear-gradient(180deg,#bfdbfe40,transparent);
+  border-bottom-left-radius:8px;border-bottom-right-radius:8px;
+}
+.s12-sun{
+  position:absolute;top:-60px;right:160px;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,#fef08a80,transparent 70%);
+  animation:pulse 3s ease infinite;
+}
+.s12-desk{
+  background:#fff;border:1px solid var(--border);
+  border-radius:20px;padding:32px 40px;box-shadow:0 8px 40px rgba(0,0,0,.08);
+  width:600px;
+}
+.s12-monitor{
+  background:#050d16;border-radius:12px;padding:20px;
+  display:flex;align-items:center;gap:16px;margin-bottom:20px;
+}
+.s12-tea{
+  width:48px;height:48px;border-radius:50%;
+  background:linear-gradient(135deg,#d97706,#f59e0b);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE 13 — CTA
+═══════════════════════════════════════════════════════════ */
+#s13{background:radial-gradient(ellipse at center,#003830 0%,#050d16 70%)}
+.s13-logo{
+  font-family:'Nunito',sans-serif;font-size:120px;font-weight:900;
+  letter-spacing:.2em;color:var(--neon);
+  text-shadow:0 0 60px rgba(0,254,137,.6);
+  animation:glow 2s ease infinite;
+}
+.s13-tagline{
+  font-family:'Nunito',sans-serif;font-size:36px;font-weight:800;
+  color:#fff;text-align:center;max-width:900px;line-height:1.3;
+}
+.s13-cta{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--green);color:#fff;font-weight:800;font-size:18px;
+  padding:16px 40px;border-radius:12px;
+  box-shadow:0 0 30px rgba(78,181,100,.4);
+  font-family:'Open Sans',sans-serif;
+}
+.s13-contact{color:var(--teal);font-size:16px;font-family:'JetBrains Mono',monospace}
+</style>
+</head>
+<body>
+
+<!-- ── Controls ─────────────────────────────────────────────────────────── -->
+<div id="controls">
+  <button id="btn-play" onclick="togglePlay()">▶ Play</button>
+  <button onclick="restart()" style="background:#334155">↺ Restart</button>
+  <button id="btn-sound" onclick="toggleSound()" style="background:#1e293b;padding:8px 12px">🔊</button>
+  <div id="progress-track" onclick="seekTo(event)">
+    <div id="progress-fill"></div>
+  </div>
+  <div id="time-label">0:00 / 2:00</div>
+  <div id="scene-label">Scene 1 / 13</div>
+</div>
+
+<!-- ── Stage ────────────────────────────────────────────────────────────── -->
+<div id="stage">
+
+<!-- ══════════════════════════════════════════
+     SCENE 1 — 11:47 PM Office
+══════════════════════════════════════════ -->
+<div class="scene" id="s1">
+  <!-- Ambient blue light -->
+  <div style="position:absolute;top:-100px;left:-100px;width:600px;height:400px;background:radial-gradient(circle,rgba(30,80,180,.12),transparent 70%);pointer-events:none"></div>
+
+  <!-- Clock + label -->
+  <div style="position:absolute;top:60px;left:80px;display:flex;align-items:center;gap:12px" class="anim-fadeIn">
+    <div class="clock-ring">
+      <div class="clock-hand clock-hour"></div>
+      <div class="clock-hand clock-min"></div>
+      <div style="position:absolute;inset:4px;border-radius:50%;border:1px solid #1e3a5f"></div>
+    </div>
+    <div>
+      <div class="mono" style="color:#ef4444;font-size:28px;font-weight:700">11:47 PM</div>
+      <div style="color:#64748b;font-size:13px">Rajesh's Office</div>
+    </div>
+  </div>
+
+  <!-- Mood label -->
+  <div style="position:absolute;top:60px;right:80px;color:#334155;font-size:11px;letter-spacing:.1em;font-weight:700" class="anim-fadeIn">MOOD: OVERLOAD &amp; FATIGUE</div>
+
+  <!-- Main desk scene -->
+  <div style="display:flex;gap:48px;align-items:flex-start">
+
+    <!-- Monitors + desk -->
+    <div style="display:flex;flex-direction:column;gap:16px" class="anim-fadeUp d2">
+      <!-- Three monitors -->
+      <div style="display:flex;gap:12px">
+        <div class="s1-monitor" style="width:480px;height:280px">
+          <div class="s1-scanline"></div>
+          <div style="padding:8px;font-size:8px;color:#22c55e;font-family:'JetBrains Mono',monospace">
+            <div style="color:#64748b;margin-bottom:4px">GSTR-2B RECONCILIATION — APRIL 2026</div>
+            <div style="display:flex;gap:6px;color:#475569;font-size:7px;margin-bottom:4px;border-bottom:1px solid #1e293b;padding-bottom:3px">
+              <span style="width:80px">Invoice No.</span><span style="width:70px">Amount</span><span style="width:60px">GSTIN</span><span>Status</span>
+            </div>
+            <div id="s1-ticker" style="overflow:hidden;height:130px">
+              <div style="animation:ticker 6s linear infinite">
+                <div style="display:flex;gap:6px;padding:2px 0;color:#334155"><span style="width:80px">APR-26-0001</span><span style="width:70px">₹1,08,000</span><span style="width:60px">33AAC...</span><span style="color:#22c55e">✓</span></div>
+                <div style="display:flex;gap:6px;padding:2px 0;color:#ef4444"><span style="width:80px">APR-26-0002</span><span style="width:70px">₹2,45,000</span><span style="width:60px">27AAB...</span><span>✗ MISS</span></div>
+                <div style="display:flex;gap:6px;padding:2px 0;color:#334155"><span style="width:80px">APR-26-0003</span><span style="width:70px">₹88,500</span><span style="width:60px">29AAA...</span><span style="color:#22c55e">✓</span></div>
+                <div style="display:flex;gap:6px;padding:2px 0;color:#f59e0b"><span style="width:80px">APR-26-0004</span><span style="width:70px">₹3,20,000</span><span style="width:60px">07AAB...</span><span>PENDING</span></div>
+                <div style="display:flex;gap:6px;padding:2px 0;color:#ef4444"><span style="width:80px">APR-26-0005</span><span style="width:70px">₹9,72,000</span><span style="width:60px">33AAC...</span><span>✗ MISS</span></div>
+                <div style="display:flex;gap:6px;padding:2px 0;color:#334155"><span style="width:80px">APR-26-0006</span><span style="width:70px">₹45,000</span><span style="width:60px">19AAC...</span><span style="color:#22c55e">✓</span></div>
+                <div style="display:flex;gap:6px;padding:2px 0;color:#ef4444"><span style="width:80px">APR-26-0007</span><span style="width:70px">₹1,62,000</span><span style="width:60px">24AAB...</span><span>✗ AMT</span></div>
+                <div style="display:flex;gap:6px;padding:2px 0;color:#334155"><span style="width:80px">APR-26-0001</span><span style="width:70px">₹1,08,000</span><span style="width:60px">33AAC...</span><span style="color:#22c55e">✓</span></div>
+                <div style="display:flex;gap:6px;padding:2px 0;color:#ef4444"><span style="width:80px">APR-26-0002</span><span style="width:70px">₹2,45,000</span><span style="width:60px">27AAB...</span><span>✗ MISS</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="s1-monitor" style="width:340px;height:280px">
+          <div class="s1-scanline"></div>
+          <div style="padding:10px;font-size:8px;font-family:'JetBrains Mono',monospace">
+            <div style="color:#64748b;margin-bottom:6px">GSTN PORTAL</div>
+            <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:6px;padding:8px;margin-bottom:6px">
+              <div style="color:#ef4444;font-size:10px;font-weight:700">47 INVOICES FLAGGED</div>
+              <div style="color:#475569;font-size:8px;margin-top:2px">Mismatch detected</div>
+            </div>
+            <div style="color:#f59e0b;font-size:9px">⚠ IMS Action Required</div>
+            <div style="color:#475569;font-size:8px;margin-top:4px">Deadline: 14th May 2026</div>
+            <div style="margin-top:8px;background:#0f172a;border-radius:4px;padding:4px;font-size:7px;color:#22c55e">
+              <div>Total ITC at Risk:</div>
+              <div style="font-size:14px;color:#ef4444;font-weight:700">₹13,72,253</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desk surface -->
+      <div style="background:#0a1628;border-top:3px solid #1e293b;padding:16px 20px;border-radius:0 0 12px 12px;display:flex;gap:20px;align-items:center">
+        <!-- Sticky notes -->
+        <div class="s1-sticky" style="background:#fef08a">MANGAL &amp; MANGAL<br><span style="font-size:8px">₹9L ITC URGENT!!</span></div>
+        <div class="s1-sticky" style="background:#bfdbfe;transform:rotate(1deg)">File GSTR-3B<br><span style="font-size:8px">BEFORE 20th!</span></div>
+        <!-- Chai cups -->
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <div style="text-align:center">
+            <div style="font-size:24px">☕</div>
+            <div style="font-size:8px;color:#475569">Empty #1</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:24px">☕</div>
+            <div style="font-size:8px;color:#475569">Empty #2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rajesh card -->
+    <div style="display:flex;flex-direction:column;gap:16px" class="anim-fadeUp d4">
+      <div class="panel-dark" style="padding:24px;width:280px">
+        <div style="font-size:48px;text-align:center;margin-bottom:12px">🧑‍💼</div>
+        <div style="color:#fff;font-size:16px;font-weight:700;font-family:'Nunito',sans-serif;text-align:center">RAJESH</div>
+        <div style="color:var(--teal);font-size:11px;text-align:center;margin-bottom:16px">Chartered Accountant · 38 yrs</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;font-size:12px;color:#fca5a5">
+            📋 <strong>40 Clients</strong><br>
+            <span style="color:#64748b">Manual recon every month</span>
+          </div>
+          <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;font-size:12px;color:#fca5a5">
+            ⏰ <strong>80 hrs/month</strong><br>
+            <span style="color:#64748b">Just for reconciliation</span>
+          </div>
+        </div>
+      </div>
+      <div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:10px;padding:14px;max-width:280px">
+        <div style="color:#94a3b8;font-size:11px;font-style:italic;line-height:1.6">
+          "I manage 40 clients. Every month, 80 hours matching invoices against GSTR-2B. That's two full work weeks. Just for reconciliation."
+        </div>
+        <div style="color:#64748b;font-size:10px;margin-top:8px">— Rajesh, CA</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Text overlay -->
+  <div style="position:absolute;bottom:120px;left:0;right:0;text-align:center" class="anim-fadeUp d6">
+    <div class="h-display" style="font-size:48px;color:#fff;text-shadow:0 0 40px rgba(0,0,0,.8)">Every month. Same story.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 2 — Data Chaos
+══════════════════════════════════════════ -->
+<div class="scene" id="s2">
+  <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at center,#120a0a,#060c18)" ></div>
+
+  <div style="display:flex;gap:60px;align-items:flex-start;position:relative;z-index:2;width:1700px">
+
+    <!-- Phone vibrating -->
+    <div class="anim-fadeUp d1">
+      <div style="color:#64748b;font-size:12px;text-align:center;margin-bottom:8px;font-weight:600">INCOMING CALL</div>
+      <div class="s2-phone">
+        <div style="text-align:center;margin-bottom:12px">
+          <div style="font-size:32px">📱</div>
+          <div style="background:var(--green);color:#fff;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;margin-top:6px;animation:pulse 1s ease infinite">
+            📞 Mangal &amp; Mangal
+          </div>
+          <div style="color:#64748b;font-size:10px;margin-top:4px">3rd call this hour</div>
+        </div>
+        <div class="s2-notification">
+          <div style="font-size:9px;color:#ef4444;font-weight:700">GST PORTAL ALERT</div>
+          <div style="font-size:10px;color:#94a3b8;margin-top:2px">47 invoices need immediate action</div>
+        </div>
+        <div class="s2-notification" style="border-color:var(--warn)">
+          <div style="font-size:9px;color:#f59e0b;font-weight:700">DEADLINE WARNING</div>
+          <div style="font-size:10px;color:#94a3b8;margin-top:2px">IMS actions due in 3 days</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inbox chaos -->
+    <div style="width:380px" class="anim-fadeUp d2">
+      <div style="color:#64748b;font-size:12px;font-weight:600;margin-bottom:10px">INBOX — UNREAD (47)</div>
+      <div class="s2-inbox">
+        <div class="s2-mail"><span class="s2-urgent">URGENT</span><span style="color:#94a3b8;font-size:12px">Cosmos Corp — ITC Discrepancy ₹3.2L</span></div>
+        <div class="s2-mail"><span class="s2-urgent">URGENT</span><span style="color:#94a3b8;font-size:12px">Delta Steel — Vendor GSTR-1 Missing</span></div>
+        <div class="s2-mail"><span style="font-size:9px;color:#f59e0b;font-weight:700;background:rgba(245,158,11,.1);padding:2px 6px;border-radius:3px">ACTION</span><span style="color:#94a3b8;font-size:12px">Apex Builders — Pre-14th Deadline</span></div>
+        <div class="s2-mail"><span class="s2-urgent">URGENT</span><span style="color:#94a3b8;font-size:12px">Jupiter Logistics — Invoice Mismatch</span></div>
+        <div class="s2-mail"><span style="font-size:9px;color:#f59e0b;font-weight:700;background:rgba(245,158,11,.1);padding:2px 6px;border-radius:3px">ACTION</span><span style="color:#94a3b8;font-size:12px">Supreme Retail — GSTR-3B Review</span></div>
+      </div>
+    </div>
+
+    <!-- Big counter -->
+    <div style="text-align:center" class="anim-fadeUp d3">
+      <div style="color:#64748b;font-size:13px;font-weight:600;margin-bottom:8px">INVOICES FLAGGED</div>
+      <div class="s2-counter" id="s2-count">47</div>
+      <div style="color:#ef4444;font-size:14px;margin-top:4px">⚠ Immediate Action Required</div>
+      <div style="margin-top:20px;padding:14px 20px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px">
+        <div style="color:#f87171;font-size:12px;font-family:'JetBrains Mono',monospace">
+          Manual cross-checking<br>10,000 rows · Cell by cell<br>
+          <span style="color:#ef4444;font-weight:700">One typo = broken books</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:120px;left:0;right:0;text-align:center" class="anim-fadeUp d5">
+    <div class="h-display" style="font-size:42px;color:#fff">GST Portal Chaos &amp; Urgent Alerts</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 3 — The Cost
+══════════════════════════════════════════ -->
+<div class="scene" id="s3">
+  <div style="position:absolute;inset:0;background:#050d16"></div>
+  <div style="display:flex;gap:80px;align-items:center;position:relative;z-index:2">
+
+    <!-- Government notice -->
+    <div class="s3-notice anim-fadeUp d1" style="width:680px">
+      <div style="color:#94a3b8;font-size:11px;letter-spacing:.1em;margin-bottom:16px;font-family:'JetBrains Mono',monospace">GOVERNMENT OF INDIA — GST DEPARTMENT</div>
+      <div style="border-top:2px solid #ef444440;border-bottom:2px solid #ef444440;padding:16px 0;margin-bottom:16px">
+        <div style="color:#f87171;font-size:18px;font-weight:700;font-family:'Nunito',sans-serif">Form GSTR-3B</div>
+        <div style="color:#ef4444;font-size:14px;margin-top:4px">Discrepancy Detected</div>
+      </div>
+      <div style="color:#64748b;font-size:13px;line-height:1.6">
+        Your returns for the period <strong style="color:#94a3b8">April 2026</strong> show a mismatch between reported ITC and GSTR-2B auto-population.<br><br>
+        Amount in question: <strong style="color:#ef4444">₹13,72,253</strong><br>
+        Action required by: <strong style="color:#f59e0b">20th May 2026</strong>
+      </div>
+      <div style="margin-top:20px;text-align:right">
+        <div class="s3-stamp">NOTICE ISSUED</div>
+      </div>
+    </div>
+
+    <!-- ITC at risk counter -->
+    <div style="text-align:center" class="anim-fadeUp d3">
+      <div style="color:#64748b;font-size:14px;font-weight:600;letter-spacing:.05em;margin-bottom:12px">ITC AT RISK</div>
+      <div class="s3-amount" id="s3-amount">₹0</div>
+      <div style="color:#f87171;font-size:14px;margin-top:8px">Permanent cash loss</div>
+      <div style="margin-top:24px;display:flex;flex-direction:column;gap:8px">
+        <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:8px;padding:12px;font-size:13px;color:#fca5a5">
+          2–5% of eligible ITC lost
+        </div>
+        <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:8px;padding:12px;font-size:13px;color:#fca5a5">
+          Every quarter. Permanently.
+        </div>
+        <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:8px;padding:12px;font-size:13px;color:#fca5a5">
+          Discovered only after deadline ⏰
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:120px;left:0;right:0;text-align:center" class="anim-fadeUp d6">
+    <div class="h-display" style="font-size:38px;color:#fff">2–5% of eligible ITC lost. Every quarter. <span style="color:#ef4444">Permanently.</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 4 — The Turn
+══════════════════════════════════════════ -->
+<div class="scene" id="s4">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,#003830 0%,#050d16 70%)"></div>
+  <!-- Ripples -->
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)">
+    <div class="s4-ripple" style="width:200px;height:200px;margin:-100px 0 0 -100px;animation-delay:0s"></div>
+    <div class="s4-ripple" style="width:200px;height:200px;margin:-100px 0 0 -100px;animation-delay:.6s"></div>
+    <div class="s4-ripple" style="width:200px;height:200px;margin:-100px 0 0 -100px;animation-delay:1.2s"></div>
+  </div>
+
+  <div style="display:flex;gap:80px;align-items:center;position:relative;z-index:2">
+    <div class="anim-fadeUp d1">
+      <div class="s4-phone">
+        <div style="font-size:36px;text-align:center;margin-bottom:12px">📱</div>
+        <div style="background:#050d16;border:1px solid var(--green);border-radius:10px;padding:12px;text-align:center">
+          <div style="color:var(--neon);font-size:11px;font-weight:700;margin-bottom:4px">REXLO</div>
+          <div style="color:var(--green);font-size:13px;font-weight:600">Dashboard Active</div>
+          <div style="color:var(--teal);font-size:11px;margin-top:4px">AI Agents Working...</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--neon);animation:pulse .8s ease infinite"></div>
+          <div style="color:var(--teal);font-size:11px">847 transactions processing</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="max-width:600px" class="anim-fadeUp d3">
+      <div style="color:var(--teal);font-size:14px;font-weight:700;letter-spacing:.1em;margin-bottom:16px">THE TURN</div>
+      <div class="h-display" style="font-size:56px;color:#fff;line-height:1.1;margin-bottom:24px">
+        What if the AI worked<br>the <span style="color:var(--neon)">80 hours.</span><br>Not you.
+      </div>
+      <div style="color:#94a3b8;font-size:18px;line-height:1.6;font-style:italic">
+        "Then, I turned on the lights. Or rather, the AI did."
+      </div>
+      <div style="margin-top:24px;display:flex;gap:12px">
+        <div style="background:rgba(0,254,137,.1);border:1px solid rgba(0,254,137,.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--neon)">✓ Zero spreadsheets</div>
+        <div style="background:rgba(0,254,137,.1);border:1px solid rgba(0,254,137,.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--neon)">✓ Works overnight</div>
+        <div style="background:rgba(0,254,137,.1);border:1px solid rgba(0,254,137,.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--neon)">✓ 40 clients at once</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 5 — Logo Reveal
+══════════════════════════════════════════ -->
+<div class="scene" id="s5">
+  <!-- Orbital particles -->
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:0;height:0">
+    <div class="s5-particle" style="animation-delay:0s;animation-duration:3s"></div>
+    <div class="s5-particle" style="animation-delay:.75s;animation-duration:3s"></div>
+    <div class="s5-particle" style="animation-delay:1.5s;animation-duration:3s"></div>
+    <div class="s5-particle" style="animation-delay:2.25s;animation-duration:3s"></div>
+  </div>
+
+  <div style="text-align:center;position:relative;z-index:2">
+    <div class="s5-logo-text anim-fadeIn d2">REXLO</div>
+    <div class="s5-sub anim-fadeIn d4" style="margin-top:16px">Powered by Agentic AI</div>
+    <div class="anim-fadeIn d6" style="margin-top:32px;color:#94a3b8;font-size:20px">
+      Four AI Agents &nbsp;·&nbsp; One Platform &nbsp;·&nbsp; Zero Spreadsheets
+    </div>
+
+    <!-- 4 agent badges -->
+    <div style="display:flex;gap:20px;justify-content:center;margin-top:40px">
+      <div class="tag-neon tag anim-fadeUp d6">01 Data Intelligence</div>
+      <div class="tag-neon tag anim-fadeUp d7">02 Reconciliation</div>
+      <div class="tag-neon tag anim-fadeUp d8">03 ITC Recovery</div>
+      <div class="tag-neon tag anim-fadeUp d9">04 Client Insights</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 6 — Agent 01: Unified Data
+══════════════════════════════════════════ -->
+<div class="scene" id="s6">
+  <div style="position:absolute;top:40px;left:80px" class="anim-fadeIn">
+    <div class="tag-neon tag">01 / Unified Data Intelligence</div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:60px;position:relative;z-index:2">
+
+    <!-- Sources -->
+    <div style="display:flex;flex-direction:column;gap:20px" class="anim-fadeUp d1">
+      <div class="s6-source">
+        <div style="font-size:28px;margin-bottom:8px">🏛️</div>
+        <div style="color:var(--teal);font-size:14px;font-weight:700">GSTN / IMS</div>
+        <div style="color:#475569;font-size:11px;margin-top:4px">Government Portal</div>
+      </div>
+      <div class="s6-source">
+        <div style="font-size:28px;margin-bottom:8px">📊</div>
+        <div style="color:var(--teal);font-size:14px;font-weight:700">Tally / SAP</div>
+        <div style="color:#475569;font-size:11px;margin-top:4px">ERP Systems</div>
+      </div>
+      <div class="s6-source">
+        <div style="font-size:28px;margin-bottom:8px">📄</div>
+        <div style="color:var(--teal);font-size:14px;font-weight:700">Vendors</div>
+        <div style="color:#475569;font-size:11px;margin-top:4px">Invoice Data</div>
+      </div>
+    </div>
+
+    <!-- Streams -->
+    <div style="display:flex;flex-direction:column;gap:40px;align-items:center" class="anim-fadeIn d3">
+      <div class="s6-stream" style="width:200px"></div>
+      <div class="s6-stream" style="width:200px;animation-delay:.3s"></div>
+      <div class="s6-stream" style="width:200px;animation-delay:.6s"></div>
+      <div style="color:var(--teal);font-size:12px;font-weight:700;letter-spacing:.05em">REAL-TIME SYNC</div>
+    </div>
+
+    <!-- Unified DB -->
+    <div class="s6-db anim-fadeUp d4" style="padding:40px 48px;text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">🗄️</div>
+      <div style="color:var(--neon);font-size:20px;font-weight:800;font-family:'Nunito',sans-serif">Unified Source</div>
+      <div style="color:var(--teal);font-size:13px;margin-top:6px">Single source of truth</div>
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+        <div style="background:rgba(0,254,137,.1);color:var(--neon);font-size:10px;padding:3px 8px;border-radius:4px;font-weight:700">100% AUDIT-PROOF</div>
+        <div style="background:rgba(98,202,195,.1);color:var(--teal);font-size:10px;padding:3px 8px;border-radius:4px;font-weight:700">STANDARDIZED</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:120px;left:0;right:0;text-align:center" class="anim-fadeUp d5">
+    <div class="h-display" style="font-size:36px;color:#fff">GST. Tally. Vendors. <span style="color:var(--neon)">One source of truth.</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 7 — Agent 02: Reconciliation
+══════════════════════════════════════════ -->
+<div class="scene" id="s7">
+  <div style="position:absolute;top:40px;left:80px" class="anim-fadeIn">
+    <div class="tag-green tag">02 / Continuous Reconciliation</div>
+  </div>
+
+  <div style="display:flex;gap:60px;align-items:flex-start;position:relative;z-index:2">
+    <!-- Recon grid -->
+    <div style="width:980px" class="anim-fadeUp d1">
+      <div style="color:#64748b;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;display:flex;justify-content:space-between">
+        <span>RECONCILIATION ENGINE — LIVE</span>
+        <span style="color:var(--green)">Processing 847 transactions...</span>
+      </div>
+      <div id="s7-rows">
+        <div class="s7-row matched anim-fadeUp d1"><span class="s7-check">✓</span><span class="mono" style="width:120px">APR-26-015</span><span style="flex:1">33AACCR4567H1Z5 — Jupiter Logistics</span><span>₹1,08,000</span><span style="color:#86efac;font-size:11px;font-weight:700">AUTO ACCEPTED</span></div>
+        <div class="s7-row matched anim-fadeUp d2"><span class="s7-check">✓</span><span class="mono" style="width:120px">APR-26-030</span><span style="flex:1">29AABCS1429B1Z6 — Delta Steel Corp</span><span>₹2,45,000</span><span style="color:#86efac;font-size:11px;font-weight:700">AUTO ACCEPTED</span></div>
+        <div class="s7-row flagged anim-fadeUp d3"><span class="s7-flag">⚠</span><span class="mono" style="width:120px">APR-26-059</span><span style="flex:1">07AABCP2345F1Z3 — Ultratech Ready Mix</span><span>₹9,09,000</span><span style="color:#f87171;font-size:11px;font-weight:700">REVIEW NEEDED</span></div>
+        <div class="s7-row matched anim-fadeUp d4"><span class="s7-check">✓</span><span class="mono" style="width:120px">APR-26-071</span><span style="flex:1">24AAHCK5362H1Z7 — Shree Cements</span><span>₹88,500</span><span style="color:#86efac;font-size:11px;font-weight:700">AUTO ACCEPTED</span></div>
+        <div class="s7-row pending anim-fadeUp d5"><span style="color:var(--teal)">⟳</span><span class="mono" style="width:120px">APR-26-089</span><span style="flex:1">19AABCS9384B2Z1 — Cosmo Glasswares</span><span>₹1,62,000</span><span style="color:#5eead4;font-size:11px;font-weight:700">PROCESSING</span></div>
+        <div class="s7-row matched anim-fadeUp d6"><span class="s7-check">✓</span><span class="mono" style="width:120px">APR-26-102</span><span style="flex:1">33AACCR4567H1Z5 — Apex Tech Consulting</span><span>₹3,20,000</span><span style="color:#86efac;font-size:11px;font-weight:700">AUTO ACCEPTED</span></div>
+      </div>
+    </div>
+
+    <!-- Stats panel -->
+    <div style="display:flex;flex-direction:column;gap:16px;width:280px" class="anim-fadeUp d3">
+      <div class="panel-dark" style="padding:20px;text-align:center">
+        <div style="color:var(--neon);font-size:56px;font-weight:900;font-family:'Nunito',sans-serif">843</div>
+        <div style="color:var(--green);font-size:13px;font-weight:600">Auto-Matched ✓</div>
+      </div>
+      <div class="panel-dark" style="padding:20px;text-align:center">
+        <div style="color:#ef4444;font-size:56px;font-weight:900;font-family:'Nunito',sans-serif">4</div>
+        <div style="color:#f87171;font-size:13px;font-weight:600">Flagged for Review</div>
+      </div>
+      <div style="background:rgba(0,254,137,.08);border:1px solid rgba(0,254,137,.2);border-radius:12px;padding:16px;font-size:12px;color:var(--teal);font-style:italic;line-height:1.5">
+        "It caught a ₹9 lakh discrepancy. Before the 14th. Before the government did."
+        <div style="color:#475569;margin-top:6px;font-size:11px">— Rajesh, CA</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:120px;left:0;right:0;text-align:center" class="anim-fadeUp d7">
+    <div class="h-display" style="font-size:36px;color:#fff">Auto-matched overnight. You review <span style="color:var(--green)">exceptions</span> — not raw data.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 8 — Agent 03: ITC Recovery
+══════════════════════════════════════════ -->
+<div class="scene" id="s8">
+  <div style="position:absolute;top:40px;left:80px" class="anim-fadeIn">
+    <div class="tag-green tag">03 / ITC &amp; Cashflow Optimisation</div>
+  </div>
+
+  <div style="display:flex;gap:80px;align-items:center;position:relative;z-index:2;width:1600px">
+    <!-- Bar chart -->
+    <div class="anim-fadeUp d1">
+      <div style="color:#64748b;font-size:12px;margin-bottom:16px;font-family:'JetBrains Mono',monospace">ITC RECOVERY — APRIL 2026</div>
+      <div class="s8-bar-wrap">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="s8-bar" style="height:80px;animation-delay:.1s"></div>
+          <div style="color:#64748b;font-size:11px;text-align:center">Mangal<br>&amp; Mangal</div>
+          <div style="color:var(--green);font-size:11px;font-weight:700">₹2,20,443</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="s8-bar" style="height:140px;animation-delay:.3s"></div>
+          <div style="color:#64748b;font-size:11px;text-align:center">Apex<br>Builders</div>
+          <div style="color:var(--green);font-size:11px;font-weight:700">₹5,43,200</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="s8-bar" style="height:100px;animation-delay:.5s"></div>
+          <div style="color:#64748b;font-size:11px;text-align:center">Supreme<br>Retail</div>
+          <div style="color:var(--green);font-size:11px;font-weight:700">₹3,12,000</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="s8-bar" style="height:200px;animation-delay:.7s"></div>
+          <div style="color:#64748b;font-size:11px;text-align:center">Cosmos<br>Corp</div>
+          <div style="color:var(--green);font-size:11px;font-weight:700">₹9,80,000</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="s8-bar" style="height:160px;animation-delay:.9s"></div>
+          <div style="color:#64748b;font-size:11px;text-align:center">Delta<br>Steel</div>
+          <div style="color:var(--green);font-size:11px;font-weight:700">₹7,25,000</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Big counter -->
+    <div style="text-align:center" class="anim-fadeUp d3">
+      <div style="color:#64748b;font-size:14px;font-weight:600;margin-bottom:8px">TOTAL ITC RECOVERED</div>
+      <div class="s8-amount" id="s8-counter">₹0</div>
+      <div style="color:var(--teal);font-size:14px;margin-top:8px">This month · 40 clients</div>
+      <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px">
+        <div style="background:rgba(0,254,137,.08);border:1px solid rgba(0,254,137,.15);border-radius:8px;padding:12px 20px;font-size:13px;color:var(--neon)">
+          🎯 Pre-14th deadline detection
+        </div>
+        <div style="background:rgba(78,181,100,.08);border:1px solid rgba(78,181,100,.15);border-radius:8px;padding:12px 20px;font-size:13px;color:var(--green)">
+          📈 Vendor risk scoring
+        </div>
+        <div style="background:rgba(98,202,195,.08);border:1px solid rgba(98,202,195,.15);border-radius:8px;padding:12px 20px;font-size:13px;color:var(--teal)">
+          ⚡ Automatic IMS actions
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:120px;left:0;right:0;text-align:center" class="anim-fadeUp d6">
+    <div class="h-display" style="font-size:36px;color:#fff">Recover every rupee. <span style="color:var(--neon)">Before the deadline.</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 9 — Agent 04: Client Portal
+══════════════════════════════════════════ -->
+<div class="scene" id="s9">
+  <div style="position:absolute;top:40px;left:80px" class="anim-fadeIn">
+    <div class="tag-teal tag">04 / Client-Ready Insights</div>
+  </div>
+
+  <div style="display:flex;gap:60px;align-items:center;position:relative;z-index:2">
+    <!-- Portal mockup -->
+    <div class="s9-portal anim-fadeUp d1">
+      <!-- Browser chrome -->
+      <div class="s9-topbar">
+        <div class="s9-dot" style="background:#ef4444"></div>
+        <div class="s9-dot" style="background:#f59e0b"></div>
+        <div class="s9-dot" style="background:#22c55e"></div>
+        <div style="flex:1;background:rgba(255,255,255,.1);border-radius:6px;padding:3px 10px;margin:0 8px;font-size:10px;color:#94a3b8;font-family:'JetBrains Mono',monospace">portal.mangal-and-mangal.in</div>
+      </div>
+      <!-- Portal header with client brand -->
+      <div class="s9-header">
+        <div>
+          <div style="font-size:18px;font-weight:800;font-family:'Nunito',sans-serif">Mangal &amp; Mangal</div>
+          <div style="font-size:11px;color:var(--teal);margin-top:2px">GST Intelligence Dashboard · Powered by your CA</div>
+        </div>
+        <div style="background:var(--green);color:#fff;font-size:11px;font-weight:700;padding:6px 14px;border-radius:8px;font-family:'Open Sans',sans-serif">LIVE ●</div>
+      </div>
+      <!-- Stat cards -->
+      <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div class="s9-card">
+          <div style="color:#64748b;font-size:10px;font-weight:600;margin-bottom:4px">ITC CLEARED</div>
+          <div class="s9-stat green">₹2,20,443</div>
+          <div style="color:#22c55e;font-size:10px;margin-top:2px">Auto-matched ✓</div>
+        </div>
+        <div class="s9-card">
+          <div style="color:#64748b;font-size:10px;font-weight:600;margin-bottom:4px">ITC AT RISK</div>
+          <div class="s9-stat red">₹9,09,000</div>
+          <div style="color:#ef4444;font-size:10px;margin-top:2px">15 actions needed</div>
+        </div>
+        <div class="s9-card">
+          <div style="color:#64748b;font-size:10px;font-weight:600;margin-bottom:4px">QUALITY SCORE</div>
+          <div class="s9-stat teal">41/100</div>
+          <div style="color:var(--teal);font-size:10px;margin-top:2px">Improving →</div>
+        </div>
+      </div>
+      <!-- Action queue -->
+      <div style="padding:0 16px 16px">
+        <div style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:8px">Your Action Queue — 3 urgent</div>
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;margin-bottom:6px;font-size:11px;color:#991b1b">
+          1. Accept APR-26-059 on GSTN → ₹1,08,000 at risk
+        </div>
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;font-size:11px;color:#991b1b">
+          2. Accept APR-26-071 on GSTN → ₹88,500 at risk
+        </div>
+      </div>
+    </div>
+
+    <!-- Benefits -->
+    <div style="width:340px" class="anim-fadeUp d4">
+      <div style="color:#94a3b8;font-size:14px;font-style:italic;margin-bottom:24px;line-height:1.6">
+        "My clients now call me for strategy. Not to verify where their invoices went."
+        <div style="color:#64748b;font-size:12px;margin-top:8px">— Rajesh, CA</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:32px;height:32px;background:rgba(98,202,195,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">🏷️</div>
+          <div><div style="color:#fff;font-size:13px;font-weight:700">Your Logo, Your Portal</div><div style="color:#64748b;font-size:11px;margin-top:2px">Premium firm positioning</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:32px;height:32px;background:rgba(78,181,100,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">🔔</div>
+          <div><div style="color:#fff;font-size:13px;font-weight:700">Proactive Alerts</div><div style="color:#64748b;font-size:11px;margin-top:2px">Clients act before deadlines</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:32px;height:32px;background:rgba(0,254,137,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">📊</div>
+          <div><div style="color:#fff;font-size:13px;font-weight:700">Advisory Dashboards</div><div style="color:#64748b;font-size:11px;margin-top:2px">24/7 financial health visibility</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:120px;left:0;right:0;text-align:center" class="anim-fadeUp d6">
+    <div class="h-display" style="font-size:36px;color:#fff">Your brand. Their portal. <span style="color:var(--teal)">24/7 visibility.</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 10 — Before vs After
+══════════════════════════════════════════ -->
+<div class="scene" id="s10">
+  <div style="position:absolute;top:60px;left:0;right:0;text-align:center" class="anim-fadeIn">
+    <div class="h-display" style="font-size:40px;color:#fff">The Transformation</div>
+  </div>
+
+  <div style="display:flex;gap:32px;width:1760px;margin-top:20px">
+    <!-- Before -->
+    <div class="s10-before s10-col anim-fadeUp d1">
+      <div class="s10-hdr" style="color:#ef4444;margin-bottom:20px">⟵ BEFORE</div>
+      <div class="s10-row"><span style="color:#94a3b8">Revenue / client</span><span class="s10-val bad">₹8,000/mo</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">Clients managed</span><span class="s10-val bad">40</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">Monthly revenue</span><span class="s10-val bad">₹3.2L</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">Recon time</span><span class="s10-val bad">80 hrs/month</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">Billing model</span><span class="s10-val" style="color:#64748b">Filing volume</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">Junior staff</span><span class="s10-val" style="color:#ef4444;font-size:14px">Burns out on Excel</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">ITC leakage</span><span class="s10-val bad">₹13,72,253</span></div>
+    </div>
+
+    <!-- Divider -->
+    <div style="display:flex;align-items:center;justify-content:center;width:60px">
+      <div style="width:2px;height:100%;background:linear-gradient(180deg,transparent,var(--neon),transparent)"></div>
+    </div>
+
+    <!-- After -->
+    <div class="s10-after s10-col anim-fadeUp d3">
+      <div class="s10-hdr" style="color:var(--green);margin-bottom:20px">AFTER REXLO ⟶</div>
+      <div class="s10-row"><span style="color:#94a3b8">Revenue / client</span><span class="s10-val good">₹17,000/mo</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">Clients managed</span><span class="s10-val good">80 – 100</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">Monthly revenue</span><span class="s10-val good">₹6.8L+</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">Recon time</span><span class="s10-val good">25 hrs/month</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">Billing model</span><span class="s10-val good" style="font-size:14px">Compliance + Advisory</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">Junior staff</span><span class="s10-val good" style="font-size:14px">Learns &amp; grows</span></div>
+      <div class="s10-row"><span style="color:#94a3b8">ITC recovered</span><span class="s10-val good">₹20,80,443</span></div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:120px;right:80px" class="anim-fadeIn d5">
+    <div style="background:rgba(0,254,137,.08);border:1px solid rgba(0,254,137,.2);border-radius:10px;padding:12px 20px;text-align:center">
+      <div style="color:var(--neon);font-size:32px;font-weight:900;font-family:'Nunito',sans-serif">5×</div>
+      <div style="color:var(--teal);font-size:12px">ROI in Month 1</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 11 — Stats
+══════════════════════════════════════════ -->
+<div class="scene" id="s11">
+  <div style="position:absolute;top:60px;left:0;right:0;text-align:center" class="anim-fadeIn">
+    <div class="h-display" style="font-size:28px;color:#475569;letter-spacing:.1em">THE AGENTIC ADVANTAGE</div>
+  </div>
+
+  <div style="display:flex;width:100%;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)">
+    <div class="s11-stat anim-fadeUp d1">
+      <div class="s11-num">80%</div>
+      <div class="s11-label">Less Tax Prep Time</div>
+    </div>
+    <div class="s11-stat anim-fadeUp d3">
+      <div class="s11-num">99%</div>
+      <div class="s11-label">Reconciliation Accuracy</div>
+    </div>
+    <div class="s11-stat anim-fadeUp d5">
+      <div class="s11-num">5×</div>
+      <div class="s11-label">ROI in Month 1</div>
+    </div>
+    <div class="s11-stat anim-fadeUp d7">
+      <div class="s11-num">60%</div>
+      <div class="s11-label">Fewer Govt Notices</div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:120px;left:0;right:0;text-align:center" class="anim-fadeUp d9">
+    <div class="h-display" style="font-size:28px;color:#475569">Not a reconciliation tool.</div>
+    <div class="h-display" style="font-size:36px;color:#fff;margin-top:8px">A system that turns compliance into your <span style="color:var(--neon)">biggest revenue driver.</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 12 — Morning: Rajesh wins
+══════════════════════════════════════════ -->
+<div class="scene" id="s12">
+  <div class="s12-window"></div>
+  <div class="s12-sun"></div>
+
+  <!-- Sunlight rays -->
+  <div style="position:absolute;top:0;right:0;width:500px;height:400px;background:linear-gradient(225deg,rgba(254,240,138,.25),transparent 60%);pointer-events:none"></div>
+
+  <div style="display:flex;gap:80px;align-items:center;position:relative;z-index:2">
+    <!-- Morning desk -->
+    <div class="s12-desk anim-fadeUp d1">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+        <div class="s12-tea">☕</div>
+        <div>
+          <div style="font-size:18px;font-weight:800;font-family:'Nunito',sans-serif;color:#0f172a">Good morning, Rajesh</div>
+          <div style="color:var(--green);font-size:13px">9:00 AM · All 40 clients reconciled ✓</div>
+        </div>
+      </div>
+      <div class="s12-monitor">
+        <div style="flex:1">
+          <div style="color:var(--teal);font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:6px">REXLO — OVERNIGHT REPORT</div>
+          <div style="color:var(--neon);font-size:13px;font-weight:700">✓ 847 transactions reconciled</div>
+          <div style="color:var(--green);font-size:13px;font-weight:700">✓ ₹20,80,443 ITC recovered</div>
+          <div style="color:var(--teal);font-size:13px;font-weight:700">✓ 3 client reports ready</div>
+        </div>
+        <div style="color:var(--neon);font-size:32px">🎉</div>
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;font-size:13px;color:#166534">
+        📞 On call with Mangal &amp; Mangal — discussing their Q1 tax strategy (not finding their invoice)
+      </div>
+    </div>
+
+    <!-- Quote -->
+    <div style="max-width:480px" class="anim-fadeUp d3">
+      <div style="font-size:64px;color:var(--green);margin-bottom:8px;font-family:'Nunito',sans-serif">"</div>
+      <div style="color:#0f172a;font-size:24px;font-weight:700;font-family:'Nunito',sans-serif;line-height:1.4;margin-bottom:20px">
+        I went from surviving tax season to building an elite advisory practice.
+      </div>
+      <div style="color:#374151;font-size:16px;line-height:1.6;margin-bottom:20px">
+        The AI did the 80 hours of work. I kept the credit. And my clients are thriving like never before.
+      </div>
+      <div style="color:#4b5563;font-size:14px;font-weight:600">— Rajesh, Chartered Accountant</div>
+      <div style="margin-top:24px;display:flex;gap:12px">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 16px;font-size:13px;color:var(--green);font-weight:700">80 clients managed ✓</div>
+        <div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:8px;padding:10px 16px;font-size:13px;color:var(--teal);font-weight:700">₹6.8L+ revenue ✓</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:120px;left:0;right:0;text-align:center" class="anim-fadeUp d5">
+    <div class="h-display" style="font-size:38px;color:#0f172a">Turn compliance into advisory. <span style="color:var(--green)">Live better.</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCENE 13 — CTA
+══════════════════════════════════════════ -->
+<div class="scene" id="s13">
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,rgba(0,254,137,.06),transparent 70%);pointer-events:none"></div>
+
+  <div style="text-align:center;position:relative;z-index:2">
+    <div class="s13-logo anim-fadeIn d1">REXLO</div>
+    <div style="color:var(--teal);font-size:16px;letter-spacing:.12em;font-weight:700;margin-top:8px;margin-bottom:32px" class="anim-fadeIn d3">POWERED BY AGENTIC AI</div>
+
+    <div class="s13-tagline anim-fadeUp d3">
+      Turn GST Compliance Into Your<br>
+      <span style="color:var(--green)">Biggest Revenue Driver</span>
+    </div>
+
+    <div style="margin-top:32px;color:#64748b;font-size:18px;font-style:italic" class="anim-fadeIn d4">
+      Start with 5 clients. 30 days. No commitment.
+    </div>
+
+    <div style="margin-top:32px" class="anim-fadeUp d5">
+      <div class="s13-cta">Request a Demo →</div>
+    </div>
+
+    <div class="s13-contact anim-fadeIn d7" style="margin-top:24px">
+      partners@gstrecon.in &nbsp;·&nbsp; rexlo.in
+    </div>
+
+    <div style="margin-top:16px;color:#334155;font-size:12px;font-family:'JetBrains Mono',monospace" class="anim-fadeIn d8">
+      30-day free pilot &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; Cancel anytime
+    </div>
+  </div>
+</div>
+
+</div><!-- /stage -->
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────
+const TOTAL     = 120;
+const SCENES    = [
+  {id:'s1', start:0,   end:10},
+  {id:'s2', start:10,  end:20},
+  {id:'s3', start:20,  end:30},
+  {id:'s4', start:30,  end:40},
+  {id:'s5', start:40,  end:50},
+  {id:'s6', start:50,  end:58},
+  {id:'s7', start:58,  end:66},
+  {id:'s8', start:66,  end:74},
+  {id:'s9', start:74,  end:82},
+  {id:'s10',start:82,  end:90},
+  {id:'s11',start:90,  end:100},
+  {id:'s12',start:100, end:110},
+  {id:'s13',start:110, end:120},
+];
+
+let time     = 0;
+let playing  = false;
+let raf      = null;
+let lastTs   = null;
+let current  = -1;
+
+// ── Stage scaling — reliable top-left origin approach ────────────────────
+function scaleStage() {
+  const stage = document.getElementById('stage');
+  const sw    = window.innerWidth;
+  const sh    = window.innerHeight - 52;      // subtract controls height
+  const scale = Math.min(sw / 1920, sh / 1080);
+  const ox    = (sw - 1920 * scale) / 2;      // centre horizontally
+  const oy    = (sh - 1080 * scale) / 2;      // centre vertically
+  stage.style.transform = `translate(${ox}px,${oy}px) scale(${scale})`;
+}
+scaleStage();
+window.addEventListener('resize', scaleStage);
+
+// ── Scene switching ───────────────────────────────────────────────────────
+function showScene(idx) {
+  if (idx === current) return;
+  SCENES.forEach((s,i) => {
+    const el = document.getElementById(s.id);
+    if (i === idx) { el.classList.add('active'); }
+    else           { el.classList.remove('active'); }
+  });
+  current = idx;
+  document.getElementById('scene-label').textContent =
+    `Scene ${idx+1} / ${SCENES.length}`;
+
+  // Trigger scene-specific animations
+  if (idx === 2) animS3();
+  if (idx === 7) animS8();
+
+  // Trigger sound only during playback (not on init or seek-while-paused)
+  if (playing) onSceneEnter(idx);
+}
+
+function sceneAt(t) {
+  for (let i = SCENES.length-1; i >= 0; i--) {
+    if (t >= SCENES[i].start) return i;
+  }
+  return 0;
+}
+
+// ── Scene 3: ITC counter ──────────────────────────────────────────────────
+function animS3() {
+  const el = document.getElementById('s3-amount');
+  const target = 1372253;
+  let val = 0; let start = null;
+  function step(ts) {
+    if (!start) start = ts;
+    const p = Math.min((ts - start) / 3000, 1);
+    const ease = 1 - Math.pow(1-p, 3);
+    val = Math.round(ease * target);
+    el.textContent = '₹' + val.toLocaleString('en-IN');
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── Scene 8: ITC recovered counter ───────────────────────────────────────
+function animS8() {
+  const el = document.getElementById('s8-counter');
+  const target = 2080443;
+  let val = 0; let start = null;
+  function step(ts) {
+    if (!start) start = ts;
+    const p = Math.min((ts - start) / 3500, 1);
+    const ease = 1 - Math.pow(1-p, 3);
+    val = Math.round(ease * target);
+    el.textContent = '₹' + val.toLocaleString('en-IN');
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── Playback loop ─────────────────────────────────────────────────────────
+function loop(ts) {
+  if (!playing) return;
+  if (!lastTs) lastTs = ts;
+  const dt = (ts - lastTs) / 1000;
+  lastTs = ts;
+  time = Math.min(time + dt, TOTAL);
+
+  updateUI();
+  showScene(sceneAt(time));
+
+  if (time >= TOTAL) { playing = false; updateBtn(); return; }
+  raf = requestAnimationFrame(loop);
+}
+
+function updateUI() {
+  const pct = (time / TOTAL) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  const m = Math.floor(time/60);
+  const s = Math.floor(time%60).toString().padStart(2,'0');
+  document.getElementById('time-label').textContent = `${m}:${s} / 2:00`;
+}
+
+function updateBtn() {
+  document.getElementById('btn-play').textContent = playing ? '⏸ Pause' : '▶ Play';
+}
+
+function togglePlay() {
+  // Resume AudioContext — must happen on user gesture
+  const ctx = getCtx();
+  if (ctx) ctx.resume();
+
+  playing = !playing;
+  updateBtn();
+
+  if (playing) {
+    lastTs = null;
+    raf = requestAnimationFrame(loop);
+    // Fire sound for current scene immediately
+    onSceneEnter(current >= 0 ? current : 0);
+  } else {
+    cancelAnimationFrame(raf);
+    stopTension();
+    clearInterval(tickTimer);
+  }
+}
+
+function restart() {
+  playing = false; time = 0; current = -1; lastTs = null;
+  cancelAnimationFrame(raf);
+  updateUI(); updateBtn();
+  showScene(0);
+}
+
+function seekTo(e) {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct  = (e.clientX - rect.left) / rect.width;
+  time = pct * TOTAL;
+  current = -1;
+  showScene(sceneAt(time));
+  updateUI();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// PROFESSIONAL AUDIO ENGINE — industry SaaS product video quality
+// ══════════════════════════════════════════════════════════════════════════
+let actx       = null;
+let masterVol  = null;   // master gain node
+let tensionOsc = null, tensionGain = null;
+let ambientBuf = null;   // shared ambient loop
+let soundOn    = true;
+let tickTimer  = null;
+
+function getCtx() {
+  if (!actx) {
+    actx      = new (window.AudioContext || window.webkitAudioContext)();
+    masterVol = actx.createGain();
+    masterVol.gain.value = 0.85;
+    masterVol.connect(actx.destination);
+  }
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+// ── Soft reverb simulation (3 delay lines) ─────────────────────────────
+function addReverb(source, ctx, wet = 0.25) {
+  const delays = [0.03, 0.05, 0.08];
+  delays.forEach(t => {
+    const d = ctx.createDelay(1.0);
+    const g = ctx.createGain();
+    d.delayTime.value = t;
+    g.gain.value = wet;
+    source.connect(d);
+    d.connect(g);
+    g.connect(masterVol);
+  });
+}
+
+// ── Soft UI click — macOS-style (Scene 1 tick) ────────────────────────
+function playTick() {
+  if (!soundOn) return;
+  const ctx = getCtx(), now = ctx.currentTime;
+  // Two harmonics for warmth
+  [[800, 0.025],[1600, 0.012]].forEach(([freq, vol]) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(vol, now + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+    o.connect(g); g.connect(masterVol);
+    o.start(now); o.stop(now + 0.09);
+  });
+}
+
+// ── Deep cinematic pad — low, subtle, non-harsh ───────────────────────
+function startTension() {
+  if (!soundOn) return;
+  stopTension();
+  const ctx = getCtx(), now = ctx.currentTime;
+  // Low pad — two detuned sine waves for depth
+  [[55, 0],[57.5, 0.3]].forEach(([freq, detune]) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    o.detune.value = detune;
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.02, now + 3);
+    o.connect(g); g.connect(masterVol);
+    o.start(now);
+    // Keep reference to first pair only
+    if (!tensionOsc) { tensionOsc = o; tensionGain = g; }
+  });
+}
+
+function stopTension() {
+  clearInterval(tickTimer);
+  try {
+    const ctx = getCtx(), now = ctx.currentTime;
+    if (tensionGain) {
+      tensionGain.gain.setValueAtTime(tensionGain.gain.value, now);
+      tensionGain.gain.linearRampToValueAtTime(0, now + 0.8);
+    }
+    const osc = tensionOsc;
+    setTimeout(() => { try { osc && osc.stop(); } catch(e){} }, 900);
+  } catch(e) {}
+  tensionOsc = null; tensionGain = null;
+}
+
+// ── Transition whoosh — smooth, modern ────────────────────────────────
+function playWhoosh() {
+  if (!soundOn) return;
+  const ctx = getCtx(), now = ctx.currentTime;
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass'; filter.frequency.value = 1200; filter.Q.value = 0.6;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.06, now + 0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+  src.connect(filter); filter.connect(g); g.connect(masterVol);
+  src.start(now);
+}
+
+// ── Ascending notification chime — Stripe/Linear style ────────────────
+function playChime(minor = false) {
+  if (!soundOn) return;
+  const ctx = getCtx(), now = ctx.currentTime;
+  // C major arpeggio: C5 E5 G5 C6
+  const notes = minor
+    ? [523.25, 622.25, 783.99, 1046.5]
+    : [523.25, 659.25, 783.99, 1046.5];
+  notes.forEach((freq, i) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    const t = now + i * 0.1;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.08, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+    o.connect(g);
+    addReverb(g, ctx, 0.15);
+    g.connect(masterVol);
+    o.start(t); o.stop(t + 2);
+  });
+}
+
+// ── Logo build — elegant ascending sweep ──────────────────────────────
+function playLogoReveal() {
+  if (!soundOn) return;
+  const ctx = getCtx(), now = ctx.currentTime;
+  // Rising harmonic pad
+  [220, 440, 660, 880].forEach((freq, i) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    const t = now + i * 0.15;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.04, t + 0.3);
+    g.gain.linearRampToValueAtTime(0.02, t + 1.5);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 3);
+    o.connect(g); addReverb(g, ctx, 0.3); g.connect(masterVol);
+    o.start(t); o.stop(t + 3.5);
+  });
+}
+
+// ── Soft UI confirm ping — every matched row ──────────────────────────
+function playConfirmPing() {
+  if (!soundOn) return;
+  const ctx = getCtx(), now = ctx.currentTime;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'sine'; o.frequency.value = 1047; // C6
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.045, now + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+  o.connect(g); addReverb(g, ctx, 0.1); g.connect(masterVol);
+  o.start(now); o.stop(now + 0.4);
+}
+
+// ── Success rising arpeggio — ITC recovered ───────────────────────────
+function playSuccess() {
+  if (!soundOn) return;
+  const ctx = getCtx(), now = ctx.currentTime;
+  // C major 7 chord arpeggio
+  [261.63, 329.63, 392, 493.88, 523.25].forEach((freq, i) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    const t = now + i * 0.08;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.06, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+    o.connect(g); addReverb(g, ctx, 0.2); g.connect(masterVol);
+    o.start(t); o.stop(t + 1.5);
+  });
+}
+
+// ── Stat lock-in — deep satisfying thud ──────────────────────────────
+function playStatLock() {
+  if (!soundOn) return;
+  const ctx = getCtx(), now = ctx.currentTime;
+  // Sub bass thud
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(80, now);
+  o.frequency.exponentialRampToValueAtTime(30, now + 0.15);
+  g.gain.setValueAtTime(0.12, now);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+  o.connect(g); g.connect(masterVol);
+  o.start(now); o.stop(now + 0.45);
+  // Bright click on top
+  const o2 = ctx.createOscillator(), g2 = ctx.createGain();
+  o2.type = 'sine'; o2.frequency.value = 1800;
+  g2.gain.setValueAtTime(0.04, now);
+  g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+  o2.connect(g2); g2.connect(masterVol);
+  o2.start(now); o2.stop(now + 0.07);
+}
+
+// ── Warm resolved major chord — morning scene ─────────────────────────
+function playMorning() {
+  if (!soundOn) return;
+  stopTension();
+  const ctx = getCtx(), now = ctx.currentTime;
+  // Warm C major chord: C4 E4 G4 C5
+  [261.63, 329.63, 392, 523.25].forEach((freq, i) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    const t = now + i * 0.12;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.05, t + 0.2);
+    g.gain.linearRampToValueAtTime(0.03, t + 2);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 4);
+    o.connect(g); addReverb(g, ctx, 0.35); g.connect(masterVol);
+    o.start(t); o.stop(t + 5);
+  });
+}
+
+// ── Final CTA chime — pristine, premium ──────────────────────────────
+function playFinalChime() {
+  if (!soundOn) return;
+  const ctx = getCtx(), now = ctx.currentTime;
+  // Perfect 5th + octave — timeless, premium
+  [[523.25, 0], [783.99, 0.2], [1046.5, 0.4]].forEach(([freq, delay]) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    const t = now + delay;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.07, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 3.5);
+    o.connect(g); addReverb(g, ctx, 0.4); g.connect(masterVol);
+    o.start(t); o.stop(t + 4);
+  });
+}
+
+// ── Scene sound router ─────────────────────────────────────────────────
+function onSceneEnter(idx) {
+  stopTension();
+  clearInterval(tickTimer);
+  playWhoosh(); // scene transition sound on every scene change
+  switch(idx) {
+    case 0: // 11:47 PM — low pad + clock ticks
+      setTimeout(startTension, 300);
+      tickTimer = setInterval(playTick, 1100);
+      break;
+    case 1: // chaos — pad + rapid pings
+      setTimeout(startTension, 300);
+      tickTimer = setInterval(playConfirmPing, 500);
+      break;
+    case 2: // cost — tense pad only
+      setTimeout(startTension, 300);
+      break;
+    case 3: // the turn — chime, stop tension
+      setTimeout(playChime, 400);
+      break;
+    case 4: // logo reveal — elegant pad build
+      setTimeout(playLogoReveal, 200);
+      break;
+    case 5: // agent 01 — soft pings
+      tickTimer = setInterval(playConfirmPing, 380);
+      break;
+    case 6: // agent 02 — faster pings
+      tickTimer = setInterval(playConfirmPing, 280);
+      break;
+    case 7: // agent 03 — success arpeggio
+      setTimeout(playSuccess, 300);
+      break;
+    case 8: // agent 04 — soft chime
+      setTimeout(() => playChime(false), 400);
+      break;
+    case 9: // before/after — silence with whoosh only
+      break;
+    case 10: // stats — 4 stat lock-ins
+      [400, 1400, 2400, 3400].forEach(d => setTimeout(playStatLock, d));
+      break;
+    case 11: // morning — warm chord
+      setTimeout(playMorning, 300);
+      break;
+    case 12: // CTA — premium final chime
+      setTimeout(playFinalChime, 500);
+      break;
+  }
+}
+// ── Sound toggle button ────────────────────────────────────────────────────
+function toggleSound() {
+  soundOn = !soundOn;
+  document.getElementById('btn-sound').textContent = soundOn ? '🔊' : '🔇';
+  if (!soundOn) { stopTension(); clearInterval(tickTimer); }
+  else if (playing) onSceneEnter(current >= 0 ? current : 0);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+showScene(0);
+</script>
+</body>
+</html>
